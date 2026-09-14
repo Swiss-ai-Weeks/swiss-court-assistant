@@ -5,3 +5,6 @@ __pycache__/
 
 # Data (downloaded / generated — never commit)
 data/
+
+# Secrets (NGC_API_KEY etc.)
+.env
