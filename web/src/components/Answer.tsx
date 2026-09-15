@@ -3,6 +3,7 @@ import Markdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Source } from "../api";
 import { erwLabel } from "../format";
+import ReadAloud from "./ReadAloud";
 
 /** Turn [1], [1, 2], [1–3] into markdown links the renderer shows as citation chips. */
 function linkCitations(md: string, max: number): string {
@@ -18,14 +19,17 @@ function linkCitations(md: string, max: number): string {
 }
 
 interface Props {
+  id: string;
   text: string;
   sources: Source[];
+  /** Language of the question; the answer is read aloud in it. */
+  language: string | null;
   streaming: boolean;
   activeN: number | null;
   onCite: (n: number) => void;
 }
 
-export default function Answer({ text, sources, streaming, activeN, onCite }: Props) {
+export default function Answer({ id, text, sources, language, streaming, activeN, onCite }: Props) {
   const components = useMemo<Components>(
     () => ({
       a({ href, children }) {
@@ -54,12 +58,17 @@ export default function Answer({ text, sources, streaming, activeN, onCite }: Pr
 
   return (
     <div className="answer">
-      <div className="md">
+      <div className="md" data-select-lang={language ?? "en"} data-select-source="the answer">
         <Markdown remarkPlugins={[remarkGfm]} components={components}>
           {linkCitations(text, sources.length)}
         </Markdown>
         {streaming && <span className="caret" />}
       </div>
+      {!streaming && language && (
+        <div className="answer-actions">
+          <ReadAloud id={`answer:${id}`} text={text} language={language} />
+        </div>
+      )}
     </div>
   );
 }

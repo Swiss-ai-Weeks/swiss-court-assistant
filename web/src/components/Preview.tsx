@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type Decision, type Source } from "../api";
 import { erwLabel, formatDate, langName } from "../format";
+import ReadAloud from "./ReadAloud";
 
 interface Props {
   /** Every source of the selected answer; the preview shows the decision of `activeN`. */
@@ -103,12 +104,16 @@ function RefTools({ source, language }: { source: Source; language: string | nul
             Translate to {langName(target)}
           </button>
         )}
+        <ReadAloud id={`passage:${key}`} text={source.text} language={from} className="lg" />
         {source.verified === false && <span className="ref-warn">Quoted words not found verbatim in this decision</span>}
       </div>
       {panel === "explain" && (
         <div className="ref-box" ref={box}>
           <div className="block-label">
             <span className="tag">Why [{source.n}] is cited</span>
+            {source.explanation && language && (
+              <ReadAloud id={`explain:${key}`} text={source.explanation} language={language} />
+            )}
           </div>
           <p>{source.explanation || "The agent gave no explanation for this citation."}</p>
         </div>
@@ -119,6 +124,9 @@ function RefTools({ source, language }: { source: Source; language: string | nul
             <span className="tag">
               Machine translation · {langName(from)} → {langName(target)}
             </span>
+            {translation.state === "done" && (
+              <ReadAloud id={`translation:${key}`} text={translation.text} language={target} />
+            )}
           </div>
           {translation.state === "loading" && <p className="muted">Translating…</p>}
           {translation.state === "done" && <p>{translation.text}</p>}
@@ -176,6 +184,12 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   const regesteActive = active.section === "regeste";
   const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
   const tools = <RefTools key={activeN} source={active} language={language} />;
+  // selected text can be read aloud, translated into the conversation's language, or quoted in a reply
+  const selectable = {
+    "data-select-lang": d.language,
+    "data-select-target": language ?? undefined,
+    "data-select-source": `${d.courtLabel} ${d.docket}`,
+  };
 
   return (
     <aside className="preview" aria-label="Source decision">
@@ -235,7 +249,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
         {doc && !regesteActive && lastActive < 0 && <div className="ref-tools-top">{tools}</div>}
 
         {d.regeste && (
-          <div className="regeste" data-active={regesteActive || undefined}>
+          <div className="regeste" data-active={regesteActive || undefined} {...selectable}>
             <div className="block-label">
               <span className="tag">Regeste</span>
             </div>
@@ -253,7 +267,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
         {error && <p className="preview-empty">Could not load the decision: {error}</p>}
         {!doc && !error && <p className="preview-empty">Loading decision…</p>}
         {doc && (
-          <div className="doc-text">
+          <div className="doc-text" {...selectable}>
             {parts.map((p, i) => {
               const tail = i === lastActive && !regesteActive ? tools : null;
               if (!p.ns.length) return <span key={i}>{p.text}</span>;

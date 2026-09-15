@@ -46,6 +46,8 @@ export interface ToolCall {
   /** Null while the tool is running. */
   summary?: string | null;
   error?: boolean;
+  /** The agent's reasoning before this call. */
+  thought?: string | null;
 }
 
 export interface Message {
@@ -84,6 +86,8 @@ export type ChatEvent =
   | { type: "conversation"; conversation: ConversationSummary }
   | { type: "meta"; language: string }
   | { type: "status"; stage: Stage; detail: string }
+  /** Reasoning streamed while the agent decides on its next tool call. */
+  | { type: "thinking"; text: string }
   | { type: "tool_start"; call: ToolCall }
   | { type: "tool_end"; id: string; summary: string; error: boolean }
   | { type: "delta"; text: string }
@@ -100,6 +104,8 @@ export interface Api {
   getDecision(id: string): Promise<Decision>;
   /** Machine translation of a cited passage (language codes: de, fr, it, rm, en). */
   translate(text: string, source: string, target: string): Promise<string>;
+  /** Speech for `text` read in `language`: a stream of 16-bit little-endian mono PCM at `sampleRate`. */
+  speech(text: string, language: string, signal?: AbortSignal): Promise<{ sampleRate: number; stream: ReadableStream<Uint8Array> }>;
   /** Streams one assistant turn. A null conversationId starts a new conversation. */
   chat(conversationId: string | null, text: string, signal?: AbortSignal): AsyncIterable<ChatEvent>;
 }

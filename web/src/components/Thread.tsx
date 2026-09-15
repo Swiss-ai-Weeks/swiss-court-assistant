@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import type { Message, Source, Stage, ToolCall } from "../api";
 import Answer from "./Answer";
+import { QuoteCard } from "./Composer";
 
 export interface PendingTurn {
   status: { stage: Stage; detail: string } | null;
   tools: ToolCall[];
   sources: Source[];
   content: string;
+  /** Reasoning streamed since the last tool call. */
+  thinking?: string;
   language?: string;
   error?: string;
 }
@@ -53,6 +56,7 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
               content={m.content}
               sources={m.sources ?? []}
               tools={m.toolCalls ?? []}
+              language={m.language ?? null}
               streaming={false}
               activeN={selection?.messageId === m.id ? selection.n : null}
               onOpenSource={onOpenSource}
@@ -66,7 +70,9 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
             sources={pending.sources}
             tools={pending.tools}
             status={pending.status}
+            thinking={pending.thinking}
             error={pending.error}
+            language={pending.language ?? null}
             streaming
             activeN={selection?.messageId === PENDING_ID ? selection.n : null}
             onOpenSource={onOpenSource}
@@ -79,9 +85,17 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
 }
 
 function UserTurn({ text }: { text: string }) {
+  // "> " lines quote a selection the user replied to (see SelectionTools)
+  const lines = text.split("\n");
+  const quote = lines.filter((l) => l.startsWith(">")).map((l) => l.replace(/^>\s?/, ""));
+  const source = quote.length > 1 && quote[quote.length - 1].startsWith("— ") ? quote.pop()!.slice(2) : null;
+  const rest = lines.filter((l) => !l.startsWith(">")).join("\n").trim();
   return (
     <div className="msg msg-user">
-      <div className="bubble">{text}</div>
+      <div className="bubble">
+        {quote.length > 0 && <QuoteCard text={quote.join("\n")} source={source} />}
+        {rest}
+      </div>
     </div>
   );
 }
@@ -94,7 +108,10 @@ const TOOL_LABEL: Record<string, string> = {
 
 function toolArg(c: ToolCall): string {
   const a = c.args;
-  const main = a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "";
+  const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
+  const main = perLanguage.length
+    ? perLanguage.join(" · ")
+    : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
   const offset = typeof a.offset === "number" && a.offset > 0 ? ` · from character ${a.offset.toLocaleString("en")}` : "";
   return `${String(main)}${offset}`;
 }
@@ -110,6 +127,11 @@ function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
           const state = c.error ? "error" : c.summary == null ? "running" : "done";
           return (
             <li key={c.id} className={state}>
+              {c.thought && (
+                <span className="thought" title={c.thought}>
+                  {c.thought}
+                </span>
+              )}
               <span className="dot" />
               <span className="tool">{TOOL_LABEL[c.name] ?? c.name}</span>
               <span className="arg">{toolArg(c)}</span>
@@ -128,24 +150,40 @@ interface TurnProps {
   sources: Source[];
   tools: ToolCall[];
   status?: PendingTurn["status"];
+  thinking?: string;
   error?: string;
+  language: string | null;
   streaming: boolean;
   activeN: number | null;
   onOpenSource: (messageId: string, n: number) => void;
 }
 
-function AssistantTurn({ id, content, sources, tools, status, error, streaming, activeN, onOpenSource }: TurnProps) {
+function AssistantTurn({ id, content, sources, tools, status, thinking, error, language, streaming, activeN,
+  onOpenSource }: TurnProps) {
   const open = (n: number) => onOpenSource(id, n);
+  const thought = streaming && !content && !error && thinking ? thinking.replace(/\s+/g, " ").trim() : "";
   return (
     <div className="msg msg-assistant">
       {tools.length > 0 && <Activity calls={tools} live={streaming} />}
-      {streaming && !content && !error && status && (
+      {thought && (
+        // one grey line; its newest words stay in view while older ones scroll out on the left
+        <p className="thinking-line" title={thought}>
+          <span className="thinking-label">Thinking</span>
+          <span className="thinking-text">
+            <span>{thought.slice(-400)}</span>
+          </span>
+        </p>
+      )}
+      {streaming && !content && !error && status && !thought && (
         <p className="status-line" aria-live="polite">
           <span className="dot" />
           {status.detail}
         </p>
       )}
-      {content && <Answer text={content} sources={sources} streaming={streaming} activeN={activeN} onCite={open} />}
+      {content && (
+        <Answer id={id} text={content} sources={sources} language={language} streaming={streaming} activeN={activeN}
+          onCite={open} />
+      )}
       {error && <p className="msg-error">{error}</p>}
     </div>
   );

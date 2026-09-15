@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type ConversationSummary, type Health, type Message } from "./api";
 import Composer from "./components/Composer";
 import Preview from "./components/Preview";
+import SelectionTools, { type Quote } from "./components/SelectionTools";
 import Sidebar from "./components/Sidebar";
 import Thread, { type PendingTurn, type Selection } from "./components/Thread";
 import Welcome from "./components/Welcome";
@@ -13,6 +14,8 @@ export default function App() {
   const [pending, setPending] = useState<PendingTurn | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // selected text the next message replies to (see SelectionTools)
+  const [quote, setQuote] = useState<Quote | null>(null);
   const abort = useRef<AbortController | null>(null);
 
   const [health, setHealth] = useState<Health | "offline" | null>(null);
@@ -30,6 +33,7 @@ export default function App() {
     abort.current?.abort();
     setPending(null);
     setSelection(null);
+    setQuote(null);
     setSidebarOpen(false);
     setActiveId(id);
     setMessages(id ? (await api.getConversation(id)).messages : []);
@@ -60,8 +64,11 @@ export default function App() {
           case "status":
             setPending((p) => p && { ...p, status: { stage: ev.stage, detail: ev.detail } });
             break;
-          case "tool_start":
-            setPending((p) => p && { ...p, tools: [...p.tools, ev.call] });
+          case "thinking":
+            setPending((p) => p && { ...p, thinking: (p.thinking ?? "") + ev.text });
+            break;
+          case "tool_start": // the call carries its thought; the next step thinks afresh
+            setPending((p) => p && { ...p, tools: [...p.tools, ev.call], thinking: "" });
             break;
           case "tool_end":
             setPending(
@@ -117,6 +124,7 @@ export default function App() {
       : messages.find((m) => m.id === selection?.messageId)?.language ?? null;
   const busy = pending !== null && !pending.error;
 
+
   return (
     <div className="app">
       <nav className="nav">
@@ -153,8 +161,10 @@ export default function App() {
               onOpenSource={(messageId, n) => setSelection({ messageId, n })}
             />
           )}
-          <Composer busy={busy} demo={health !== null && health !== "offline" && health.agent === "stub"} onSend={send} onStop={() => abort.current?.abort()} />
+          <Composer busy={busy} demo={health !== null && health !== "offline" && health.agent === "stub"} quote={quote}
+            onClearQuote={() => setQuote(null)} onSend={send} onStop={() => abort.current?.abort()} />
         </main>
+        <SelectionTools onReply={setQuote} />
 
         {showPreview && (
           <Preview

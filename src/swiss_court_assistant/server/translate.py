@@ -12,6 +12,8 @@ from ..statutes import GLOSSARY, REPORTER
 RIVA_URI = os.environ.get("SCA_TRANSLATE_URI", "localhost:50051")
 RIVA_MODEL = os.environ.get("SCA_TRANSLATE_MODEL", "")  # "" = the NIM's only model
 MAX_PIECE = 800  # characters per request text; the NMT model truncates long inputs
+# gRPC backs off up to 2 min after a failed connect (e.g. while a NIM starts); retry within seconds instead
+GRPC_OPTIONS = [("grpc.initial_reconnect_backoff_ms", 500), ("grpc.max_reconnect_backoff_ms", 3000)]
 
 _SENTENCE = re.compile(r"(?<=[.;:!?])\s+(?=[A-ZÀ-ÖØ-Þ(«\"„])")
 _ABBR = {lang: {form: row for row in GLOSSARY for form in row[lang]} for lang in REPORTER}
@@ -68,7 +70,7 @@ class Translator:
     """Translates cited passages with the Riva Translate NIM (gRPC); results are cached."""
 
     def __init__(self, cache_size: int = 512):
-        self.client = riva.client.NeuralMachineTranslationClient(riva.client.Auth(uri=RIVA_URI))
+        self.client = riva.client.NeuralMachineTranslationClient(riva.client.Auth(uri=RIVA_URI, options=GRPC_OPTIONS))
         self._cache: OrderedDict[tuple[str, str, str], str] = OrderedDict()
         self._size = cache_size
 

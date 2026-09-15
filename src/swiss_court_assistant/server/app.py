@@ -14,11 +14,12 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .agent import Agent, Cite, Delta, Status, StubAgent, ToolEnd, ToolStart
+from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart
 from .decisions import DecisionStore
 from .language import detect_language
-from .schemas import (ChatRequest, Conversation, ConversationSummary, Decision, Health, Message, Source, ToolCall,
-                      TranslateRequest, TranslateResponse)
+from .schemas import (ChatRequest, Conversation, ConversationSummary, Decision, Health, Message, Source,
+                      SpeechRequest, ToolCall, TranslateRequest, TranslateResponse)
+from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
 
@@ -39,12 +40,13 @@ class Services:
     store: ConversationStore
     agent: Agent
     translator: Translator
+    speaker: Speaker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     decisions = DecisionStore(DECISIONS)
-    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions), Translator())
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions), Translator(), Speaker())
     log.info("loaded %d decisions; agent=%s", len(decisions), app.state.services.agent.name)
     yield
 
@@ -124,8 +126,22 @@ async def translate(req: TranslateRequest, s: Svc) -> TranslateResponse:
     return TranslateResponse(translation=out, source=req.source, target=req.target)
 
 
+@app.post("/api/speech")
+async def speech(req: SpeechRequest, s: Svc) -> StreamingResponse:
+    try:
+        audio = await s.speaker.stream(req.text, req.language)
+    except UnspeakableError as e:
+        raise HTTPException(422, str(e)) from e
+    except Exception as e:
+        log.exception("speech synthesis failed")
+        raise HTTPException(502, "The speech model is not available right now.") from e
+    return StreamingResponse(audio, media_type="application/octet-stream", headers={
+        "X-Sample-Rate": str(SAMPLE_RATE), "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"})
+
+
 def _title(text: str) -> str:
-    text = " ".join(text.split())
+    own = [line for line in text.splitlines() if not line.lstrip().startswith(">")]  # not the quoted selection
+    text = " ".join(" ".join(own).split()) or " ".join(text.lstrip("> ").split())
     return text if len(text) <= 60 else text[:57] + "…"
 
 
@@ -166,8 +182,10 @@ async def _stream(s: Services, conv: ConversationSummary, question: str,
             match ev:
                 case Status():
                     yield _sse({"type": "status", "stage": ev.stage, "detail": ev.detail})
+                case Thought():
+                    yield _sse({"type": "thinking", "text": ev.text})
                 case ToolStart():
-                    calls[ev.id] = ToolCall(id=ev.id, name=ev.name, args=ev.args)
+                    calls[ev.id] = ToolCall(id=ev.id, name=ev.name, args=ev.args, thought=ev.thought)
                     yield _sse({"type": "tool_start", "call": calls[ev.id].model_dump(by_alias=True)})
                 case ToolEnd():
                     if ev.id in calls:

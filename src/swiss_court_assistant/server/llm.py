@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 LLM_URL = os.environ.get("SCA_LLM_URL", "http://localhost:9100/v1")
 LLM_MODEL = os.environ.get("SCA_LLM_MODEL")  # default: the first model the server lists
 LLM_KEY = os.environ.get("SCA_LLM_KEY", "nim")
-LLM_THINKING = os.environ.get("SCA_LLM_THINKING", "0") == "1"
+LLM_THINKING = os.environ.get("SCA_LLM_THINKING", "1") == "1"  # reasoning before each research step
 
 
 def served_model() -> str:

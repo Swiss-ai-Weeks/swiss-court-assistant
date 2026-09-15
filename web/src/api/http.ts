@@ -34,6 +34,17 @@ export const httpApi: Api = {
     return (await json<{ translation: string }>(res)).translation;
   },
 
+  async speech(text, language, signal) {
+    const res = await fetch("api/speech", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, language }),
+      signal,
+    });
+    if (!res.ok || !res.body) throw new Error(await errorText(res));
+    return { sampleRate: Number(res.headers.get("x-sample-rate")) || 22050, stream: res.body };
+  },
+
   async deleteConversation(id) {
     const res = await fetch(`api/conversations/${enc(id)}`, { method: "DELETE" });
     if (!res.ok) throw new Error(await errorText(res));

@@ -26,3 +26,34 @@ def _parse_glossary() -> list[dict[str, list[str]]]:
 
 
 GLOSSARY = _parse_glossary()
+
+
+def _form_index() -> dict[str, dict[str, list[str]]]:
+    """Abbreviation -> its glossary row, for abbreviations that belong to exactly one statute."""
+    rows: dict[str, list[dict[str, list[str]]]] = {}
+    for row in GLOSSARY:
+        for form in {f for forms in row.values() for f in forms}:
+            rows.setdefault(form, []).append(row)
+    return {form: r[0] for form, r in rows.items() if len(r) == 1}
+
+
+_FORMS = _form_index()
+_TOKEN = re.compile(r"(?<![\w.])[A-Z]\w*\.?")
+_REPORTER = re.compile(r"\b(?:BGE|ATF|DTF)\b")
+
+
+def localize(text: str, lang: str) -> str:
+    """Statute abbreviations and the reporter in the official form of ``lang``:
+    "art. 271 OR, BGE 138 III 59" -> "art. 271 CO, ATF 138 III 59" for French."""
+    if lang not in REPORTER:
+        return text
+
+    def sub(m: re.Match) -> str:
+        tok = m.group(0)
+        core = tok if tok in _FORMS else tok.rstrip(".")  # "Cst." keeps its dot, "ZGB." ends a sentence
+        row = _FORMS.get(core)
+        if row is None or core in row[lang]:
+            return tok
+        return row[lang][0] + tok[len(core):]
+
+    return _REPORTER.sub(REPORTER[lang], _TOKEN.sub(sub, text))
