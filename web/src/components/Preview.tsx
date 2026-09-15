@@ -6,6 +6,8 @@ interface Props {
   /** Every source of the selected answer; the preview shows the decision of `activeN`. */
   sources: Source[];
   activeN: number;
+  /** Language of the conversation turn; passages in another language can be translated into it. */
+  language: string | null;
   onSelect: (n: number) => void;
   onClose: () => void;
 }
@@ -50,7 +52,84 @@ function segments(text: string, ranges: { n: number; start: number; end: number 
   return out;
 }
 
-export default function Preview({ sources, activeN, onSelect, onClose }: Props) {
+// Translations outlive the component, so switching between citations does not refetch them.
+const translations = new Map<string, string>();
+
+type Panel = "explain" | "translate" | null;
+
+/** Explain / Translate buttons shown right under the highlighted passage. */
+function RefTools({ source, language }: { source: Source; language: string | null }) {
+  const [panel, setPanel] = useState<Panel>(null);
+  const [translation, setTranslation] = useState<{ state: "loading" | "done" | "error"; text: string } | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const from = source.decision.language;
+  const target = language && language !== from ? language : null;
+  const key = `${source.decisionId}:${source.charStart ?? source.section}:${source.text.length}:${target}`;
+
+  useEffect(() => {
+    box.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [panel, translation?.state]);
+
+  const toggle = (p: Panel) => setPanel((cur) => (cur === p ? null : p));
+
+  const translate = () => {
+    toggle("translate");
+    if (!target || translation?.state === "loading" || translation?.state === "done") return;
+    const cached = translations.get(key);
+    if (cached) {
+      setTranslation({ state: "done", text: cached });
+      return;
+    }
+    setTranslation({ state: "loading", text: "" });
+    api.translate(source.text, from, target).then(
+      (t) => {
+        translations.set(key, t);
+        setTranslation({ state: "done", text: t });
+      },
+      (e: Error) => setTranslation({ state: "error", text: e.message }),
+    );
+  };
+
+  return (
+    <div className="ref-tools">
+      <div className="ref-actions">
+        <button className={`ref-btn${panel === "explain" ? " on" : ""}`} onClick={() => toggle("explain")}
+          aria-expanded={panel === "explain"}>
+          Explain
+        </button>
+        {target && (
+          <button className={`ref-btn${panel === "translate" ? " on" : ""}`} onClick={translate}
+            aria-expanded={panel === "translate"}>
+            Translate to {langName(target)}
+          </button>
+        )}
+        {source.verified === false && <span className="ref-warn">Quoted words not found verbatim in this decision</span>}
+      </div>
+      {panel === "explain" && (
+        <div className="ref-box" ref={box}>
+          <div className="block-label">
+            <span className="tag">Why [{source.n}] is cited</span>
+          </div>
+          <p>{source.explanation || "The agent gave no explanation for this citation."}</p>
+        </div>
+      )}
+      {panel === "translate" && target && translation && (
+        <div className="ref-box" ref={box}>
+          <div className="block-label">
+            <span className="tag">
+              Machine translation · {langName(from)} → {langName(target)}
+            </span>
+          </div>
+          {translation.state === "loading" && <p className="muted">Translating…</p>}
+          {translation.state === "done" && <p>{translation.text}</p>}
+          {translation.state === "error" && <p className="ref-err">Translation failed: {translation.text}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Preview({ sources, activeN, language, onSelect, onClose }: Props) {
   const active = sources.find((s) => s.n === activeN);
   const decisionId = active?.decisionId;
   const [doc, setDoc] = useState<Decision | null>(null);
@@ -95,6 +174,8 @@ export default function Preview({ sources, activeN, onSelect, onClose }: Props) 
   if (!active) return null;
   const d = doc ?? active.decision;
   const regesteActive = active.section === "regeste";
+  const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
+  const tools = <RefTools key={activeN} source={active} language={language} />;
 
   return (
     <aside className="preview" aria-label="Source decision">
@@ -105,18 +186,6 @@ export default function Preview({ sources, activeN, onSelect, onClose }: Props) 
           ×
         </button>
       </div>
-      {/* outside the scroll area, so it stays in view next to the highlighted passage */}
-      {active.explanation && (
-        <div className="why">
-          <div className="block-label">
-            <span className="tag">Why [{active.n}] is cited</span>
-          </div>
-          <p>{active.explanation}</p>
-          {active.verified === false && (
-            <p className="warn">The quoted words were not found verbatim in this decision.</p>
-          )}
-        </div>
-      )}
       <div className="preview-scroll" ref={scroller}>
         <header className="preview-head">
           <span className="corner-square" />
@@ -162,12 +231,22 @@ export default function Preview({ sources, activeN, onSelect, onClose }: Props) 
           ))}
         </div>
 
+        {/* no highlight to attach the buttons to (quote not located): show them here */}
+        {doc && !regesteActive && lastActive < 0 && <div className="ref-tools-top">{tools}</div>}
+
         {d.regeste && (
           <div className="regeste" data-active={regesteActive || undefined}>
             <div className="block-label">
               <span className="tag">Regeste</span>
             </div>
-            {regesteActive ? <mark className="hl active">{d.regeste}</mark> : d.regeste}
+            {regesteActive ? (
+              <>
+                <mark className="hl active">{d.regeste}</mark>
+                {tools}
+              </>
+            ) : (
+              d.regeste
+            )}
           </div>
         )}
 
@@ -176,20 +255,23 @@ export default function Preview({ sources, activeN, onSelect, onClose }: Props) 
         {doc && (
           <div className="doc-text">
             {parts.map((p, i) => {
+              const tail = i === lastActive && !regesteActive ? tools : null;
               if (!p.ns.length) return <span key={i}>{p.text}</span>;
               const on = p.ns.includes(activeN);
               // mark only the first segment of the active passage as the scroll target
-              const first = on && !(parts[i - 1]?.ns.includes(activeN));
+              const first = on && !parts[i - 1]?.ns.includes(activeN);
               return (
-                <mark
-                  key={i}
-                  className={`hl${on ? " active" : ""}`}
-                  data-active={first || undefined}
-                  title={`Passage ${p.ns.join(", ")}`}
-                  onClick={() => onSelect(p.ns[0])}
-                >
-                  {p.text}
-                </mark>
+                <span key={i}>
+                  <mark
+                    className={`hl${on ? " active" : ""}`}
+                    data-active={first || undefined}
+                    title={`Passage ${p.ns.join(", ")}`}
+                    onClick={() => onSelect(p.ns[0])}
+                  >
+                    {p.text}
+                  </mark>
+                  {tail}
+                </span>
               );
             })}
           </div>

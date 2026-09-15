@@ -56,6 +56,8 @@ export interface Message {
   searchQuery?: string | null;
   sources?: Source[] | null;
   toolCalls?: ToolCall[] | null;
+  /** Language of the question (on assistant messages); cited passages can be translated into it. */
+  language?: string | null;
   createdAt: string;
 }
 
@@ -80,6 +82,7 @@ export type Stage = "thinking" | "answer";
 
 export type ChatEvent =
   | { type: "conversation"; conversation: ConversationSummary }
+  | { type: "meta"; language: string }
   | { type: "status"; stage: Stage; detail: string }
   | { type: "tool_start"; call: ToolCall }
   | { type: "tool_end"; id: string; summary: string; error: boolean }
@@ -95,6 +98,8 @@ export interface Api {
   getConversation(id: string): Promise<Conversation>;
   deleteConversation(id: string): Promise<void>;
   getDecision(id: string): Promise<Decision>;
+  /** Machine translation of a cited passage (language codes: de, fr, it, rm, en). */
+  translate(text: string, source: string, target: string): Promise<string>;
   /** Streams one assistant turn. A null conversationId starts a new conversation. */
   chat(conversationId: string | null, text: string, signal?: AbortSignal): AsyncIterable<ChatEvent>;
 }

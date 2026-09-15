@@ -43,7 +43,12 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `GET /api/health` | agent name, number of decisions loaded |
 | `GET /api/conversations`, `GET/DELETE /api/conversations/{id}` | history |
 | `GET /api/decisions/{decision_id}` | metadata + full text for the preview |
-| `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
+| `POST /api/translate` `{text, source, target}` | machine translation of a cited passage by the Riva Translate NIM; statute abbreviations and BGE/ATF/DTF are passed as do-not-translate phrases mapped to the target language's official form (OR → CO); cached |
+| `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
+
+In the preview, a highlighted citation has an **Explain** button (the agent's reason for citing
+it) and, when the decision is in another language than the question, a **Translate** button
+(into the question's language, detected from its function words).
 
 ### The agent
 
@@ -94,7 +99,19 @@ docker run -d --name nim-llm --gpus '"device=0"' --shm-size=16GB -e NGC_API_KEY 
   -v ~/.cache/nim/dragos:/opt/nim/.cache -u $(id -u) -p 9100:8000 nvcr.io/nim/nvidia/nemotron-3.5-lightning-30b-a3b:latest
 ```
 
-Settings (environment): `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
+The **Translate** button uses the Riva Translate NIM over gRPC. GPU 0 is full with the LLM, so it
+runs on GPU 1 (~1–4 s per passage):
+
+```bash
+docker run -d --name riva-translate --gpus '"device=1"' --shm-size=8GB -e NGC_API_KEY \
+  -e NIM_HTTP_API_PORT=9000 -e NIM_GRPC_API_PORT=50051 \
+  -v ~/.cache/nim:/opt/nim/.cache -u $(id -u) -p 9000:9000 -p 50051:50051 \
+  nvcr.io/nim/nvidia/riva-translate-1_6b:latest
+curl localhost:9000/v1/health/ready
+```
+
+Settings (environment): `SCA_TRANSLATE_URI` (default `localhost:50051`), `SCA_TRANSLATE_MODEL`
+(default: the NIM's only model), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
 (default: the first model the server lists), `SCA_LLM_THINKING=1`, `SCA_EMBED_MODEL`,
 `SCA_EMBED_DEVICE` (default `cuda:1`), `SCA_RERANK=0`, `SCA_DECISIONS`, `SCA_VECTOR_DB`, `SCA_DB`.
 `SCA_AGENT=stub` swaps in a canned agent (`server/agent.py`) that needs no LLM.

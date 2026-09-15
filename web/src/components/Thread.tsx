@@ -7,6 +7,7 @@ export interface PendingTurn {
   tools: ToolCall[];
   sources: Source[];
   content: string;
+  language?: string;
   error?: string;
 }
 

@@ -16,8 +16,11 @@ from fastapi.staticfiles import StaticFiles
 
 from .agent import Agent, Cite, Delta, Status, StubAgent, ToolEnd, ToolStart
 from .decisions import DecisionStore
-from .schemas import ChatRequest, Conversation, ConversationSummary, Decision, Health, Message, Source, ToolCall
+from .language import detect_language
+from .schemas import (ChatRequest, Conversation, ConversationSummary, Decision, Health, Message, Source, ToolCall,
+                      TranslateRequest, TranslateResponse)
 from .store import ConversationStore, new_id, now
+from .translate import Translator, UntranslatableError
 
 DECISIONS = Path(os.environ.get("SCA_DECISIONS", "data/subset/decisions_50k_seed42.parquet"))
 CHUNKS = DECISIONS.with_name(DECISIONS.stem + ".chunks.parquet")
@@ -35,12 +38,13 @@ class Services:
     decisions: DecisionStore
     store: ConversationStore
     agent: Agent
+    translator: Translator
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     decisions = DecisionStore(DECISIONS)
-    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions))
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions), Translator())
     log.info("loaded %d decisions; agent=%s", len(decisions), app.state.services.agent.name)
     yield
 
@@ -82,6 +86,12 @@ async def get_conversation(conversation_id: str, s: Svc) -> Conversation:
     conv = s.store.get(conversation_id)
     if conv is None:
         raise HTTPException(404, "Conversation not found")
+    question = None
+    for m in conv.messages:  # an answer's language is its question's, recomputed rather than stored
+        if m.role == "user":
+            question = m.content
+        elif m.language is None and question:
+            m.language = detect_language(question)
     return conv
 
 
@@ -98,6 +108,20 @@ async def get_decision(decision_id: str, s: Svc) -> Decision:
     if d is None:
         raise HTTPException(404, "Decision not found")
     return d
+
+
+@app.post("/api/translate", response_model=TranslateResponse)
+async def translate(req: TranslateRequest, s: Svc) -> TranslateResponse:
+    if req.source == req.target:
+        return TranslateResponse(translation=req.text, source=req.source, target=req.target)
+    try:
+        out = await s.translator.translate(req.text, req.source, req.target)
+    except UntranslatableError as e:
+        raise HTTPException(422, str(e)) from e
+    except Exception as e:
+        log.exception("translation failed")
+        raise HTTPException(502, "The translation model is not available right now.") from e
+    return TranslateResponse(translation=out, source=req.source, target=req.target)
 
 
 def _title(text: str) -> str:
@@ -123,15 +147,17 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
     s.store.add_message(cid, user)
     summary = ConversationSummary(id=cid, title=title, updated_at=user.created_at)
     return StreamingResponse(
-        _stream(s, summary, req.message, history),
+        _stream(s, summary, req.message, history, detect_language(req.message)),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        # no-transform: compressing proxies (code-server's port proxy, CDNs) would otherwise buffer the stream
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
     )
 
 
 async def _stream(s: Services, conv: ConversationSummary, question: str,
-                  history: list[Message]) -> AsyncIterator[str]:
+                  history: list[Message], language: str) -> AsyncIterator[str]:
     yield _sse({"type": "conversation", "conversation": conv.model_dump(by_alias=True)})
+    yield _sse({"type": "meta", "language": language})
     parts: list[str] = []
     sources: list[Source] = []
     calls: dict[str, ToolCall] = {}
@@ -160,7 +186,7 @@ async def _stream(s: Services, conv: ConversationSummary, question: str,
         yield _sse({"type": "error", "message": "The assistant failed to answer. Please try again."})
         return
     msg = Message(id=new_id(), role="assistant", content="".join(parts), sources=sources,
-                  tool_calls=list(calls.values()) or None, created_at=now())
+                  tool_calls=list(calls.values()) or None, language=language, created_at=now())
     s.store.add_message(conv.id, msg)
     yield _sse({"type": "done", "message": msg.model_dump(by_alias=True)})
 

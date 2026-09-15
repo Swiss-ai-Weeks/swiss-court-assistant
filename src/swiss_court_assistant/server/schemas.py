@@ -63,6 +63,7 @@ class Message(Model):
     search_query: str | None = None
     sources: list[Source] | None = None
     tool_calls: list[ToolCall] | None = None
+    language: str | None = None  # of the question, on assistant messages
     created_at: str
 
 
@@ -79,6 +80,21 @@ class Conversation(ConversationSummary):
 class ChatRequest(Model):
     conversation_id: str | None = None
     message: str = Field(min_length=1, max_length=4000)
+
+
+Language = Literal["de", "fr", "it", "rm", "en"]
+
+
+class TranslateRequest(Model):
+    text: str = Field(min_length=1, max_length=8000)
+    source: Language
+    target: Language
+
+
+class TranslateResponse(Model):
+    translation: str
+    source: Language
+    target: Language
 
 
 class Health(Model):

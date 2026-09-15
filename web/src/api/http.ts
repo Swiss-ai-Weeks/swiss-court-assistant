@@ -25,6 +25,15 @@ export const httpApi: Api = {
   getConversation: (id) => fetch(`api/conversations/${enc(id)}`).then((r) => json<Conversation>(r)),
   getDecision: (id) => fetch(`api/decisions/${enc(id)}`).then((r) => json<Decision>(r)),
 
+  async translate(text, source, target) {
+    const res = await fetch("api/translate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, source, target }),
+    });
+    return (await json<{ translation: string }>(res)).translation;
+  },
+
   async deleteConversation(id) {
     const res = await fetch(`api/conversations/${enc(id)}`, { method: "DELETE" });
     if (!res.ok) throw new Error(await errorText(res));

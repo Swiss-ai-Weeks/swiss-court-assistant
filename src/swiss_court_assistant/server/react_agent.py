@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 from collections.abc import AsyncIterator
 from typing import Annotated, Literal
 
-import httpx
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, ModelRequest, ModelResponse
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, SystemMessage, ToolMessage
@@ -18,13 +16,11 @@ from pydantic import BaseModel, Field, ValidationError
 
 from .agent import AgentEvent, Cite, Delta, Status, ToolEnd, ToolStart
 from .corpus import Corpus, Passage
+from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
 from .schemas import Message, Source
 
 log = logging.getLogger(__name__)
 
-LLM_URL = os.environ.get("SCA_LLM_URL", "http://localhost:9100/v1")
-LLM_MODEL = os.environ.get("SCA_LLM_MODEL")  # default: the first model the server lists
-LLM_THINKING = os.environ.get("SCA_LLM_THINKING", "0") == "1"
 READ_WINDOW = 8000
 MAX_TOOL_CALLS = 8  # then the agent has to write the answer
 RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
@@ -396,16 +392,6 @@ class _Citations:
 
 
 # ── agent ───────────────────────────────────────────────────────────────
-def _served_model() -> str:
-    if LLM_MODEL:
-        return LLM_MODEL
-    try:
-        return httpx.get(f"{LLM_URL}/models", timeout=5).json()["data"][0]["id"]
-    except (httpx.HTTPError, KeyError, IndexError, ValueError):
-        log.warning("could not list models at %s; assuming nvidia/nemotron-3.5-lightning", LLM_URL)
-        return "nvidia/nemotron-3.5-lightning"
-
-
 def _history(messages: list[Message], limit: int = 8) -> list[BaseMessage]:
     """Earlier turns as plain text, citations replaced by docket numbers."""
     out: list[BaseMessage] = []
@@ -423,8 +409,8 @@ class ReactAgent:
 
     def __init__(self, corpus: Corpus):
         self.corpus = corpus
-        self.model = _served_model()
-        common = dict(base_url=LLM_URL, api_key=os.environ.get("SCA_LLM_KEY", "nim"), model=self.model,
+        self.model = served_model()
+        common = dict(base_url=LLM_URL, api_key=LLM_KEY, model=self.model,
                       temperature=0.2, streaming=True)
         template = {"chat_template_kwargs": {"enable_thinking": LLM_THINKING}}
         research_llm = ChatOpenAI(**common, max_tokens=1024, extra_body=template)
