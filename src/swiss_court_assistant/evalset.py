@@ -32,6 +32,8 @@ from pathlib import Path
 import polars as pl
 from openai import AsyncOpenAI
 
+from swiss_court_assistant.statutes import GLOSSARY, STATUTE_GLOSSARY
+
 MODEL = os.environ.get("LLM_MODEL", "Qwen/Qwen3-30B-A3B-Instruct-2507")
 BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:8000/v1")
 # Romansh is supported but off by default: in the pilot, Qwen3-30B's "Romansh"
@@ -130,27 +132,7 @@ def tr_schema(langs: list[str]) -> dict:
 VERIFY_SCHEMA = {"type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}
 
 
-# Swiss statutes have a different official abbreviation in each language; LLMs
-# otherwise invent literal translations ("LTF" -> "RVG" instead of "BGG").
-STATUTE_GLOSSARY = """de / fr / it
-BV / Cst. / Cost. — ZGB / CC / CC — OR / CO / CO — StGB / CP / CP — StPO / CPP / CPP
-ZPO / CPC / CPC — SchKG / LP / LEF — BGG / LTF / LTF — VwVG / PA / PA — ATSG / LPGA / LPGA
-IVG / LAI / LAI — AHVG / LAVS / LAVS — UVG / LAA / LAINF — KVG / LAMal / LAMal — BVG / LPP / LPP
-AVIG / LACI / LADI — AIG (AuG) / LEI (LEtr) / LStrI (LStr) — AsylG / LAsi / LAsi — DBG / LIFD / LIFD
-MWSTG / LTVA / LIVA — RPG / LAT / LPT — USG / LPE / LPAmb — SVG / LCR / LCStr — BetmG / LStup / LStup"""
-
-
-def _parse_glossary() -> list[dict[str, list[str]]]:
-    """Rows of {lang: [official form, *aliases]} from STATUTE_GLOSSARY."""
-    rows = []
-    for line in STATUTE_GLOSSARY.splitlines()[1:]:
-        for entry in line.split(" — "):
-            forms = [re.findall(r"[\w.]+", part) for part in entry.split(" / ")]
-            rows.append(dict(zip(["de", "fr", "it"], forms)))
-    return rows
-
-
-_GLOSSARY = _parse_glossary()
+_GLOSSARY = GLOSSARY
 
 
 def normalize_statutes(text: str, lang: str) -> str:

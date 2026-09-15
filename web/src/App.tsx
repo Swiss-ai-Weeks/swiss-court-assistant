@@ -54,6 +54,9 @@ export default function App() {
             setActiveId(ev.conversation.id);
             refreshList();
             break;
+          case "meta":
+            setPending((p) => p && { ...p, language: ev.language });
+            break;
           case "status":
             setPending((p) => p && { ...p, status: { stage: ev.stage, detail: ev.detail } });
             break;
@@ -108,6 +111,10 @@ export default function App() {
       ? pending?.sources ?? []
       : messages.find((m) => m.id === selection?.messageId)?.sources ?? [];
   const showPreview = !!selection && selectedSources.some((s) => s.n === selection.n);
+  const selectedLanguage =
+    selection?.messageId === "pending"
+      ? pending?.language ?? null
+      : messages.find((m) => m.id === selection?.messageId)?.language ?? null;
   const busy = pending !== null && !pending.error;
 
   return (
@@ -119,17 +126,6 @@ export default function App() {
         <div className="wordmark">
           <span className="wordmark-square" />
           Swiss Court Assistant
-        </div>
-        <div className="nav-meta">
-          {health === "offline" ? (
-            <b>API offline</b>
-          ) : (
-            health && (
-              <>
-                {health.decisions.toLocaleString("en")} decisions · <b>{health.agent} agent</b>
-              </>
-            )
-          )}
         </div>
       </nav>
 
@@ -164,6 +160,7 @@ export default function App() {
           <Preview
             sources={selectedSources}
             activeN={selection!.n}
+            language={selectedLanguage}
             onSelect={(n) => setSelection((s) => s && { ...s, n })}
             onClose={() => setSelection(null)}
           />
