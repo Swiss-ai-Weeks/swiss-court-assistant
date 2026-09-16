@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type ConversationSummary, type Health, type Message } from "./api";
 import Composer from "./components/Composer";
+import Logo from "./components/Logo";
 import Preview from "./components/Preview";
 import SelectionTools, { type Quote } from "./components/SelectionTools";
 import Sidebar from "./components/Sidebar";
@@ -132,7 +133,7 @@ export default function App() {
           ☰
         </button>
         <div className="wordmark">
-          <span className="wordmark-square" />
+          <Logo className="wordmark-logo" />
           Swiss Court Assistant
         </div>
       </nav>

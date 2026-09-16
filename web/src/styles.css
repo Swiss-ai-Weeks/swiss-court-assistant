@@ -62,7 +62,7 @@ textarea { font: inherit; }
   padding: 0 var(--space-xl);
 }
 .wordmark { display: flex; align-items: center; gap: var(--space-md); font-weight: 700; font-size: 16px; }
-.wordmark-square { width: 16px; height: 16px; background: var(--primary); border-radius: var(--rounded-sm); }
+.wordmark-logo { width: 22px; height: 22px; flex: none; }
 .nav-meta { margin-left: auto; font-size: 12px; color: var(--on-dark-mute); }
 .nav-meta b { color: var(--on-dark); font-weight: 700; }
 .nav-menu { display: none; background: none; border: 1px solid var(--hairline-strong); border-radius: var(--rounded-sm); color: var(--on-dark); height: 36px; padding: 0 var(--space-md); }
