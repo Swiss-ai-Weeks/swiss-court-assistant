@@ -253,12 +253,15 @@ class VectorDB:
     def models(self) -> list[dict]:
         return [dict(r) for r in self.con.execute("SELECT * FROM embedding_models")]
 
+    def encode(self, query: str, model: str) -> np.ndarray:
+        if model not in self._encoders:
+            self._encoders[model] = R.load_encoder(model, self.device)
+        return encode_query(model, self._encoders[model], query)
+
     def search(self, query: str | np.ndarray, model: str, k: int = 10, year_from: int | None = None,
                year_to: int | None = None, **filters: str | None) -> list[dict]:
         if isinstance(query, str):
-            if model not in self._encoders:
-                self._encoders[model] = R.load_encoder(model, self.device)
-            query = encode_query(model, self._encoders[model], query)
+            query = self.encode(query, model)
         where, params = ["embedding MATCH ?", "k = ?"], [np.asarray(query, dtype=np.float32).tobytes(), k]
         for col, val in filters.items():
             if col not in VEC_FILTERS:

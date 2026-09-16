@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from functools import partial
@@ -14,6 +15,7 @@ import httpx
 
 from swiss_court_assistant import retrieval as R
 from swiss_court_assistant.fts import KeywordIndex
+from swiss_court_assistant.statutes import localize
 from swiss_court_assistant.vectordb import VectorDB
 
 from .decisions import DecisionStore
@@ -55,6 +57,10 @@ class Corpus:
         self.rerank_model = cfg["model"]
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="corpus")
         self._pool.submit(self._open, db, fts, embed_model, device).result()
+        # A KNN query scans every vector (~2 s); with a connection per thread the languages scan in parallel
+        self._local = threading.local()
+        self._knn_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="knn",
+                                            initializer=self._open_knn, initargs=(db,))
 
     def _open(self, db: Path, fts: Path, embed_model: str | None, device: str) -> None:
         self.vdb = VectorDB(db, device)
@@ -74,6 +80,12 @@ class Corpus:
         if self.fts is None:
             log.warning("no keyword index at %s; run `python -m swiss_court_assistant.fts build`", fts)
         log.info("corpus: embeddings=%s (%s), keyword index=%s", embed_model, device, bool(self.fts))
+
+    def _open_knn(self, db: Path) -> None:
+        self._local.vdb = VectorDB(db)  # no encoder: it gets query vectors
+
+    def _knn(self, vector, language: str) -> list[dict]:
+        return self._local.vdb.search(vector, self.embed_model, self.candidates, language=language)
 
     async def _call(self, fn, *args: Any, **kwargs: Any) -> Any:
         return await asyncio.get_running_loop().run_in_executor(self._pool, partial(fn, *args, **kwargs))
@@ -95,6 +107,25 @@ class Corpus:
         rows = await self._call(self.vdb.search, query, self.embed_model, self.candidates, language=language)
         hits = await self._rerank(query, [self._passage(r, r["similarity"]) for r in rows])
         return _diverse(hits, k)
+
+    async def semantic_search_by_language(self, queries: dict[str, str], k: int = 8,
+                                          per_language: int = 2) -> list[Passage]:
+        """Search each language's decisions with the query written in that language ({"de": ..., "fr": ...})
+        and rerank them against it. The merged result keeps the best ``per_language`` passages of each
+        language, then fills up by reranker score."""
+        # the agent sometimes writes "art. 336 OR" in the French query; courts write "art. 336 CO"
+        queries = {lang: localize(q.strip(), lang) for lang, q in queries.items() if q and q.strip()}
+        vectors = [await self._call(self.vdb.encode, q, self.embed_model) for q in queries.values()]
+        loop = asyncio.get_running_loop()
+        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn, v, lang)
+                                       for v, lang in zip(vectors, queries)))
+        ranked = await asyncio.gather(*(self._rerank(q, [self._passage(r, r["similarity"]) for r in rows])
+                                        for q, rows in zip(queries.values(), found)))
+        picked = [h for hits in ranked for h in _diverse(hits, per_language)]
+        rest = sorted((h for hits in ranked for h in hits), key=lambda h: -h.score)
+        seen: set[str] = set()
+        merged = [h for h in picked + rest if not (h.chunk_id in seen or seen.add(h.chunk_id))]
+        return sorted(_diverse(merged, k), key=lambda h: -h.score)
 
     async def keyword_search(self, keyword: str, k: int = 8) -> list[Passage]:
         if self.fts is None:

@@ -44,11 +44,19 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `GET /api/conversations`, `GET/DELETE /api/conversations/{id}` | history |
 | `GET /api/decisions/{decision_id}` | metadata + full text for the preview |
 | `POST /api/translate` `{text, source, target}` | machine translation of a cited passage by the Riva Translate NIM; statute abbreviations and BGE/ATF/DTF are passed as do-not-translate phrases mapped to the target language's official form (OR → CO); cached |
+| `POST /api/speech` `{text, language}` | read aloud by the Magpie TTS NIM: 16-bit mono PCM streamed sentence by sentence (rate in `X-Sample-Rate`); `[n]` markers and markdown are dropped |
 | `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
 
 In the preview, a highlighted citation has an **Explain** button (the agent's reason for citing
 it) and, when the decision is in another language than the question, a **Translate** button
 (into the question's language, detected from its function words).
+
+Selecting any text in the answer or in the decision opens a small toolbar (`SelectionTools.tsx`):
+**Read aloud**, **Translate** (only when the selection is not in the conversation's language) and
+**Reply**, which shows the selection as a card above the message box ("Replying to <court docket>",
+not editable; × or Esc removes it) for a follow-up question. The message is sent with the quote
+as `> …` lines plus a `> — court docket` line, and the thread shows it as the same card. Quoted lines are ignored when detecting the question's language
+and for the conversation title; the agent's prompt says they are the text the question is about.
 
 ### The agent
 
@@ -57,7 +65,7 @@ it) and, when the decision is in another language than the question, a **Transla
 
 | Tool | What it does |
 |---|---|
-| `semantic_search(query)` | KNN over the sqlite-vec embeddings (Nemotron embedder once fully built, else bge-m3), the top 40 reranked by the Nemotron reranker NIM; returns 8 passages, at most 2 per decision |
+| `semantic_search(query_de, query_fr, query_it)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the sqlite-vec embeddings (Nemotron embedder once fully built, else bge-m3) filtered to decisions in its language (the three scans run in parallel), and its top 40 are reranked against it by the Nemotron reranker NIM; returns 8 passages, at least 2 per language and at most 2 per decision |
 | `keyword_search(keyword)` | SQLite FTS5 over all passages; `"quoted text"` is an exact phrase, other words must all appear; docket numbers in the query are matched to decisions |
 | `read_decision(decision_id, offset=0)` | metadata, Regeste and 8,000 characters of the full text per call |
 
@@ -110,9 +118,23 @@ docker run -d --name riva-translate --gpus '"device=1"' --shm-size=8GB -e NGC_AP
 curl localhost:9000/v1/health/ready
 ```
 
+**Read aloud** (answers, cited passages, explanations, translations) uses the Magpie TTS NIM. Its
+default ports are taken by the translator, so map them to 9001/50052. The first start builds its
+TensorRT engines (~30 min on GPU 1). They live in the container, not in the cache mount, so use
+`docker stop`/`docker start magpie-tts` afterwards; `docker rm` (or `--rm`) means rebuilding:
+
+```bash
+docker run -d --name magpie-tts --gpus '"device=1"' --shm-size=8GB -e NGC_API_KEY \
+  -e NIM_HTTP_API_PORT=9000 -e NIM_GRPC_API_PORT=50051 \
+  -v ~/.cache/nim:/opt/nim/.cache -u $(id -u) -p 9001:9000 -p 50052:50051 \
+  nvcr.io/nim/nvidia/magpie-tts-multilingual:latest
+curl localhost:9001/v1/health/ready
+```
+
 Settings (environment): `SCA_TRANSLATE_URI` (default `localhost:50051`), `SCA_TRANSLATE_MODEL`
-(default: the NIM's only model), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
-(default: the first model the server lists), `SCA_LLM_THINKING=1`, `SCA_EMBED_MODEL`,
+(default: the NIM's only model), `SCA_TTS_URI` (default `localhost:50052`), `SCA_TTS_VOICE_<LANG>`
+(e.g. `SCA_TTS_VOICE_DE`; default: the first voice the NIM lists for the language), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
+(default: the first model the server lists), `SCA_LLM_THINKING=0` (stops the reasoning before each research step, which the UI streams as a grey "Thinking" line; ~1 s per step), `SCA_EMBED_MODEL`,
 `SCA_EMBED_DEVICE` (default `cuda:1`), `SCA_RERANK=0`, `SCA_DECISIONS`, `SCA_VECTOR_DB`, `SCA_DB`.
 `SCA_AGENT=stub` swaps in a canned agent (`server/agent.py`) that needs no LLM.
 

@@ -21,10 +21,17 @@ class Status:
 
 
 @dataclass
+class Thought:
+    """Streamed reasoning while the agent decides on its next tool call."""
+    text: str
+
+
+@dataclass
 class ToolStart:
     id: str
     name: str
     args: dict[str, Any]
+    thought: str | None = None  # the reasoning that led to this call
 
 
 @dataclass
@@ -45,14 +52,14 @@ class Cite:
     source: Source
 
 
-AgentEvent = Status | ToolStart | ToolEnd | Delta | Cite
+AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite
 
 
 class Agent(Protocol):
     name: str
 
     def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
-        """Stream one turn: Status and ToolStart/ToolEnd while researching, then the answer as
+        """Stream one turn: Status, Thought and ToolStart/ToolEnd while researching, then the answer as
         Delta text with a Cite right after each statement a source supports."""
         ...
 

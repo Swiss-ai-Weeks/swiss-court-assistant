@@ -54,6 +54,7 @@ class ToolCall(Model):
     args: dict[str, Any]
     summary: str | None = None
     error: bool = False
+    thought: str | None = None  # the agent's reasoning before the call
 
 
 class Message(Model):
@@ -95,6 +96,11 @@ class TranslateResponse(Model):
     translation: str
     source: Language
     target: Language
+
+
+class SpeechRequest(Model):
+    text: str = Field(min_length=1, max_length=20000)
+    language: Language
 
 
 class Health(Model):

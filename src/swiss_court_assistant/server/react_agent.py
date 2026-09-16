@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections import Counter
 from collections.abc import AsyncIterator
 from typing import Annotated, Literal
 
@@ -14,8 +15,9 @@ from langchain_core.utils.json import parse_partial_json
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
-from .agent import AgentEvent, Cite, Delta, Status, ToolEnd, ToolStart
+from .agent import AgentEvent, Cite, Delta, Status, Thought, ToolEnd, ToolStart
 from .corpus import Corpus, Passage
+from .language import detect_language
 from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
 from .schemas import Message, Source
 
@@ -23,6 +25,7 @@ log = logging.getLogger(__name__)
 
 READ_WINDOW = 8000
 MAX_TOOL_CALLS = 8  # then the agent has to write the answer
+LANGUAGE_NAMES = {"de": "German", "fr": "French", "it": "Italian", "rm": "Romansh", "en": "English"}
 RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
 
 
@@ -54,11 +57,12 @@ ANSWER_FORMAT = {"type": "json_schema",
 RESEARCH_PROMPT = """You are a legal research assistant for Swiss case law, working on a corpus of {n_decisions:,} Swiss court decisions (Federal Supreme Court, other federal courts and cantonal courts), written in German, French or Italian.
 
 Research the user's question with the tools, then call write_answer.
-- semantic_search(query): finds passages by meaning, across languages. Start here for most questions. Phrase the query like a legal researcher ("Anfechtung der Kündigung wegen Verstoss gegen Treu und Glauben"). If results are thin, search again with other wording or in another language (de/fr/it).
+- semantic_search(query_de, query_fr, query_it): finds passages by meaning. Start here for most questions. Write the same search in German, French and Italian, each phrased like a Swiss court in that language, with that language's legal terms and statute abbreviations, e.g. query_de="Anfechtung der Kündigung wegen Verstoss gegen Treu und Glauben, Art. 271 OR", query_fr="annulation du congé contraire aux règles de la bonne foi, art. 271 CO", query_it="annullamento della disdetta contraria alla buona fede, art. 271 CO". Each query searches the decisions in its language. If results are thin, search again with other wording.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
 - write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. You have at most {max_calls} tool calls.
-Prefer passages where a court states the rule and its reasoning over passages that only mention it."""
+Prefer passages where a court states the rule and its reasoning over passages that only mention it.
+Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
 
 ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using only the tool results in this conversation, answer the user's last question as a JSON object {"answer": [...]} whose parts alternate between text and citations:
 - A "text" part holds one or two sentences of the answer (Markdown allowed). Write in the language of the user's question and name decisions by court and docket number.
@@ -108,13 +112,20 @@ def _failed(e: Exception) -> tuple[str, dict]:
 
 def make_tools(corpus: Corpus) -> list:
     @tool(response_format="content_and_artifact")
-    async def semantic_search(query: str) -> tuple[str, dict]:
-        """Find passages by meaning. Works across German, French, Italian and English: the query
-        language need not match the decision's. Returns the best passages with decision_id and chunk_id."""
+    async def semantic_search(query_de: str, query_fr: str, query_it: str) -> tuple[str, dict]:
+        """Find passages by meaning. Give the same search in German, French and Italian, each phrased the
+        way a Swiss court writes in that language, with its legal terms and statute abbreviations
+        (OR / CO / CO). Each query searches only the decisions in its language. Returns the best
+        passages with decision_id and chunk_id."""
         try:
-            return _hits_result(await corpus.semantic_search(query))
+            hits = await corpus.semantic_search_by_language({"de": query_de, "fr": query_fr, "it": query_it})
         except Exception as e:
             return _failed(e)
+        text, artifact = _hits_result(hits)
+        if hits:
+            per = Counter(h.language for h in hits)
+            artifact["summary"] += " · " + ", ".join(f"{n} {lang}" for lang, n in sorted(per.items()))
+        return text, artifact
 
     @tool(response_format="content_and_artifact")
     async def keyword_search(keyword: str) -> tuple[str, dict]:
@@ -181,8 +192,13 @@ class ResearchThenAnswer(AgentMiddleware):
         calls = [tc for m in result if isinstance(m, AIMessage) for tc in m.tool_calls]
         if not any(tc["name"] == "write_answer" for tc in calls):
             return response
-        return await self.answer_llm.ainvoke(
-            [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage("Write the final answer now.")])
+        # Passages and searches in three languages pull the answer away from the question's language
+        # (a French question got a German answer), so name it when the question makes it clear.
+        question = next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), "")
+        language = LANGUAGE_NAMES.get(detect_language(str(question), default=""))
+        final = "Write the final answer now." + (
+            f" Write its text parts and explanations in {language}." if language else "")
+        return await self.answer_llm.ainvoke([SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)])
 
 
 # ── streaming the final JSON ────────────────────────────────────────────
@@ -404,6 +420,19 @@ def _history(messages: list[Message], limit: int = 8) -> list[BaseMessage]:
     return out
 
 
+class ReasoningChatOpenAI(ChatOpenAI):
+    """ChatOpenAI that keeps vLLM's streamed reasoning (``delta.reasoning_content``), which
+    langchain-openai drops, as ``additional_kwargs["reasoning"]`` on each chunk."""
+
+    def _convert_chunk_to_generation_chunk(self, chunk, default_chunk_class, base_generation_info):
+        gen = super()._convert_chunk_to_generation_chunk(chunk, default_chunk_class, base_generation_info)
+        choices = chunk.get("choices") or []
+        delta = (choices[0].get("delta") or {}) if choices else {}
+        if gen is not None and (text := delta.get("reasoning_content") or delta.get("reasoning")):
+            gen.message.additional_kwargs["reasoning"] = text
+        return gen
+
+
 class ReactAgent:
     name = "react"
 
@@ -412,10 +441,13 @@ class ReactAgent:
         self.model = served_model()
         common = dict(base_url=LLM_URL, api_key=LLM_KEY, model=self.model,
                       temperature=0.2, streaming=True)
-        template = {"chat_template_kwargs": {"enable_thinking": LLM_THINKING}}
-        research_llm = ChatOpenAI(**common, max_tokens=1024, extra_body=template)
+        # the research steps reason before each tool call (streamed to the UI); the answer is constrained
+        # JSON and starts right away
+        research_llm = ReasoningChatOpenAI(**common, max_tokens=4096,
+                                           extra_body={"chat_template_kwargs": {"enable_thinking": LLM_THINKING}})
         # passed in the request body as is, bypassing LangChain's own response_format handling
-        answer_llm = ChatOpenAI(**common, max_tokens=4096, extra_body=template | {"response_format": ANSWER_FORMAT})
+        answer_llm = ChatOpenAI(**common, max_tokens=4096, extra_body={
+            "chat_template_kwargs": {"enable_thinking": False}, "response_format": ANSWER_FORMAT})
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS)
         self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
                                   middleware=[ResearchThenAnswer(answer_llm)])
@@ -436,10 +468,16 @@ class ReactAgent:
         events = self.graph.astream(
             {"messages": [*_history(history), HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates"])
+        thought: list[str] = []  # reasoning since the last tool call
         async for mode, data in events:
             if mode == "messages":
                 chunk = data[0]
-                if not isinstance(chunk, AIMessageChunk) or not isinstance(chunk.content, str) or not chunk.content:
+                if not isinstance(chunk, AIMessageChunk):
+                    continue
+                if (text := chunk.additional_kwargs.get("reasoning")) and not writing:
+                    thought.append(text)
+                    yield Thought(text)
+                if not isinstance(chunk.content, str) or not chunk.content:
                     continue
                 if not writing:  # research calls are tool calls only, so text means the answer has begun
                     writing = True
@@ -454,8 +492,10 @@ class ReactAgent:
                 for m in (update or {}).get("messages", []):
                     if isinstance(m, AIMessage) and m.tool_calls:
                         stream = AnswerStream()
+                        said = " ".join("".join(thought).split()) or None
+                        thought.clear()
                         for tc in m.tool_calls:
-                            yield ToolStart(tc["id"], tc["name"], tc["args"])
+                            yield ToolStart(tc["id"], tc["name"], tc["args"], said)
                     elif isinstance(m, ToolMessage):
                         art = m.artifact if isinstance(m.artifact, dict) else {}
                         cites.seen.update(art.get("decisions", []))
