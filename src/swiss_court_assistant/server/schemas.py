@@ -107,3 +107,4 @@ class Health(Model):
     status: str
     agent: str
     decisions: int
+    speech_languages: list[str] = []  # what the ASR NIM understands; empty when it is not reachable

@@ -68,6 +68,8 @@ export interface Health {
   /** "stub" until the real agent lands. */
   agent: string;
   decisions: number;
+  /** Language codes the speech recogniser understands; empty when voice mode is unavailable. */
+  speechLanguages?: string[];
 }
 
 export interface ConversationSummary {

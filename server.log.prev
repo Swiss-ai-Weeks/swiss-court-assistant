@@ -1,0 +1,181 @@
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [1763880] using WatchFiles
+INFO:     Started server process [1763882]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58180 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58182 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60704 - "GET / HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-Dtp6h_n1.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 965, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 948, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 965, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv6:%5B::1%5D:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv6:%5B::1%5D:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 948, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 948, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv4:127.0.0.1:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 948, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.UNAVAILABLE
+	details = "failed to connect to all addresses; last error: UNAVAILABLE: ipv6:%5B::1%5D:50053: recvmsg:Connection reset by peer (104)"
+	debug_error_string = "UNAVAILABLE:failed to connect to all addresses; last error: UNAVAILABLE: ipv6:%5B::1%5D:50053: recvmsg:Connection reset by peer (104)"
+>
+INFO:     127.0.0.1:44256 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote cited from None found in sg_publikationen_K 2006_2, K 2006_3 instead
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in voice
+    audio: asyncio.Queue[bytes | None] = asyncio.Queue()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 63, in transcribe
+    inbox: queue.Queue[bytes | None] = queue.Queue()
+                ^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 49, in run
+    def _config(self, language: str) -> rasr.StreamingRecognitionConfig:
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 965, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.INVALID_ARGUMENT
+	details = "inference request for sequence 1224849826 to model 'cache-aware-parakeet-rnnt-en-US-asr-streaming-sortformer' must specify the START flag on the first request of the sequence"
+	debug_error_string = "INVALID_ARGUMENT:inference request for sequence 1224849826 to model 'cache-aware-parakeet-rnnt-en-US-asr-streaming-sortformer' must specify the START flag on the first request of the sequence"
+>
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1763882]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

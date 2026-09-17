@@ -264,6 +264,28 @@ textarea { font: inherit; }
 .quote-card-close:hover { color: var(--ink); background: var(--surface-soft); }
 .composer .quote-card { background: var(--surface-soft); }
 
+/* voice mode */
+.mic-btn {
+  flex: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  background: var(--canvas); color: var(--ink); border: 1px solid var(--hairline);
+  border-radius: var(--rounded-sm);
+}
+.mic-btn:hover { border-color: var(--ink); }
+.mic-btn.on { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+.voice-bar {
+  display: flex; align-items: center; gap: var(--space-sm);
+  max-width: 820px; width: 100%; margin: 0 auto; padding: var(--space-sm) var(--space-xl) 0;
+  font-size: 13px; color: var(--mute);
+}
+.voice-dot {
+  width: 8px; height: 8px; flex: none; background: var(--primary); animation: pulse 1s ease-in-out infinite;
+}
+.voice-bar.speaking .voice-dot { background: var(--ink); }
+.voice-state { flex: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; color: var(--ink); }
+.voice-heard { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-style: italic; }
+.voice-stop { flex: none; height: 24px; padding: 0 var(--space-sm); background: none; color: var(--mute); border: 1px solid var(--hairline); border-radius: var(--rounded-sm); font-size: 12px; font-weight: 700; }
+.voice-stop:hover { color: var(--ink); border-color: var(--ink); }
+
 /* Read aloud */
 .speak-btn {
   display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 var(--space-sm);

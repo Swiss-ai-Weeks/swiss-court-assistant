@@ -45,6 +45,7 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `GET /api/decisions/{decision_id}` | metadata + full text for the preview |
 | `POST /api/translate` `{text, source, target}` | machine translation of a cited passage by the Riva Translate NIM; statute abbreviations and BGE/ATF/DTF are passed as do-not-translate phrases mapped to the target language's official form (OR → CO); cached |
 | `POST /api/speech` `{text, language}` | read aloud by the Magpie TTS NIM: 16-bit mono PCM streamed sentence by sentence (rate in `X-Sample-Rate`); `[n]` markers and markdown are dropped |
+| `WS /api/voice` | voice mode: 16 kHz PCM from the microphone in; `partial` transcripts, the same turn events as `/api/chat`, and the spoken answer (PCM frames between `speech_start`/`speech_end`) out. Any speech sends `cancel_speech` (the browser drops audio it has not played yet — the server is always ahead) and cancels a running turn, which is saved with a "cut off" marker. The answer starts only after `SCA_VOICE_PAUSE` seconds of silence (default 1.2, ≈2 s after the speaker stops), joining everything heard since the last pause, so an end-of-utterance mid-sentence does not trigger an answer |
 | `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
 
 In the preview, a highlighted citation has an **Explain** button (the agent's reason for citing
@@ -131,9 +132,29 @@ docker run -d --name magpie-tts --gpus '"device=1"' --shm-size=8GB -e NGC_API_KE
 curl localhost:9001/v1/health/ready
 ```
 
+**Voice mode** (the microphone button next to the composer) transcribes with the Nemotron streaming
+ASR NIM, again on the next free ports (the first start builds TensorRT engines, ~35 min). The image
+ships two models and **defaults to English** (`NIM_TAGS_SELECTOR=type=en-US,batch_size=128`);
+`type=multi` serves the multilingual model instead (41 codes incl. de-DE, fr-FR, it-IT, plus `auto`),
+which is what voice mode needs here:
+
+```bash
+docker run -d --name nemotron-asr-multi --gpus '"device=1"' --shm-size=8GB -e NGC_API_KEY \
+  -e NIM_TAGS_SELECTOR="type=multi,batch_size=128" \
+  -e NIM_HTTP_API_PORT=9000 -e NIM_GRPC_API_PORT=50051 \
+  -v ~/.cache/nim:/opt/nim/.cache -u $(id -u) -p 9002:9000 -p 50053:50051 \
+  nvcr.io/nim/nvidia/nemotron-asr-streaming:latest
+curl localhost:9002/v1/health/ready
+```
+
+The server asks the NIM which languages it serves (`/api/health` reports them) and listens with
+`auto`, so the speaker can switch language between questions.
+
 Settings (environment): `SCA_TRANSLATE_URI` (default `localhost:50051`), `SCA_TRANSLATE_MODEL`
 (default: the NIM's only model), `SCA_TTS_URI` (default `localhost:50052`), `SCA_TTS_VOICE_<LANG>`
-(e.g. `SCA_TTS_VOICE_DE`; default: the first voice the NIM lists for the language), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
+(e.g. `SCA_TTS_VOICE_DE`; default: the first voice the NIM lists for the language), `SCA_ASR_URI`
+(default `localhost:50053`), `SCA_ASR_LANGUAGE` (unset: `auto` when the NIM offers it, else the
+question's language), `SCA_VOICE_PAUSE` (default 1.2 s of silence before answering), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
 (default: the first model the server lists), `SCA_LLM_THINKING=0` (stops the reasoning before each research step, which the UI streams as a grey "Thinking" line; ~1 s per step), `SCA_EMBED_MODEL`,
 `SCA_EMBED_DEVICE` (default `cuda:1`), `SCA_RERANK=0`, `SCA_DECISIONS`, `SCA_VECTOR_DB`, `SCA_DB`.
 `SCA_AGENT=stub` swaps in a canned agent (`server/agent.py`) that needs no LLM.

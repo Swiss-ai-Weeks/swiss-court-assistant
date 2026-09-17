@@ -8,6 +8,9 @@ interface Props {
   /** Selected text the next message replies to: shown above the input, not editable. */
   quote: Quote | null;
   onClearQuote: () => void;
+  /** Voice mode: the microphone is open and the assistant answers out loud. */
+  voiceOn: boolean;
+  onToggleVoice: () => void;
   onSend: (text: string) => void;
   onStop: () => void;
 }
@@ -43,7 +46,7 @@ export function QuoteCard({ text, source, language, onRemove }: {
   );
 }
 
-export default function Composer({ busy, demo, quote, onClearQuote, onSend, onStop }: Props) {
+export default function Composer({ busy, demo, quote, onClearQuote, voiceOn, onToggleVoice, onSend, onStop }: Props) {
   const [text, setText] = useState("");
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -87,6 +90,18 @@ export default function Composer({ busy, demo, quote, onClearQuote, onSend, onSt
               }
             }}
           />
+          <button
+            className={`mic-btn${voiceOn ? " on" : ""}`}
+            onClick={onToggleVoice}
+            aria-pressed={voiceOn}
+            title={voiceOn ? "Leave voice mode" : "Talk to the assistant"}
+            aria-label={voiceOn ? "Leave voice mode" : "Talk to the assistant"}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor" />
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </button>
           {busy ? (
             <button className="btn-primary" onClick={onStop}>
               Stop

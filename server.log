@@ -1,0 +1,373 @@
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [2157484] using WatchFiles
+INFO:     Started server process [2157486]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:45560 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45562 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42808 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in ge_gerichte_C_23408_2023: 'Nach Ablauf des zeitlichen Kündigungsschutzes (Art. 336c Abs. 1 lit. b OR) jemandem wegen einer Arbeitsleistung zu kündigen. Der Arbeitgeber hat nach Art. 328 Abs. 1 OR die Persönlichkeit des Arbeitne'
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2157486]
+INFO:     Started server process [2161063]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2161063]
+INFO:     Started server process [2162174]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54404 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54420 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in ge_gerichte_C_2319_2005: "ab. De façon implicite, l'appelant en vient ensuite à soutenir avoir été licencié parce qu'il était malade, et il en déduit avoir fait l'objet d'un licenciement abusif au sens de l'art. 336 CO. A tene"
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2162174]
+INFO:     Started server process [2164947]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:47506 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47518 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:45266 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45276 - "GET /api/conversations/98cd9115b1d1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56168 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56180 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56168 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56168 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56180 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52744 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52748 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52744 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52744 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52748 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43744 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43744 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43750 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43750 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43744 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48330 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48334 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48330 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48330 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48334 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48338 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:48334 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_ACJC_658_2013: "5.1 Le congé est annulable lorsqu'il contrevient aux règles de la bonne foi (art. 271 al. 1 CO). Selon la jurisprudence, la protection accordée par l'art. 271 al. 1 CO procède à la fois du principe de"
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektives, ernsthaftes und schützenswertes Interesse und damit aus reiner Schikane erfolgt oder Interessen der Parteien tangiert, die in ei'
+quote not found verbatim in ge_gerichte_ACJC_890_2013: "Ainsi, le congé donné par le bailleur en vue d'obtenir d'un nouveau locataire un loyer plus élevé, mais non abusif, ne saurait, en règle générale, constituer un abus de droit (arrêts du Tribunal fédér"
+INFO:     127.0.0.1:50604 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+citation of unknown decision '63391'
+citation of unknown decision '63391'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+citation of unknown decision 'CH_2023_12'
+citation of unknown decision 'CH_2021_07'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+citation of unknown decision 'CH-2023-00123'
+citation of unknown decision 'CH-2021-00456'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_arbeitsgericht_AN210006-L: 'Nach dem bundesgerichtlichen Rechtsprechung zufolge ist eine fristlose Kündigung umgehend zu erklären, wenn der Grund zur sicheren und möglichst vollständigen Kenntnis gelangt ist. Damit ist nicht ein'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50704 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50704 - "GET /assets/index-BbxjIGZe.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50716 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50704 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50716 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50726 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50716 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Kündigung einer der Parteien durch die Gegenpartei anfechtbar, wenn sie gegen diesen Grundsatz verstossst (Art. 271 Abs. 1 OR). Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektives, '
+INFO:     127.0.0.1:33238 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in bl_gerichte_410_22_153: 'Bei einer kurzen Kündigungsfrist ist die Fortsetzung des Arbeitsverhältnisses eher zumutbar als bei einer längeren. Die Wichtigkeit des Grundes muss umso grösser sein, je näher das Ende des Arbeitsver'
+quote not found verbatim in vd_gerichte_P316.039507: ''
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36332 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36338 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36332 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36332 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36338 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36346 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:36338 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40116 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/0db1675aabb4 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektiven, ernsthaften und schützenswertes Interesse und damit aus reiner Schikane erfolgt oder Interessen der Parteien tangiert, die in ei'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23257_2009 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_C_23257_2009: 'Die Kündigung ist nichtig, wenn sie gegen den Grundsatz der guten Treu und Glauben verstösst.'
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Die Kündigung ist nichtig, wenn sie während eines laufenden Mediations- oder Gerichtsverfahrens über die Mietschaft ausgesprochen wird.'
+quote not found verbatim in bger_4A_482_2014: 'Eine Kündigung während eines laufenden Verfahrens über die Mietschaft kann angefochten werden, sofern der Vermieter nicht nachweislich ein berechtigtes Interesse hat.'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2164947]
+INFO:     Started server process [2193795]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2193795]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [2194979]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2194979]
+INFO:     Started server process [2195826]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:36190 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36196 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:41936 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Kündigung einer der Parteien durch die Gegenpartei anfechtbar, wenn sie gegen diesen Grundsatz verstossst (Art. 271 Abs. 1 OR). Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektives, '
+quote not found verbatim in zh_arbeitsgericht_AH250019: 'Art. 336c Abs. 1 lit. b OR einen Kündigungsschutz aufgrund Krankheit bietet. Eine Arbeitsverhinderung aufgrund von Krankheit oder Unfall kann eine Sperrfrist auslösen. Entfällt doch die Arbeitsverhind'
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2195826]
+INFO:     Started server process [2199902]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2199902]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [2201023]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2201023]
+INFO:     Started server process [2201629]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2201629]
+INFO:     Started server process [2202255]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59512 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59526 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in ge_gerichte_ACJC_658_2013: "Le congé est annulable lorsqu'il contrevient aux règles de la bonne foi (art. 271 al. 1 CO). Selon la jurisprudence, la protection accordée par l'art. 271 al. 1 CO procède à la fois du principe de la "
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Kündigung einer der Parteien durch die Gegenpartei anfechtbar, wenn sie gegen diesen Grundsatz verstösst (Art. 271 Abs. 1 OR). Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektiven, e'
+quote not found verbatim in ge_gerichte_C_23408_2023: 'Nach dem Gesetz kann das Arbeitsverhältnis während einer Krankheit nicht aufgelöst werden, solange der Arbeitnehmer krank ist. Der Arbeitgeber kann jedoch nach Ablauf des gesetzlichen Schutzes kündige'
+quote not found verbatim in ge_gerichte_C_23408_2023: 'Der Arbeitgeber kann jedoch nach Ablauf des gesetzlichen Schutzes kündigen, sofern ein triftiger Grund vorliegt.'
+quote not found verbatim in gr_gerichte_ZK2 2020 26: 'Der Arbeitgeber hat nach Art. 328 Abs. 1 OR die Persönlichkeit des Arbeitnehmers zu achten und zu schützen, auf dessen Gesundheit gebührend Rücksicht zu nehmen und für die Wahrung der Sittlichkeit zu '
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/17e5e42896fe HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_mietgericht_MB180024-L HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_obergericht_NG180004 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/5897b43a2000 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23257_2009 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23257_2009 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/fr_gerichte_604_2022_62 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bl_gerichte_510_17_64 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/fr_gerichte_604_2022_62 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bs_appellationsgericht_ZB.2018.45 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in vd_omni_CR.2004.0084: "un excès de vitesse de 25 km/h constitue une mise en danger grave des autres usagers de la route justifiant un retrait obligatoire du permis de conduire (ATF 123 II 37), tandis qu'un excès de vitesse "
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in vd_omni_CR.2008.0134: 'Eine Geschwindigkeitsüberschreitung von 1–20 km/h ausserhalb geschlossener Ortschaften wird als leichte Schuld gewertet und führt in der Regel nur zu einer einfachen Verwarnung, sofern keine zusätzlic'
+quote not found verbatim in vd_omni_CR.2004.0084: 'Ein Geschwindigkeitsüberschreitung von 30 km/h oder mehr ausserhalb geschlossener Ortschaften stellt eine erhebliche Gefahr für andere Verkehrsteilnehmer dar und rechtfertigt den Führerausweisentzug n'
+quote not found verbatim in ge_gerichte_ATA_140_2012: 'Die Höhe des Bußgeldes und die Art der Sanktion richten sich nach der Höhe der Geschwindigkeitsüberschreitung: 1–20 km/h ausserhalb geschlossener Ortschaften oder 1–25 km/h auf Autobahnen führt zu ein'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_omni_CR.2004.0084 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/a7131b449c39 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/a7131b449c39 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_mietgericht_MJ240024-L: 'Art. 271a OR konkretisiert und erweitert die Grundnorm von Art. 271 OR. Der Katalog anfechtbarer Kündigungen in Art. 271a OR bestätigt, dass das Gesetz eher von positiven Loyalitätskriterien und vom S'
+quote not found verbatim in bs_appellationsgericht_ZB.2016.34: 'Eine ordentliche Kündigung des Mietvertrags setzt keine besonderen Kündigungsgründe voraus. Mieter und Vermieter sind grundsätzlich frei, das (unbefristete) Mietverhältnis unter Einhaltung der vertrag'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_mietgericht_MB180024-L HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_mietgericht_MJ240024-L HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-DIUDvVgy.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+citation of unknown decision 'CH-2024-00123'
+citation of unknown decision 'CH-2024-00456'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/server/schemas.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2202255]
+INFO:     Started server process [2295068]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:38960 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38970 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38972 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38972 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33858 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33872 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+voice session failed
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 384, in voice
+    async for text, final in s.listener.transcribe(audio, state["language"]):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 99, in transcribe
+    raise item
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/voice.py", line 77, in run
+    for response in self.service.streaming_response_generator(chunks(), self._config(language)):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/riva/client/asr.py", line 443, in streaming_response_generator
+    for response in self.stub.StreamingRecognize(generator, metadata=self.auth.get_auth_metadata()):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 547, in __next__
+    return self._next()
+           ^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/grpc/_channel.py", line 965, in _next
+    raise self
+grpc._channel._MultiThreadedRendezvous: <_MultiThreadedRendezvous of RPC that terminated with:
+	status = StatusCode.INVALID_ARGUMENT
+	details = "Error: Unavailable model requested given these parameters: language_code=bg; sample_rate=16000; type=online; "
+	debug_error_string = "INVALID_ARGUMENT:Error: Unavailable model requested given these parameters: language_code=bg; sample_rate=16000; type=online; "
+>
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2295068]
+INFO:     Started server process [2697408]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2697408]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/voice.py'. Reloading...
+INFO:     Started server process [2698053]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2698053]
+INFO:     Started server process [2698723]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51814 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51816 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48546 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in ge_gerichte_ACJC_1491_2013: "Peu importe la nature des droits dont le locataire s'est prévenu ou entend se prévaloir, pourvu qu'il ne s'agisse pas de bagatelles. Il peut s'agir de droits relatifs au loyer et aux frais accessoires"
+INFO:     127.0.0.1:52154 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+quote not found verbatim in vd_gerichte_P321.019847: 'Wenn, der Arbeiter nach einer Entlassung mit sofortiger Wirkung krank wird, so schuldet ihm der Arbeitgeber infolge dessen insbesondere, als Schadenersatz den Lohn, den er nach Art. 324a CO zusteht, e'
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-Ccqfr0JS.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-D4tMB0Xs.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_ACJC_50_2025: "La liste posée par l'art. 336 CO n'est toutefois pas exhaustive et une résiliation abusive peut aussi être admise dans d'autres circonstances. Il faut toutefois que ces autres situations apparaissent "
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_A-4470_2020 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
