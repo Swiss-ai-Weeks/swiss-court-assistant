@@ -104,6 +104,7 @@ const TOOL_LABEL: Record<string, string> = {
   semantic_search: "Semantic search",
   keyword_search: "Keyword search",
   read_decision: "Read decision",
+  citing_decisions: "Who cites it",
 };
 
 function toolArg(c: ToolCall): string {
@@ -120,7 +121,7 @@ function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
   return (
     <details className="activity" open={live || undefined}>
       <summary>
-        Research · {calls.length} tool call{calls.length === 1 ? "" : "s"}
+        Research - {calls.length} searches{calls.length === 1 ? "" : "s"}
       </summary>
       <ol>
         {calls.map((c) => {

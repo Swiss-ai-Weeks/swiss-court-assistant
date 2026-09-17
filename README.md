@@ -43,10 +43,17 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `GET /api/health` | agent name, number of decisions loaded |
 | `GET /api/conversations`, `GET/DELETE /api/conversations/{id}` | history |
 | `GET /api/decisions/{decision_id}` | metadata + full text for the preview |
+| `GET /api/decisions/{id}/citations` | from the corpus citation graph: how often later decisions cite this one, how many it cites, and the most recent decisions at either end (`inCorpus` marks the ones this app serves) |
 | `POST /api/translate` `{text, source, target}` | machine translation of a cited passage by the Riva Translate NIM; statute abbreviations and BGE/ATF/DTF are passed as do-not-translate phrases mapped to the target language's official form (OR → CO); cached |
 | `POST /api/speech` `{text, language}` | read aloud by the Magpie TTS NIM: 16-bit mono PCM streamed sentence by sentence (rate in `X-Sample-Rate`); `[n]` markers and markdown are dropped |
 | `WS /api/voice` | voice mode: 16 kHz PCM from the microphone in; `partial` transcripts, the same turn events as `/api/chat`, and the spoken answer (PCM frames between `speech_start`/`speech_end`) out. Any speech sends `cancel_speech` (the browser drops audio it has not played yet — the server is always ahead) and cancels a running turn, which is saved with a "cut off" marker. The answer starts only after `SCA_VOICE_PAUSE` seconds of silence (default 1.2, ≈2 s after the speaker stops), joining everything heard since the last pause, so an end-of-utterance mid-sentence does not trigger an answer |
 | `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
+
+**Grounding check.** Every citation is checked against the sentence it supports: a short constrained
+call (`{"supported": true|false}`) asks whether that passage states that sentence, judged on the
+passage alone. The checks run while the answer streams and arrive as `verdict` events; a citation
+whose passage does not state the claim is marked in red in the answer and in the saved message
+(`Source.supported`). Quote wording is checked separately (`Source.verified`, verbatim match).
 
 In the preview, a highlighted citation has an **Explain** button (the agent's reason for citing
 it) and, when the decision is in another language than the question, a **Translate** button
@@ -95,6 +102,20 @@ the vector DB is being written):
 ```bash
 uv run python -m swiss_court_assistant.fts build
 ```
+
+**Citation graph.** `data/raw/graph/citations.parquet` holds 11.8M edges for the whole corpus; the
+index keeps the 1.1M that touch the subset, with a court/docket/date label for every decision they
+mention (413k, mostly citing decisions from outside the subset). ~70 s, 193 MB:
+
+```bash
+uv run python -m swiss_court_assistant.citations build
+uv run python -m swiss_court_assistant.citations show bge_BGE_122_V_157
+```
+
+Search results then carry "cited by N later decisions" (an authority signal the agent is told to
+prefer), the agent can call `citing_decisions(decision_id)`, and the preview shows the panel.
+Caveat: some decisions exist under two ids ("bge_122 V 157" and "bge_BGE_122_V_157"), so counts can
+be split between the twins; the twin is filtered out of the lists.
 
 The LLM NIM needs tool calling enabled. Port 8000 is taken by the embedder NIM, so map it
 elsewhere (the agent defaults to 9100), and keep it on GPU 0: GPU 1 holds the reranker and

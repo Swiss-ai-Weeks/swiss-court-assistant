@@ -264,6 +264,22 @@ textarea { font: inherit; }
 .quote-card-close:hover { color: var(--ink); background: var(--surface-soft); }
 .composer .quote-card { background: var(--surface-soft); }
 
+/* a citation whose passage does not state the sentence (grounding check) */
+.cite.unsupported { background: var(--error); color: var(--on-dark); }
+.cite.unsupported::after { content: "!"; margin-left: 2px; font-weight: 700; }
+
+/* how often later decisions cite this one */
+.cited-by-graph { margin-top: var(--space-md); font-size: 13px; }
+.cited-by-graph summary {
+  cursor: pointer; width: fit-content; font-weight: 700; color: var(--ink);
+  border-bottom: 2px solid var(--primary); padding-bottom: 2px;
+}
+.cited-by-note { margin: var(--space-sm) 0 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); }
+.cited-by-graph ul { list-style: none; margin: var(--space-xs) 0 0; padding: 0; }
+.cited-by-graph li { display: flex; gap: var(--space-sm); padding: 2px 0; color: var(--body); }
+.cited-by-graph .when { flex: none; width: 92px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.cited-by-graph .what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* voice mode */
 .mic-btn {
   flex: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;

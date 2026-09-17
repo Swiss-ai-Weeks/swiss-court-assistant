@@ -39,11 +39,13 @@ export default function Answer({ id, text, sources, language, streaming, activeN
         const s = sources[n - 1];
         return (
           <button
-            className={`cite${activeN === n ? " on" : ""}`}
+            className={`cite${activeN === n ? " on" : ""}${s?.supported === false ? " unsupported" : ""}`}
             onClick={() => onCite(n)}
             title={
               s
-                ? `${s.decision.docket} ${erwLabel(s.erwaegungen)}`.trim() + (s.explanation ? `\n${s.explanation}` : "")
+                ? `${s.decision.docket} ${erwLabel(s.erwaegungen)}`.trim() +
+                  (s.explanation ? `\n${s.explanation}` : "") +
+                  (s.supported === false ? "\n⚠ Checked: this passage does not state that sentence." : "")
                 : undefined
             }
             aria-label={`Open source ${n}`}

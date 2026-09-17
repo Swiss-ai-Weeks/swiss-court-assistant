@@ -18,6 +18,7 @@ from swiss_court_assistant.fts import KeywordIndex
 from swiss_court_assistant.statutes import localize
 from swiss_court_assistant.vectordb import VectorDB
 
+from .citations import CitationIndex
 from .decisions import DecisionStore
 
 log = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ class Passage:
     date: str | None
     language: str
     score: float = 0.0
+    cited_by: int = 0  # later decisions citing this one, from the citation graph
 
 
 class Corpus:
@@ -49,9 +51,11 @@ class Corpus:
     """
 
     def __init__(self, db: Path, fts: Path, decisions: DecisionStore, embed_model: str | None = None,
-                 device: str = "cpu", rerank: bool = True, candidates: int = 40):
+                 device: str = "cpu", rerank: bool = True, candidates: int = 40,
+                 citations: "CitationIndex | None" = None):
         self.decisions = decisions
         self.candidates = candidates
+        self.citations = citations  # how often each decision is cited: an authority signal on results
         cfg = R.RERANKERS["nemotron"]
         self.rerank_url = os.environ.get(cfg["url_env"], cfg["url"]) if rerank else None
         self.rerank_model = cfg["model"]
@@ -103,10 +107,18 @@ class Corpus:
     def _rows(self, where: str, params: list) -> list[dict]:
         return [dict(r) for r in self.vdb.con.execute(f"SELECT {_CHUNK_COLS} FROM chunks WHERE {where}", params)]
 
+    async def _authority(self, hits: list[Passage]) -> list[Passage]:
+        """Annotate each passage with how often its decision is cited by later ones."""
+        if self.citations is None or not hits:
+            return hits
+        counts = await asyncio.to_thread(self.citations.cited_by_counts,
+                                         sorted({h.decision_id for h in hits}))
+        return [replace(h, cited_by=counts.get(h.decision_id, 0)) for h in hits]
+
     async def semantic_search(self, query: str, k: int = 8, language: str | None = None) -> list[Passage]:
         rows = await self._call(self.vdb.search, query, self.embed_model, self.candidates, language=language)
         hits = await self._rerank(query, [self._passage(r, r["similarity"]) for r in rows])
-        return _diverse(hits, k)
+        return await self._authority(_diverse(hits, k))
 
     async def semantic_search_by_language(self, queries: dict[str, str], k: int = 8,
                                           per_language: int = 2) -> list[Passage]:
@@ -125,7 +137,7 @@ class Corpus:
         rest = sorted((h for hits in ranked for h in hits), key=lambda h: -h.score)
         seen: set[str] = set()
         merged = [h for h in picked + rest if not (h.chunk_id in seen or seen.add(h.chunk_id))]
-        return sorted(_diverse(merged, k), key=lambda h: -h.score)
+        return await self._authority(sorted(_diverse(merged, k), key=lambda h: -h.score))
 
     async def keyword_search(self, keyword: str, k: int = 8) -> list[Passage]:
         if self.fts is None:
@@ -135,7 +147,7 @@ class Corpus:
             return []
         ids = [rowid for rowid, _ in ranked]
         rows = {r["id"]: r for r in await self._call(self._rows, f"id IN ({','.join('?' * len(ids))})", ids)}
-        return _diverse([self._passage(rows[i], -s) for i, s in ranked if i in rows], k)
+        return await self._authority(_diverse([self._passage(rows[i], -s) for i, s in ranked if i in rows], k))
 
     async def chunk(self, chunk_id: str) -> Passage | None:
         rows = await self._call(self._rows, "chunk_id = ?", [chunk_id])

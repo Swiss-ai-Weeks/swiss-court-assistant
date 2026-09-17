@@ -17,11 +17,12 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, WebSocke
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart
+from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict
 from .decisions import DecisionStore
 from .language import detect_language
-from .schemas import (ChatRequest, Conversation, ConversationSummary, Decision, Health, Message, Source,
-                      SpeechRequest, ToolCall, TranslateRequest, TranslateResponse)
+from .citations import CitationIndex, open_index
+from .schemas import (ChatRequest, Citations, CitingDecision, Conversation, ConversationSummary, Decision, Health,
+                      Message, Source, SpeechRequest, ToolCall, TranslateRequest, TranslateResponse)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
@@ -31,6 +32,7 @@ DECISIONS = Path(os.environ.get("SCA_DECISIONS", "data/subset/decisions_50k_seed
 CHUNKS = DECISIONS.with_name(DECISIONS.stem + ".chunks.parquet")
 VECTOR_DB = Path(os.environ.get("SCA_VECTOR_DB", f"data/vectordb/{DECISIONS.stem}.sqlite"))
 KEYWORD_INDEX = VECTOR_DB.with_name(VECTOR_DB.stem + ".fts.sqlite")
+CITATION_INDEX = Path(os.environ.get("SCA_CITATIONS", f"data/graph/{DECISIONS.stem}.citations.sqlite"))
 DB = Path(os.environ.get("SCA_DB", "data/app/conversations.sqlite"))
 AGENT = os.environ.get("SCA_AGENT", "react")  # react | stub
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
@@ -46,18 +48,20 @@ class Services:
     translator: Translator
     speaker: Speaker
     listener: Listener
+    citations: CitationIndex | None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     decisions = DecisionStore(DECISIONS)
-    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions), Translator(), Speaker(),
-                                  Listener())
+    citations = open_index(CITATION_INDEX, set(decisions.df["decision_id"].to_list()))
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                  Speaker(), Listener(), citations)
     log.info("loaded %d decisions; agent=%s", len(decisions), app.state.services.agent.name)
     yield
 
 
-def _make_agent(decisions: DecisionStore) -> Agent:
+def _make_agent(decisions: DecisionStore, citations: CitationIndex | None = None) -> Agent:
     if AGENT == "stub":
         return StubAgent(CHUNKS, decisions)
     import torch
@@ -67,7 +71,7 @@ def _make_agent(decisions: DecisionStore) -> Agent:
 
     device = os.environ.get("SCA_EMBED_DEVICE", "cuda:1" if torch.cuda.device_count() > 1 else "cpu")
     corpus = Corpus(VECTOR_DB, KEYWORD_INDEX, decisions, os.environ.get("SCA_EMBED_MODEL"), device,
-                    rerank=os.environ.get("SCA_RERANK", "1") == "1")
+                    rerank=os.environ.get("SCA_RERANK", "1") == "1", citations=citations)
     return ReactAgent(corpus)
 
 
@@ -120,6 +124,19 @@ async def get_decision(decision_id: str, s: Svc) -> Decision:
     if d is None:
         raise HTTPException(404, "Decision not found")
     return d
+
+
+@app.get("/api/decisions/{decision_id}/citations", response_model=Citations)
+async def decision_citations(decision_id: str, s: Svc, limit: int = 20) -> Citations:
+    """Which later decisions cite this one — the corpus citation graph, not the agent."""
+    if s.citations is None:
+        raise HTTPException(503, "The citation index is not built.")
+    cited_by_count, cites_count = await asyncio.to_thread(s.citations.counts, decision_id)
+    cited_by = await asyncio.to_thread(s.citations.cited_by, decision_id, limit)
+    cites = await asyncio.to_thread(s.citations.cites, decision_id, limit)
+    return Citations(decision_id=decision_id, cited_by_count=cited_by_count, cites_count=cites_count,
+                     cited_by=[CitingDecision(**vars(c)) for c in cited_by],
+                     cites=[CitingDecision(**vars(c)) for c in cites])
 
 
 @app.post("/api/translate", response_model=TranslateResponse)
@@ -218,6 +235,11 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
                         sources.append(ev.source)
                     parts.append(f"[{ev.source.n}]")
                     yield {"type": "citation", "source": ev.source.model_dump(by_alias=True)}
+                case Verdict():
+                    for source in sources:  # saved with the message, so the check survives a reload
+                        if source.n == ev.n:
+                            source.supported = ev.supported
+                    yield {"type": "verdict", "n": ev.n, "supported": ev.supported}
     except asyncio.CancelledError:
         # keep the abandoned turn in the history, so the next one answers the new question instead of
         # carrying on with the old one

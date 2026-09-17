@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type Decision, type Source } from "../api";
+import { api, type Citations as CitationsInfo, type Decision, type Source } from "../api";
 import { erwLabel, formatDate, langName } from "../format";
 import ReadAloud from "./ReadAloud";
 
@@ -55,6 +55,51 @@ function segments(text: string, ranges: { n: number; start: number; end: number 
 
 // Translations outlive the component, so switching between citations does not refetch them.
 const translations = new Map<string, string>();
+
+/** How often later decisions cite this one: whether the courts still rely on it. */
+function CitedBy({ decisionId }: { decisionId: string }) {
+  const [data, setData] = useState<CitationsInfo | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    setData(null);
+    api.getCitations(decisionId, 8).then(
+      (c) => live && setData(c),
+      () => {}, // no citation index: the panel just stays hidden
+    );
+    return () => {
+      live = false;
+    };
+  }, [decisionId]);
+
+  if (!data || (!data.citedByCount && !data.citesCount)) return null;
+  const n = (x: number) => x.toLocaleString("en");
+  // a first-instance decision is often cited by nobody yet, but what it relies on is still worth seeing
+  const showCiting = data.citedByCount > 0;
+  const list = showCiting ? data.citedBy : data.cites;
+  return (
+    <details className="cited-by-graph">
+      <summary>
+        {data.citedByCount > 0
+          ? `Cited by ${n(data.citedByCount)} later decision${data.citedByCount === 1 ? "" : "s"}`
+          : "Not cited by later decisions yet"}
+        {data.citesCount > 0 && ` · cites ${n(data.citesCount)}`}
+      </summary>
+      <p className="cited-by-note">{showCiting ? "Most recent decisions citing it" : "Decisions it relies on"}</p>
+      <ul>
+        {list.map((c) => (
+          <li key={c.decisionId}>
+            <span className="when">{c.date ? formatDate(c.date) : "undated"}</span>
+            <span className="what">
+              {c.docket ?? c.decisionId}
+              {c.court ? ` · ${c.court}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 type Panel = "explain" | "translate" | null;
 
@@ -234,6 +279,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
               </a>
             )}
           </div>
+          <CitedBy decisionId={d.decisionId} />
         </header>
 
         <div className="cited-in">

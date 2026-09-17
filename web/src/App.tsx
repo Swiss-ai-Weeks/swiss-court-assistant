@@ -98,6 +98,12 @@ export default function App() {
         );
         break;
       }
+      case "verdict":
+        setPending(
+          (p) =>
+            p && { ...p, sources: p.sources.map((s) => (s.n === ev.n ? { ...s, supported: ev.supported } : s)) },
+        );
+        break;
       case "done":
         setMessages((m) => [...m, ev.message]);
         setPending(null);

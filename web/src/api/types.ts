@@ -37,6 +37,26 @@ export interface Source {
   explanation?: string | null;
   /** False when the quoted words were not found verbatim in the decision. */
   verified?: boolean;
+  /** Whether the passage really states the sentence citing it; null while unchecked. */
+  supported?: boolean | null;
+}
+
+/** A decision at the other end of a citation edge (the corpus citation graph). */
+export interface CitingDecision {
+  decisionId: string;
+  court: string | null;
+  docket: string | null;
+  date: string | null;
+  /** Part of this app's corpus, so it can be opened here. */
+  inCorpus: boolean;
+}
+
+export interface Citations {
+  decisionId: string;
+  citedByCount: number;
+  citesCount: number;
+  citedBy: CitingDecision[];
+  cites: CitingDecision[];
 }
 
 export interface ToolCall {
@@ -95,6 +115,8 @@ export type ChatEvent =
   | { type: "delta"; text: string }
   /** Cites `source` right after the text so far; the same source may be cited again. */
   | { type: "citation"; source: Source }
+  /** The grounding check on citation `n`, once the passage has been compared with the sentence. */
+  | { type: "verdict"; n: number; supported: boolean }
   | { type: "done"; message: Message }
   | { type: "error"; message: string };
 
@@ -104,6 +126,8 @@ export interface Api {
   getConversation(id: string): Promise<Conversation>;
   deleteConversation(id: string): Promise<void>;
   getDecision(id: string): Promise<Decision>;
+  /** How often later decisions cite this one, and which. */
+  getCitations(id: string, limit?: number): Promise<Citations>;
   /** Machine translation of a cited passage (language codes: de, fr, it, rm, en). */
   translate(text: string, source: string, target: string): Promise<string>;
   /** Speech for `text` read in `language`: a stream of 16-bit little-endian mono PCM at `sampleRate`. */

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -15,7 +16,7 @@ from langchain_core.utils.json import parse_partial_json
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
-from .agent import AgentEvent, Cite, Delta, Status, Thought, ToolEnd, ToolStart
+from .agent import AgentEvent, Cite, Delta, Status, Thought, ToolEnd, ToolStart, Verdict
 from .corpus import Corpus, Passage
 from .language import detect_language
 from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
@@ -54,12 +55,18 @@ class AgentAnswer(BaseModel):
 ANSWER_FORMAT = {"type": "json_schema",
                  "json_schema": {"name": "agent_answer", "schema": AgentAnswer.model_json_schema()}}
 
+SUPPORT_PROMPT = """You check a legal answer against its sources. Given one passage from a Swiss court decision and one statement from an answer that cites it, reply {"supported": true} if the passage states or directly implies the statement, and {"supported": false} if it does not (it is about something else, says less than the statement claims, or contradicts it). Judge only against this passage, not your own legal knowledge."""
+SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
+    "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
+MAX_CHECKS = 8  # grounding checks per answer
+
 RESEARCH_PROMPT = """You are a legal research assistant for Swiss case law, working on a corpus of {n_decisions:,} Swiss court decisions (Federal Supreme Court, other federal courts and cantonal courts), written in German, French or Italian.
 
 Research the user's question with the tools, then call write_answer.
 - semantic_search(query_de, query_fr, query_it): finds passages by meaning. Start here for most questions. Write the same search in German, French and Italian, each phrased like a Swiss court in that language, with that language's legal terms and statute abbreviations, e.g. query_de="Anfechtung der Kündigung wegen Verstoss gegen Treu und Glauben, Art. 271 OR", query_fr="annulation du congé contraire aux règles de la bonne foi, art. 271 CO", query_it="annullamento della disdetta contraria alla buona fede, art. 271 CO". Each query searches the decisions in its language. If results are thin, search again with other wording.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
+- citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
 - write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. You have at most {max_calls} tool calls.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
@@ -82,8 +89,9 @@ Shape:
 def _hit_block(i: int, p: Passage) -> str:
     erw = f" · E. {', '.join(p.erwaegungen)}" if p.erwaegungen else ""
     regeste = " · Regeste" if p.section == "regeste" else ""
+    cited = f" · cited by {p.cited_by} later decisions" if p.cited_by else ""
     return (f"Result {i}: decision_id={p.decision_id} chunk_id={p.chunk_id}\n"
-            f"{p.court_label} {p.docket} · {p.date or 'undated'} · {p.language}{erw}{regeste}\n{p.text}")
+            f"{p.court_label} {p.docket} · {p.date or 'undated'} · {p.language}{erw}{regeste}{cited}\n{p.text}")
 
 
 def _hits_result(hits: list[Passage]) -> tuple[str, dict]:
@@ -165,13 +173,37 @@ def make_tools(corpus: Corpus) -> list:
                 {"summary": f"{d.docket}, characters {start:,}–{end:,} of {len(d.full_text):,}",
                  "decisions": [d.decision_id]})
 
+    @tool(response_format="content_and_artifact")
+    async def citing_decisions(decision_id: str) -> tuple[str, dict]:
+        """How many later decisions cite this one, and the most recent of them. Use it to check whether
+        a precedent is still followed before relying on it."""
+        if corpus.citations is None:
+            return "The citation index is not available.", {"summary": "unavailable", "error": True}
+        ids = corpus.decisions.find(decision_id)
+        did = ids[0] if ids else decision_id
+        try:
+            cited_by, cites = await asyncio.to_thread(corpus.citations.counts, did)
+            recent = await asyncio.to_thread(corpus.citations.cited_by, did, 10)
+        except Exception as e:
+            return _failed(e)
+        if not cited_by:
+            return (f"No later decision in the corpus cites {did}.",
+                    {"summary": "cited by 0", "decisions": [did]})
+        # name the corpus id only for decisions that are actually here: a court+docket label looks like
+        # an id, and the agent then wastes calls on read_decision("zh_gerichte 4A_82/2024")
+        lines = [f"- {r.date or 'undated'} · {r.court or '?'} {r.docket or r.decision_id}"
+                 f" ({'decision_id=' + r.decision_id if r.in_corpus else 'not in this corpus'})" for r in recent]
+        return (f"{did} is cited by {cited_by} later decisions and itself cites {cites}. The most recent citing "
+                f"decisions (only those with a decision_id can be opened with read_decision):\n" + "\n".join(lines),
+                {"summary": f"cited by {cited_by}", "decisions": [did]})
+
     @tool
     async def write_answer() -> str:
         """Finish the research and write the answer. Call it once the passages found answer the
         question, or when more searching is unlikely to help."""
         return ""  # never runs: ResearchThenAnswer answers instead
 
-    return [semantic_search, keyword_search, read_decision, write_answer]
+    return [semantic_search, keyword_search, read_decision, citing_decisions, write_answer]
 
 
 class ResearchThenAnswer(AgentMiddleware):
@@ -448,21 +480,48 @@ class ReactAgent:
         # passed in the request body as is, bypassing LangChain's own response_format handling
         answer_llm = ChatOpenAI(**common, max_tokens=4096, extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": ANSWER_FORMAT})
+        # a separate short call per citation: does the passage actually say what the sentence claims?
+        self.check_llm = ChatOpenAI(**{**common, "temperature": 0}, max_tokens=32, extra_body={
+            "chat_template_kwargs": {"enable_thinking": False}, "response_format": SUPPORT_FORMAT})
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS)
         self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
                                   middleware=[ResearchThenAnswer(answer_llm)])
         log.info("react agent: %s at %s (thinking=%s)", self.model, LLM_URL, LLM_THINKING)
 
+    async def _check(self, n: int, claim: str, source: Source) -> tuple[int, bool | None]:
+        """Does the cited passage state the sentence it is attached to?"""
+        try:
+            reply = await self.check_llm.ainvoke([
+                SystemMessage(SUPPORT_PROMPT),
+                HumanMessage(f"PASSAGE ({source.decision.docket}):\n{source.text[:2000]}\n\n"
+                             f"STATEMENT:\n{claim}")])
+            return n, bool(json.loads(str(reply.content))["supported"])
+        except (ValidationError, ValueError, KeyError, TypeError):
+            log.warning("grounding check returned no verdict for [%d]", n, exc_info=True)
+        except Exception:
+            log.warning("grounding check failed for [%d]", n, exc_info=True)
+        return n, None
+
     async def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus)
         stream, writing = AnswerStream(), False
+        claim: list[str] = []  # the sentences since the last citation
+        previous = ""  # several citations in a row all support the same sentence
+        checks: list[asyncio.Task[tuple[int, bool | None]]] = []
         yield Status("thinking", "Planning the research")
 
         async def emit(parts: list[TextPart | CitationPart]) -> AsyncIterator[AgentEvent]:
+            nonlocal previous
             for p in parts:
                 if isinstance(p, TextPart):
+                    claim.append(p.text)
                     yield Delta(p.text)
                 elif (src := await cites.resolve(p)) is not None:
+                    statement = " ".join("".join(claim).split())[-400:] or previous
+                    claim.clear()
+                    previous = statement
+                    if statement and len(checks) < MAX_CHECKS:
+                        checks.append(asyncio.create_task(self._check(src.n, statement, src)))
                     yield Cite(src)
 
         events = self.graph.astream(
@@ -505,3 +564,7 @@ class ReactAgent:
         await events.aclose()  # cancels the model call if we broke off
         async for ev in emit(stream.finish()):
             yield ev
+        for finished in asyncio.as_completed(checks):  # the checks ran while the answer was streaming
+            n, supported = await finished
+            if supported is not None:
+                yield Verdict(n, supported)

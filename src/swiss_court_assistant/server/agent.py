@@ -52,7 +52,15 @@ class Cite:
     source: Source
 
 
-AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite
+@dataclass
+class Verdict:
+    """Whether the cited passage really states the sentence it was attached to."""
+
+    n: int
+    supported: bool
+
+
+AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite | Verdict
 
 
 class Agent(Protocol):

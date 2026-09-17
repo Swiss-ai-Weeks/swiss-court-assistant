@@ -371,3 +371,435 @@ quote not found verbatim in ge_gerichte_ACJC_50_2025: "La liste posée par l'art
 INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_A-4470_2020 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/citations.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2698723]
+INFO:     Started server process [3103097]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3103097]
+INFO:     Started server process [3103862]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/schemas.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3103862]
+INFO:     Started server process [3105202]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3105202]
+INFO:     Started server process [3106341]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3106341]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [3107361]
+INFO:     Waiting for application startup.
+no citation index at data/graph/decisions_50k_seed42.citations.sqlite; run `python -m swiss_court_assistant.citations build`
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 58, in lifespan
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 73, in _make_agent
+    corpus = Corpus(VECTOR_DB, KEYWORD_INDEX, decisions, os.environ.get("SCA_EMBED_MODEL"), device,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Corpus.__init__() got an unexpected keyword argument 'citations'
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/server/corpus.py'. Reloading...
+INFO:     Started server process [3108077]
+INFO:     Waiting for application startup.
+no citation index at data/graph/decisions_50k_seed42.citations.sqlite; run `python -m swiss_court_assistant.citations build`
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3108077]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/corpus.py'. Reloading...
+INFO:     Started server process [3109262]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3109262]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [3110270]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3110270]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [3111123]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3111123]
+INFO:     Started server process [3111729]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:49920 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49924 - "GET /api/decisions/bge_BGE_122_V_157/citations?limit=3 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3111729]
+INFO:     Started server process [3115142]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3115142]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Started server process [3116166]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3116166]
+INFO:     Started server process [3116845]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53882 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53884 - "GET /api/decisions/bge_BGE_122_V_157/citations?limit=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53896 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53906 - "GET /assets/index-Da2jisVX.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53896 - "GET /assets/index-DeMZWOzY.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53896 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53906 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53896 - "GET /api/conversations/2f3371f001d2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53906 - "GET /api/decisions/zh_mietgericht_MB180024-L HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53896 - "GET /api/decisions/zh_mietgericht_MB180024-L/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60532 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60544 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in zh_obergericht_NG180004: 'anfechtbar, wenn sie gegen den Grundsatz von Treu und Glauben verstösst (Art. 271 Abs. 1 OR). Art. 271a OR nennt Fallgruppen treuwidriger Vermieterkündigungen.'
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Kündigung einer der Parteien durch die Gegenpartei anfechtbar, wenn sie gegen diesen Grundsatz verstossst (Art. 271 Abs. 1 OR). Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektives, '
+INFO:     127.0.0.1:51152 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51164 - "GET /api/conversations/2f3371f001d2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51170 - "GET /api/decisions/bs_appellationsgericht_ZB.2016.34/citations?limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51180 - "GET /api/decisions/zh_mietgericht_MB180024-L/citations?limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51184 - "GET /api/decisions/zh_mietgericht_MJ240024-L/citations?limit=1 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3116845]
+INFO:     Started server process [3119282]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/schemas.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3119282]
+INFO:     Started server process [3121908]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3121908]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [3122969]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 58, in lifespan
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 75, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 481, in __init__
+    self.check_llm = ChatOpenAI(**common, temperature=0, max_tokens=32, extra_body={
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: langchain_openai.chat_models.base.ChatOpenAI() got multiple values for keyword argument 'temperature'
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [3123895]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 58, in lifespan
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 75, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 481, in __init__
+    self.check_llm = ChatOpenAI(**common, temperature=0, max_tokens=32, extra_body={
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: langchain_openai.chat_models.base.ChatOpenAI() got multiple values for keyword argument 'temperature'
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [3125082]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 58, in lifespan
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 75, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 481, in __init__
+    self.check_llm = ChatOpenAI(**common, temperature=0, max_tokens=32, extra_body={
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: langchain_openai.chat_models.base.ChatOpenAI() got multiple values for keyword argument 'temperature'
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [3125970]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 58, in lifespan
+    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 75, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 481, in __init__
+    self.check_llm = ChatOpenAI(**common, temperature=0, max_tokens=32, extra_body={
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: langchain_openai.chat_models.base.ChatOpenAI() got multiple values for keyword argument 'temperature'
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [3138361]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57450 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56864 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56878 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Allgemein gilt eine Kündigung als treuwidrig, wenn sie ohne objektives, ernsthaftes und schützenswertes Interesse und damit aus reiner Schikane erfolgt oder Interessen der Parteien tangiert, die in ei'
+INFO:     127.0.0.1:42342 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42350 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42362 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42350 - "GET /assets/index-bgdAraqD.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42350 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42362 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42350 - "GET /api/conversations/7ffe5da00c83 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42362 - "GET /api/decisions/ge_gerichte_ACJC_890_2013 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42350 - "GET /api/decisions/ge_gerichte_ACJC_890_2013/citations?limit=8 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/citations.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3138361]
+INFO:     Started server process [3140633]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3140633]
+INFO:     Started server process [3142011]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56494 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56506 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_C_23408_2023: 'Nach dem Zeitablauf des zeitlichen Kündigungsschutzes (Art. 336c Abs. 1 lit. b OR) ist jemandem wegen einer Arbeitsleistung zu kündigen.'
+INFO:     127.0.0.1:56678 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56680 - "GET /api/decisions/bs_appellationsgericht_ZB.2016.34/citations?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56684 - "GET /api/decisions/zh_mietgericht_MB180024-L/citations?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56690 - "GET /api/decisions/bge_BGE_122_V_157/citations?limit=6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56460 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56476 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56460 - "GET /assets/index-bgdAraqD.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56460 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56476 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56476 - "GET /api/conversations/802a4f12a312 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56460 - "GET /api/decisions/ge_gerichte_C_23408_2023 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56476 - "GET /api/decisions/ge_gerichte_C_23408_2023/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-bgdAraqD.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_ACJC_890_2013 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_ACJC_890_2013/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_mietgericht_MB180024-L HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_mietgericht_MB180024-L/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_HC___2022___340 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_HC___2022___340/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/5a09222d481b HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/802a4f12a312 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/802a4f12a312 HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/802a4f12a312 HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/7ffe5da00c83 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/6d23f93e5b4b HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/6d23f93e5b4b HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/6d23f93e5b4b HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/6d23f93e5b4b HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/4db989440d2a HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/4021a1b28c5f HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/4021a1b28c5f HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/4021a1b28c5f HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/11465552cd8c HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/11465552cd8c HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/1cc36f57a70f HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/1cc36f57a70f HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/1cc36f57a70f HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/44ef9fd7665a HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/44ef9fd7665a HTTP/1.1" 404 Not Found
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in bge_BGE_98_V_238: "Die jurisprudenz s'est maintes fois occupée de la définition des prestations d'assurance et de secours destinées à couvrir les risques de vieillesse, d'invalidité ou de décès. Elle a reconnu que de te"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_98_V_238 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_98_V_238/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_sozialversicherungsgericht_AB.2014.00026/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_sozialversicherungsgericht_AB.2014.00026 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_98_V_238 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_98_V_238/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4C.194_2002 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4C.194_2002/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-bgdAraqD.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/3ac443142a88 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_sozialversicherungsgericht_AB.2014.00026: 'Im BGE 133 V 556 entschied das Bundesgericht, dass die vom VBS in Form von Deckungskapitalien zu Gunsten einzelner versicherter Personen im Zusammenhang mit deren vorzeitiger Pensionierung der Pension'
+quote not found verbatim in bge_BGE_98_V_238: 'However, if the employee retires voluntarily without employer pressure, the normal contribution rules apply and the employer stops paying only the regular share at the normal retirement date.'
+quote cited from None found in bl_gerichte_735 18 26_164 instead
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote cited from zh_sozialversicherungsgericht_AB.2014.00026 found in gl_gerichte_VG.2015.00002 instead
+quote cited from bge_BGE_98_V_238 found in bge_BGE_127_V_301 instead
+quote cited from bl_gerichte_735 18 26_164 found in gl_gerichte_VG.2015.00002 instead
+quote not found verbatim in bger_4C.194_2002: "art. 10 al. 2 LPP (RS 831.40) hier prévoit la cessation de l'obligation d'assurance à la dissolution des rapports de travail. In casu, l'obligation de cotiser des parties a donc cessé à fin février 19"
+quote not found verbatim in bger_4C.194_2002: "art. 10 al. 2 LPP (RS 831.40) hier prévoit la cessation de l'obligation d'assurance à la dissolution des rapports de travail. In casu, l'obligation de cotiser des parties a donc cessé à fin février 19"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/3ac443142a88 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/97f962886567 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_23408_2023/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46104 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46112 - "POST /api/chat HTTP/1.1" 200 OK
+citation of unknown decision 'zh_obergericht_NG230012'
+quote not found verbatim in zh_mietgericht_MB180024-L: 'Es obliegt dem Empfänger der Kündigung zu beweisen, dass die Kündigung aus einem verpönten oder ohne schützenswerten Grund erfolgte. Treuwidrigkeit wird angenommen, wenn der angegebene Kündigungsgrund'
+INFO:     127.0.0.1:49502 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49502 - "GET /assets/index-bgdAraqD.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49518 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49502 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49518 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49502 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49518 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3142011]
+INFO:     Started server process [3197312]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:41204 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41220 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58886 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58902 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58910 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58902 - "GET /assets/index-C8kVJ3uN.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58902 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58910 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58910 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58902 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-C8kVJ3uN.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-Crs3uqtb.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/dcaf3c27fb88 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/sg_publikationen_K%202006_2%2C%20K%202006_3 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/sg_publikationen_K%202006_2%2C%20K%202006_3/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/sg_publikationen_K%202006_2%2C%20K%202006_3 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/sg_publikationen_K%202006_2%2C%20K%202006_3/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in weko_concessionari-volkswagen-decisione-del-23-maggio-2022: "La conseguenza giuridica di una violazione ai sensi dell'art. 49a cpv. 1 LCart è l'imposizione all'impresa inadempiente di un importo fino al 10 % della cifra d'affari realizzata in Svizzera negli ult"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_146_II_217 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bge_BGE_146_II_217/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK

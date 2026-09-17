@@ -1,6 +1,6 @@
 // Api over the FastAPI backend (src/swiss_court_assistant/server). In dev, Vite proxies /api.
 // Paths are relative to the page, so the app also works behind a path prefix (e.g. /coder/proxy/8090/).
-import type { Api, ChatEvent, Conversation, ConversationSummary, Decision, Health } from "./types";
+import type { Api, ChatEvent, Citations, Conversation, ConversationSummary, Decision, Health } from "./types";
 
 async function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(await errorText(res));
@@ -24,6 +24,8 @@ export const httpApi: Api = {
   listConversations: () => fetch("api/conversations").then((r) => json<ConversationSummary[]>(r)),
   getConversation: (id) => fetch(`api/conversations/${enc(id)}`).then((r) => json<Conversation>(r)),
   getDecision: (id) => fetch(`api/decisions/${enc(id)}`).then((r) => json<Decision>(r)),
+  getCitations: (id, limit = 20) =>
+    fetch(`api/decisions/${enc(id)}/citations?limit=${limit}`).then((r) => json<Citations>(r)),
 
   async translate(text, source, target) {
     const res = await fetch("api/translate", {

@@ -46,6 +46,8 @@ class Source(Model):
     decision: DecisionSummary
     explanation: str | None = None
     verified: bool = True
+    # whether the cited passage really states the sentence it is attached to; null = not checked
+    supported: bool | None = None
 
 
 class ToolCall(Model):
@@ -96,6 +98,24 @@ class TranslateResponse(Model):
     translation: str
     source: Language
     target: Language
+
+
+class CitingDecision(Model):
+    """A decision at the other end of a citation edge."""
+
+    decision_id: str
+    court: str | None = None
+    docket: str | None = None
+    date: str | None = None
+    in_corpus: bool = False  # part of this app's corpus, so it can be opened here
+
+
+class Citations(Model):
+    decision_id: str
+    cited_by_count: int
+    cites_count: int
+    cited_by: list[CitingDecision] = []
+    cites: list[CitingDecision] = []
 
 
 class SpeechRequest(Model):
