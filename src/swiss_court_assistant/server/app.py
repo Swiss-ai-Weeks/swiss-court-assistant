@@ -13,17 +13,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
+from fastapi import (Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket,
+                     WebSocketDisconnect)
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import tracing
 from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict
 from .decisions import DecisionStore
+from .documents import UnreadableError, extract, transcribe
+from .matters import MatterStore, Pipeline, create_matter, docx_memo, memo
 from .language import detect_language
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Conversation, ConversationSummary, Decision, Health,
-                      Message, Source, SpeechRequest, ToolCall, TranslateRequest, TranslateResponse)
+                      Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
+                      TranslateRequest, TranslateResponse)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
@@ -35,6 +39,8 @@ VECTOR_DB = Path(os.environ.get("SCA_VECTOR_DB", f"data/vectordb/{DECISIONS.stem
 KEYWORD_INDEX = VECTOR_DB.with_name(VECTOR_DB.stem + ".fts.sqlite")
 CITATION_INDEX = Path(os.environ.get("SCA_CITATIONS", f"data/graph/{DECISIONS.stem}.citations.sqlite"))
 DB = Path(os.environ.get("SCA_DB", "data/app/conversations.sqlite"))
+MATTERS_DB = Path(os.environ.get("SCA_MATTERS_DB", "data/app/matters.sqlite"))
+MAX_UPLOAD = 25 * 1024 * 1024  # a long recording or a scanned brief; anything larger is a mistake
 AGENT = os.environ.get("SCA_AGENT", "react")  # react | stub
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
 
@@ -50,6 +56,8 @@ class Services:
     speaker: Speaker
     listener: Listener
     citations: CitationIndex | None
+    matters: MatterStore
+    pipeline: Pipeline
 
 
 @asynccontextmanager
@@ -57,8 +65,10 @@ async def lifespan(app: FastAPI):
     tracing.setup()  # before the agent is built, so LangChain autologging patches it
     decisions = DecisionStore(DECISIONS)
     citations = open_index(CITATION_INDEX, set(decisions.df["decision_id"].to_list()))
-    app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
-                                  Speaker(), Listener(), citations)
+    agent = _make_agent(decisions, citations)
+    matters = MatterStore(MATTERS_DB)
+    app.state.services = Services(decisions, ConversationStore(DB), agent, Translator(),
+                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters))
     log.info("loaded %d decisions; agent=%s", len(decisions), app.state.services.agent.name)
     yield
 
@@ -176,6 +186,91 @@ def _title(text: str) -> str:
 
 def _sse(event: dict[str, Any]) -> str:
     return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+
+# ── matters: a client case through intake, research, assessment and drafting ──
+async def _facts(s: Services, file: UploadFile | None, text: str | None) -> tuple[str, str | None, str]:
+    """What the client handed over, as text: a document, a recording, or typed notes."""
+    if file is not None and file.filename:
+        data = await file.read()
+        if len(data) > MAX_UPLOAD:
+            raise HTTPException(413, "That file is larger than 25 MB.")
+        try:
+            if file.filename.endswith(".pcm"):  # the browser decoded the recording for us
+                return await transcribe(s.listener, data), file.filename, "recording"
+            return await asyncio.to_thread(extract, file.filename, data), file.filename, "document"
+        except UnreadableError as e:
+            raise HTTPException(422, str(e)) from e
+        except Exception as e:
+            log.exception("could not read %s", file.filename)
+            raise HTTPException(502, "That file could not be read right now.") from e
+    if text and text.strip():
+        return text.strip(), None, "text"
+    raise HTTPException(422, "Add a document, a recording, or the facts as text.")
+
+
+@app.get("/api/matters", response_model=list[MatterSummary])
+async def list_matters(s: Svc) -> list[MatterSummary]:
+    return s.matters.list()
+
+
+@app.post("/api/matters", response_model=Matter)
+async def new_matter(s: Svc, file: UploadFile | None = File(None), text: str | None = Form(None),
+                     title: str | None = Form(None)) -> Matter:
+    facts, name, kind = await _facts(s, file, text)
+    return create_matter(s.matters, facts, name, kind, title)
+
+
+@app.post("/api/matters/text", response_model=Matter)
+async def new_matter_from_text(req: MatterRequest, s: Svc) -> Matter:
+    return create_matter(s.matters, req.text.strip(), None, "text", req.title)
+
+
+@app.get("/api/matters/{matter_id}", response_model=Matter)
+async def get_matter(matter_id: str, s: Svc) -> Matter:
+    matter = s.matters.get(matter_id)
+    if matter is None:
+        raise HTTPException(404, "Matter not found")
+    return matter
+
+
+@app.delete("/api/matters/{matter_id}", status_code=204)
+async def delete_matter(matter_id: str, s: Svc) -> Response:
+    if not s.matters.delete(matter_id):
+        raise HTTPException(404, "Matter not found")
+    return Response(status_code=204)
+
+
+DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+@app.get("/api/matters/{matter_id}/memo")
+async def matter_memo(matter_id: str, s: Svc, format: str = "docx") -> Response:
+    """The memo as a Word file for the client file (`?format=md` for the Markdown behind it)."""
+    matter = s.matters.get(matter_id)
+    if matter is None:
+        raise HTTPException(404, "Matter not found")
+    name = re.sub(r"[^\w\-]+", "-", matter.title).strip("-").lower() or "memo"
+    if format == "md":
+        return Response(matter.memo or memo(matter), media_type="text/markdown; charset=utf-8",
+                        headers={"Content-Disposition": f'attachment; filename="{name}.md"'})
+    body = await asyncio.to_thread(docx_memo, matter)
+    return Response(body, media_type=DOCX_TYPE,
+                    headers={"Content-Disposition": f'attachment; filename="{name}.docx"'})
+
+
+@app.post("/api/matters/{matter_id}/run")
+async def run_matter(matter_id: str, s: Svc) -> StreamingResponse:
+    matter = s.matters.get(matter_id)
+    if matter is None:
+        raise HTTPException(404, "Matter not found")
+
+    async def stream() -> AsyncIterator[str]:
+        async for event in s.pipeline.run(matter):
+            yield _sse(event)
+
+    return StreamingResponse(stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"})
 
 
 @app.post("/api/chat")

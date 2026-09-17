@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type ChatEvent, type ConversationSummary, type Health, type Message } from "./api";
+import { api, type ChatEvent, type ConversationSummary, type Health, type MatterSummary, type Message,
+  type Source } from "./api";
 import { startVoice, type VoiceEvent, type VoiceSession } from "./voice";
 import Composer from "./components/Composer";
 import Logo from "./components/Logo";
+import MatterPage from "./components/MatterPage";
 import Preview from "./components/Preview";
 import SelectionTools, { type Quote } from "./components/SelectionTools";
 import Sidebar from "./components/Sidebar";
 import Thread, { type PendingTurn, type Selection } from "./components/Thread";
 import Welcome from "./components/Welcome";
 
+type Page = "chat" | "matters";
+
 export default function App() {
+  const [page, setPage] = useState<Page>("chat");
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [matters, setMatters] = useState<MatterSummary[]>([]);
+  const [matterId, setMatterId] = useState<string | null>(null);
+  // a cited passage opened from a matter; the chat page opens its own from `selection`
+  const [matterPreview, setMatterPreview] = useState<{ sources: Source[]; n: number } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [pending, setPending] = useState<PendingTurn | null>(null);
@@ -31,10 +40,27 @@ export default function App() {
     () => api.listConversations().then(setConversations, (e) => console.error("history:", e)),
     [],
   );
+  const refreshMatters = useCallback(
+    () => api.listMatters().then(setMatters, (e) => console.error("matters:", e)),
+    [],
+  );
   useEffect(() => {
     refreshList();
+    refreshMatters();
     api.health().then(setHealth, () => setHealth("offline"));
-  }, [refreshList]);
+  }, [refreshList, refreshMatters]);
+
+  const openMatter = (id: string | null) => {
+    setMatterId(id);
+    setMatterPreview(null);
+    setSidebarOpen(false);
+  };
+
+  const deleteMatter = async (id: string) => {
+    await api.deleteMatter(id);
+    if (id === matterId) openMatter(null);
+    refreshMatters();
+  };
 
   const openConversation = async (id: string | null) => {
     abort.current?.abort();
@@ -218,55 +244,100 @@ export default function App() {
           <Logo className="wordmark-logo" />
           Swiss Court Assistant
         </div>
+        <div className="tabs" role="tablist">
+          <button role="tab" aria-selected={page === "chat"} className={page === "chat" ? "active" : ""}
+            onClick={() => setPage("chat")}>
+            Assistant
+          </button>
+          <button role="tab" aria-selected={page === "matters"} className={page === "matters" ? "active" : ""}
+            onClick={() => setPage("matters")}>
+            Matters
+          </button>
+        </div>
       </nav>
 
-      <div className={`body${showPreview ? " with-preview" : ""}`}>
-        <Sidebar
-          conversations={conversations}
-          activeId={activeId}
-          open={sidebarOpen}
-          onNew={() => openConversation(null)}
-          onSelect={openConversation}
-          onDelete={deleteConversation}
-        />
+      <div className={`body${(page === "chat" ? showPreview : !!matterPreview) ? " with-preview" : ""}`}>
+        {page === "chat" ? (
+          <Sidebar
+            items={conversations}
+            label="History"
+            newLabel="New conversation"
+            emptyLabel="No conversations yet."
+            activeId={activeId}
+            open={sidebarOpen}
+            onNew={() => openConversation(null)}
+            onSelect={openConversation}
+            onDelete={deleteConversation}
+          />
+        ) : (
+          <Sidebar
+            items={matters}
+            label="Matters"
+            newLabel="New matter"
+            emptyLabel="No matters yet."
+            activeId={matterId}
+            open={sidebarOpen}
+            onNew={() => openMatter(null)}
+            onSelect={openMatter}
+            onDelete={deleteMatter}
+          />
+        )}
         <div className={`backdrop${sidebarOpen ? " show" : ""}`} onClick={() => setSidebarOpen(false)} />
 
-        <main className="chat">
-          {messages.length === 0 && !pending ? (
-            <div className="thread">
-              <Welcome onAsk={send} />
-            </div>
-          ) : (
-            <Thread
-              messages={messages}
-              pending={pending}
-              selection={selection}
-              onOpenSource={(messageId, n) => setSelection({ messageId, n })}
-            />
-          )}
-          {(voice || voiceError) && (
-            <div className={`voice-bar${speaking ? " speaking" : ""}`}>
-              <span className="voice-dot" />
-              <span className="voice-state">{voiceError ?? (speaking ? "Speaking" : "Listening")}</span>
-              {!voiceError && <span className="voice-heard">{heard || voiceHint}</span>}
-              <button className="voice-stop" onClick={voice ? toggleVoice : () => setVoiceError(null)}>
-                {voice ? "Stop voice" : "Dismiss"}
-              </button>
-            </div>
-          )}
-          <Composer busy={busy} demo={health !== null && health !== "offline" && health.agent === "stub"} quote={quote}
-            voiceOn={!!voice} onToggleVoice={toggleVoice}
-            onClearQuote={() => setQuote(null)} onSend={send} onStop={() => abort.current?.abort()} />
-        </main>
+        {page === "chat" ? (
+          <main className="chat">
+            {messages.length === 0 && !pending ? (
+              <div className="thread">
+                <Welcome onAsk={send} />
+              </div>
+            ) : (
+              <Thread
+                messages={messages}
+                pending={pending}
+                selection={selection}
+                onOpenSource={(messageId, n) => setSelection({ messageId, n })}
+              />
+            )}
+            {(voice || voiceError) && (
+              <div className={`voice-bar${speaking ? " speaking" : ""}`}>
+                <span className="voice-dot" />
+                <span className="voice-state">{voiceError ?? (speaking ? "Speaking" : "Listening")}</span>
+                {!voiceError && <span className="voice-heard">{heard || voiceHint}</span>}
+                <button className="voice-stop" onClick={voice ? toggleVoice : () => setVoiceError(null)}>
+                  {voice ? "Stop voice" : "Dismiss"}
+                </button>
+              </div>
+            )}
+            <Composer busy={busy} demo={health !== null && health !== "offline" && health.agent === "stub"} quote={quote}
+              voiceOn={!!voice} onToggleVoice={toggleVoice}
+              onClearQuote={() => setQuote(null)} onSend={send} onStop={() => abort.current?.abort()} />
+          </main>
+        ) : (
+          <MatterPage
+            matterId={matterId}
+            onOpenMatter={openMatter}
+            onChanged={refreshMatters}
+            onOpenSource={(sources, n) => setMatterPreview({ sources, n })}
+          />
+        )}
         <SelectionTools onReply={setQuote} />
 
-        {showPreview && (
+        {page === "chat" && showPreview && (
           <Preview
             sources={selectedSources}
             activeN={selection!.n}
             language={selectedLanguage}
             onSelect={(n) => setSelection((s) => s && { ...s, n })}
             onClose={() => setSelection(null)}
+          />
+        )}
+        {page === "matters" && matterPreview && (
+          <Preview
+            sources={matterPreview.sources}
+            activeN={matterPreview.n}
+            language={null}
+            onSelect={(n) => setMatterPreview((p) => p && { ...p, n })}
+            onClose={() => setMatterPreview(null)}
           />
         )}
       </div>

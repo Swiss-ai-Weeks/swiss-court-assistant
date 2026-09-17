@@ -128,3 +128,48 @@ class Health(Model):
     agent: str
     decisions: int
     speech_languages: list[str] = []  # what the ASR NIM understands; empty when it is not reachable
+
+
+# ── matters: one client case, worked through intake, research, assessment and drafting ──
+MatterStage = Literal["new", "intake", "research", "assessment", "drafting", "done"]
+
+
+class Issue(Model):
+    """One legal question hidden in the client's story, and what the research found on it."""
+
+    n: int
+    question: str
+    why: str  # why it decides this case
+    area: str | None = None
+    answer: str | None = None
+    sources: list[Source] | None = None
+
+
+class Intake(Model):
+    summary: str
+    parties: list[str] = []
+    timeline: list[str] = []  # dated facts, in order
+
+
+class MatterSummary(Model):
+    id: str
+    title: str
+    stage: MatterStage = "new"
+    source_name: str | None = None
+    source_kind: Literal["document", "recording", "text"] = "text"
+    created_at: str
+    updated_at: str
+
+
+class Matter(MatterSummary):
+    language: str
+    facts: str  # the client's story as text, however it arrived
+    intake: Intake | None = None
+    issues: list[Issue] = []
+    assessment: str | None = None
+    memo: str | None = None
+
+
+class MatterRequest(Model):
+    title: str | None = None
+    text: str = Field(min_length=20, max_length=40_000)

@@ -100,7 +100,7 @@ function UserTurn({ text }: { text: string }) {
   );
 }
 
-const TOOL_LABEL: Record<string, string> = {
+export const TOOL_LABEL: Record<string, string> = {
   semantic_search: "Semantic search",
   keyword_search: "Keyword search",
   read_decision: "Read decision",

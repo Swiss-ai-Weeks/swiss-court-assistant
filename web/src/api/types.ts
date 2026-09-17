@@ -120,6 +120,67 @@ export type ChatEvent =
   | { type: "done"; message: Message }
   | { type: "error"; message: string };
 
+// ── matters: one client case through intake, research, assessment and drafting ──
+export type MatterStage = "new" | "intake" | "research" | "assessment" | "drafting" | "done";
+
+export interface Issue {
+  n: number;
+  question: string;
+  /** Why this question decides the case. */
+  why: string;
+  area: string | null;
+  /** Markdown with [n] citations into `sources`; null until the research has run. */
+  answer: string | null;
+  sources: Source[] | null;
+}
+
+export interface Intake {
+  summary: string;
+  parties: string[];
+  timeline: string[];
+}
+
+export interface MatterSummary {
+  id: string;
+  title: string;
+  stage: MatterStage;
+  sourceName: string | null;
+  sourceKind: "document" | "recording" | "text";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Matter extends MatterSummary {
+  language: string;
+  /** The client's story as text, however it arrived. */
+  facts: string;
+  intake: Intake | null;
+  issues: Issue[];
+  assessment: string | null;
+  memo: string | null;
+}
+
+export type MatterEvent =
+  | { type: "stage"; stage: MatterStage; status: "running" | "done" }
+  | { type: "intake"; title: string; intake: Intake; issues: Issue[] }
+  | { type: "issue_start"; n: number }
+  | { type: "issue_tool"; n: number; name: string; arg: string }
+  | { type: "issue_delta"; n: number; text: string }
+  | { type: "issue_citation"; n: number; source: Source }
+  | { type: "issue_verdict"; n: number; source: number; supported: boolean }
+  | { type: "issue_done"; n: number; issue: Issue }
+  | { type: "assessment_delta"; text: string }
+  | { type: "done"; matter: Matter }
+  | { type: "error"; stage: MatterStage; message: string };
+
+/** What the client handed over: a file (document or audio), or the facts typed in. */
+export interface MatterInput {
+  file?: File | Blob;
+  filename?: string;
+  text?: string;
+  title?: string;
+}
+
 export interface Api {
   health(): Promise<Health>;
   listConversations(): Promise<ConversationSummary[]>;
@@ -134,4 +195,13 @@ export interface Api {
   speech(text: string, language: string, signal?: AbortSignal): Promise<{ sampleRate: number; stream: ReadableStream<Uint8Array> }>;
   /** Streams one assistant turn. A null conversationId starts a new conversation. */
   chat(conversationId: string | null, text: string, signal?: AbortSignal): AsyncIterable<ChatEvent>;
+  listMatters(): Promise<MatterSummary[]>;
+  getMatter(id: string): Promise<Matter>;
+  /** Reads the document or recording and opens a matter on it; nothing is researched yet. */
+  createMatter(input: MatterInput): Promise<Matter>;
+  deleteMatter(id: string): Promise<void>;
+  /** Runs the matter through intake, research, assessment and drafting. */
+  runMatter(id: string, signal?: AbortSignal): AsyncIterable<MatterEvent>;
+  /** Where the drafted memo can be downloaded as Markdown. */
+  memoUrl(id: string): string;
 }

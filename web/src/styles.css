@@ -403,3 +403,104 @@ mark.hl.active { background: #fbdc6a; }
   .thread-inner, .composer-inner { padding-inline: var(--space-lg); }
   .preview { width: 100%; }
 }
+
+/* ── matters: intake → research → assessment → drafting ─── */
+.tabs { display: flex; gap: var(--space-lg); margin-left: var(--space-xl); }
+.tabs button {
+  background: none; border: 0; border-bottom: 2px solid transparent; color: var(--on-dark-mute);
+  font-size: 14px; font-weight: 700; height: 56px; padding: 0 var(--space-xxs);
+}
+.tabs button.active { color: var(--on-dark); border-bottom-color: var(--primary); }
+
+.matter { overflow-y: auto; min-width: 0; }
+.matter-inner, .intake { max-width: 860px; margin: 0 auto; padding: var(--space-xxl) var(--space-xl) 64px; }
+.matter-head h1 { font-size: 30px; line-height: 1.25; font-weight: 700; color: var(--ink); margin: 0 0 var(--space-lg); }
+.matter-actions { display: flex; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg); }
+.matter-actions .btn-outline, .matter-actions .btn-primary {
+  width: auto; height: 40px; font-size: 14px; display: inline-flex; align-items: center; text-decoration: none;
+}
+
+/* the five stages, the last one greyed out because it is outside what this app does */
+.stage-rail { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-md); margin: var(--space-xl) 0 var(--space-xxl); padding: 0; }
+.stage { border-top: 2px solid var(--hairline); padding-top: var(--space-sm); }
+.stage.done { border-top-color: var(--primary); }
+.stage.running, .stage.current { border-top-color: var(--ink); }
+.stage.out { opacity: 0.45; }
+.stage-dot { display: none; }
+.stage.running .stage-dot { display: block; width: 8px; height: 8px; background: var(--primary); margin-bottom: var(--space-xs); animation: pulse 1s ease-in-out infinite; }
+.stage-label { display: block; font-size: 13px; font-weight: 700; color: var(--ink); }
+.stage.out .stage-label { color: var(--mute); }
+.stage-hint { display: block; font-size: 12px; line-height: 1.45; color: var(--mute); margin-top: var(--space-xxs); }
+
+.matter-block { margin-bottom: var(--space-xxl); }
+.matter-block > h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); border-bottom: 1px solid var(--hairline); padding-bottom: var(--space-sm); margin: 0 0 var(--space-lg); }
+.facts { font-size: 16px; line-height: 1.6; margin: 0 0 var(--space-lg); color: var(--body); }
+.facts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-xl); }
+.facts-grid h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); margin: 0 0 var(--space-sm); }
+.facts-grid ul { margin: 0; padding-left: var(--space-lg); font-size: 14px; line-height: 1.6; }
+
+.issue { margin-bottom: var(--space-xxl); }
+.issue h3 { display: flex; gap: var(--space-md); align-items: baseline; font-size: 18px; line-height: 1.4; color: var(--ink); margin: 0 0 var(--space-sm); }
+.issue-n { flex: none; width: 24px; height: 24px; background: var(--primary); color: var(--ink); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.issue-why { font-size: 14px; color: var(--mute); margin: 0 0 var(--space-md); display: flex; gap: var(--space-md); align-items: baseline; flex-wrap: wrap; }
+.issue-area { border: 1px solid var(--hairline); padding: 0 var(--space-sm); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+.issue-tools { list-style: none; margin: 0 0 var(--space-md); padding: 0; font-size: 13px; color: var(--mute); }
+.issue-tools li { padding: var(--space-xxs) 0; border-left: 2px solid var(--hairline); padding-left: var(--space-md); }
+
+/* the memo reads as the document it becomes in Word, not as a dump of Markdown */
+.memo {
+  background: var(--canvas); border: 1px solid var(--hairline);
+  padding: var(--space-xxl) var(--space-xxl) var(--space-xl);
+  font-size: 15px; line-height: 1.65; color: var(--body);
+}
+.memo h1 { font-size: 24px; line-height: 1.3; font-weight: 700; color: var(--ink); margin: 0 0 var(--space-xs); }
+.memo h1 + p em { font-size: 12px; color: var(--mute); font-style: normal; letter-spacing: 0.03em; text-transform: uppercase; }
+.memo h2 {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute);
+  border-bottom: 1px solid var(--hairline); padding-bottom: var(--space-xs);
+  margin: var(--space-xl) 0 var(--space-md);
+}
+.memo h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin: var(--space-lg) 0 var(--space-xs); }
+.memo h3 + p em { color: var(--mute); font-style: italic; }
+.memo ol, .memo ul { padding-left: var(--space-xl); }
+.memo ol li { margin-bottom: var(--space-sm); }
+.memo a { color: var(--link-blue); overflow-wrap: anywhere; font-size: 13px; }
+.memo p:last-child { margin-bottom: 0; }
+
+.next-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); }
+.next-card { position: relative; border: 1px solid var(--hairline); padding: var(--space-xl); padding-top: 28px; }
+.next-card.planned { opacity: 0.6; }
+.next-card.planned .corner-square { background: var(--hairline); }
+.next-state { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); }
+.next-card h3 { font-size: 16px; margin: var(--space-xs) 0 var(--space-sm); color: var(--ink); }
+.next-card p { font-size: 14px; line-height: 1.5; color: var(--body); margin: 0; }
+
+/* intake: what the client handed over */
+.intake h1 { font-size: 34px; line-height: 1.25; font-weight: 700; color: var(--ink); margin: 0 0 var(--space-lg); }
+.intake-lead { font-size: 17px; line-height: 1.6; max-width: 640px; margin: 0 0 var(--space-xxl); }
+.dropzone { border: 2px dashed var(--hairline); padding: var(--space-xxl); text-align: center; }
+.dropzone.over { border-color: var(--primary); background: var(--surface-soft); }
+.dropzone.busy { opacity: 0.6; }
+.dropzone-main { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0 0 var(--space-xs); }
+.dropzone-hint { font-size: 14px; color: var(--mute); margin: 0 0 var(--space-lg); }
+.dropzone-actions { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
+.dropzone-actions .btn-outline { width: auto; height: 40px; font-size: 14px; }
+.dropzone-actions .btn-outline.recording { border-color: var(--error); color: var(--error); }
+.intake-text { margin-top: var(--space-xl); }
+.intake-text label { display: block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute); margin-bottom: var(--space-sm); }
+.intake-text textarea { width: 100%; border: 1px solid var(--hairline); border-radius: var(--rounded-sm); padding: var(--space-md); font-size: 15px; line-height: 1.6; resize: vertical; }
+.intake-text textarea:focus { outline: 2px solid var(--primary); outline-offset: -2px; }
+.intake-text .btn-primary { margin-top: var(--space-md); }
+.intake-note { font-size: 13px; color: var(--mute); margin-top: var(--space-xl); }
+
+@media (max-width: 900px) {
+  .stage-rail { grid-template-columns: 1fr 1fr; }
+  .tabs { margin-left: var(--space-md); gap: var(--space-md); }
+}
+
+/* the upload is a slow silence — transcription takes about as long as the recording */
+.working { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
+.working .dot { width: 8px; height: 8px; background: var(--primary); animation: pulse 1s ease-in-out infinite; }
+.working-main { font-size: 18px; font-weight: 700; color: var(--ink); margin: var(--space-sm) 0 0; }
+.working-hint { font-size: 14px; color: var(--mute); margin: 0; }
+.matter .status-line { margin-bottom: var(--space-xl); }

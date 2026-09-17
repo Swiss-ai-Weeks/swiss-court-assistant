@@ -48,6 +48,11 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `POST /api/speech` `{text, language}` | read aloud by the Magpie TTS NIM: 16-bit mono PCM streamed sentence by sentence (rate in `X-Sample-Rate`); `[n]` markers and markdown are dropped |
 | `WS /api/voice` | voice mode: 16 kHz PCM from the microphone in; `partial` transcripts, the same turn events as `/api/chat`, and the spoken answer (PCM frames between `speech_start`/`speech_end`) out. Any speech sends `cancel_speech` (the browser drops audio it has not played yet — the server is always ahead) and cancels a running turn, which is saved with a "cut off" marker. The answer starts only after `SCA_VOICE_PAUSE` seconds of silence (default 1.2, ≈2 s after the speaker stops), joining everything heard since the last pause, so an end-of-utterance mid-sentence does not trigger an answer |
 | `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
+| `GET /api/matters`, `GET/DELETE /api/matters/{id}` | matters (see below) |
+| `POST /api/matters` (multipart `file`/`text`/`title`) | opens a matter on what the client handed over: a PDF, a Word file, plain text, or a recording already decoded to 16 kHz PCM (`*.pcm`), which is transcribed by the ASR NIM |
+| `POST /api/matters/text` `{text, title?}` | the same, for facts typed in |
+| `POST /api/matters/{id}/run` | `text/event-stream` of the four stages: `stage`, `intake`, then per issue `issue_start`/`issue_tool`/`issue_delta`/`issue_citation`/`issue_verdict`/`issue_done`, then `assessment_delta`, `done` or `error` |
+| `GET /api/matters/{id}/memo` | the drafted memo as a Word file (`?format=md` for the Markdown behind it) |
 
 **Grounding check.** Every citation is checked against the sentence it supports: a short constrained
 call (`{"supported": true|false}`) asks whether that passage states that sentence, judged on the
@@ -65,6 +70,42 @@ Selecting any text in the answer or in the decision opens a small toolbar (`Sele
 not editable; × or Esc removes it) for a follow-up question. The message is sent with the quote
 as `> …` lines plus a `> — court docket` line, and the thread shows it as the same card. Quoted lines are ignored when detecting the question's language
 and for the conversation title; the agent's prompt says they are the text the question is about.
+
+### Matters: intake → research → assessment → drafting
+
+A second page (`Matters` in the top bar) works a whole client case rather than one question. A case
+in a firm moves through five stages; four of them are things software can touch, and the fifth is
+shown greyed out because it is practice management, not case law:
+
+1. **Intake** — one constrained call over the client's document or recording returns the matter
+   title, the facts as given, the parties, a dated timeline and up to four legal questions
+   (`Pipeline._intake`). A question that names a statute article the client's own text never
+   mentions has it stripped (`without_invented_articles`): the model guesses article numbers from
+   memory, and a wrong one sends the research after the wrong provision.
+2. **Research** — each issue runs through the ordinary agent (`Agent.answer`), so it gets the same
+   per-language searches, citations, verbatim quotes and grounding checks as a chat question. The
+   page shows the searches as they happen and streams each answer.
+3. **Assessment** — one call over the researched issues only: where the client stands, what is in
+   their favour, what the other side will argue, what is still open. The citation markers are
+   renumbered onto the memo's running series first, so `[3]` means the same decision everywhere.
+4. **Drafting** — the memo is *assembled*, not rewritten by a model (`matters.memo` for Markdown,
+   `matters.docx_memo` for Word): facts, parties, timeline, every issue with its researched answer,
+   the assessment, and a table of authorities where a citation that failed its grounding check is
+   flagged. Headings follow the matter's language. The page downloads it as `.docx` for the client
+   file; the Markdown stays behind `?format=md` and the "Copy as Markdown" button.
+
+Opening a matter whose stage is still `new` starts the run by itself. That has to happen in the
+load effect rather than right after the upload: selecting the freshly created matter re-runs the
+effect, which aborts whatever stream is open — a run started before that arrived was cancelled a
+moment after it began, and the page just sat there. While the upload is being read (ASR on a
+recording takes about as long as the recording lasted) the intake screen says so, and a running
+matter shows which stage and which issue it is on.
+
+Recordings are decoded in the browser (`web/src/audio.ts`): `AudioContext.decodeAudioData` plus an
+`OfflineAudioContext` at 16 kHz turn any format the browser can play — or a recording made in the
+page — into the mono PCM the ASR NIM wants, so the server needs no ffmpeg. Matters are stored in
+`data/app/matters.sqlite` (`SCA_MATTERS_DB`), and each stage is saved as it finishes, so a browser
+that disconnects loses the stream, not the work.
 
 ### The agent
 
