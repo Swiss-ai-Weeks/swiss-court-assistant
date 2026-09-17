@@ -1,0 +1,24 @@
+[project]
+name = "asr-finetune"
+version = "0.1.0"
+description = "Fine-tune Whisper on SwissDial: Swiss German speech -> High German text"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.14.0",
+    "transformers>=5.17.0",
+    "accelerate>=1.0",
+    "peft>=0.18",
+    "soundfile>=0.13",
+    "librosa>=0.11",
+    "numpy>=2.0",
+    "jiwer>=4.0",
+    "sacrebleu>=2.4",
+    "tensorboard>=2.18",
+    "tqdm>=4.67",
+]
+
+[dependency-groups]
+serve = ["fastapi>=0.141.1", "uvicorn[standard]>=0.53.0", "python-multipart>=0.0.20"]
+
+[tool.uv]
+package = false

@@ -73,22 +73,30 @@ class NimEncoder:
     # Small batches, many in flight: best measured on one H100 (~130 passages/s,
     # GPU-bound; 64 x 16 gave ~100/s).
     def __init__(self, cfg: dict, batch_size: int = 16, concurrency: int = 128):
-        self.url = os.environ.get(cfg["url_env"], cfg["url"])
+        # one NIM saturates one GPU; a comma-separated list (one instance per GPU) is used round-robin
+        self.urls = [u.strip() for u in os.environ.get(cfg["url_env"], cfg["url"]).split(",") if u.strip()]
+        self.url = self.urls[0]
         self.model, self.batch_size, self.concurrency = cfg["model"], batch_size, concurrency
 
     def embed(self, texts: list[str], input_type: str) -> np.ndarray:
+        from contextlib import AsyncExitStack
+
         from openai import AsyncOpenAI
         from tqdm.asyncio import tqdm_asyncio
 
         async def run() -> list[np.ndarray]:
             sem = asyncio.Semaphore(self.concurrency)
-            # close the client inside the loop, or its transport is torn down after it
-            async with AsyncOpenAI(base_url=self.url, api_key="nim", timeout=600, max_retries=5) as client:
+            # close the clients inside the loop, or their transports are torn down after it
+            async with AsyncExitStack() as stack:
+                clients = [await stack.enter_async_context(
+                    AsyncOpenAI(base_url=u, api_key="nim", timeout=600, max_retries=5)) for u in self.urls]
 
-                async def one(batch: list[str]) -> np.ndarray:
+                async def one(i: int, batch: list[str]) -> np.ndarray:
                     async with sem:
-                        r = await client.embeddings.create(
-                            model=self.model, input=batch, encoding_format="float",
+                        # no encoding_format: the SDK then asks for base64 and decodes it with numpy,
+                        # which measured 165 vs 100 passages/s — parsing JSON floats was the bottleneck
+                        r = await clients[i % len(clients)].embeddings.create(
+                            model=self.model, input=batch,
                             extra_body={"input_type": input_type, "truncate": "END"},
                         )
                     # to float32 right away: 800k vectors as Python floats would not fit
@@ -96,8 +104,8 @@ class NimEncoder:
                                       dtype=np.float32)
 
                 batches = [texts[i:i + self.batch_size] for i in range(0, len(texts), self.batch_size)]
-                return await tqdm_asyncio.gather(*(one(b) for b in batches), desc=f"embed {input_type}",
-                                                 disable=len(batches) < 10)
+                return await tqdm_asyncio.gather(*(one(i, b) for i, b in enumerate(batches)),
+                                                 desc=f"embed {input_type}", disable=len(batches) < 10)
 
         emb = np.concatenate(asyncio.run(run()))
         return emb / np.linalg.norm(emb, axis=1, keepdims=True)

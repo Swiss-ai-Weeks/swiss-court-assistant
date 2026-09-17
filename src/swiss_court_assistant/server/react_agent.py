@@ -6,6 +6,7 @@ import logging
 import re
 from collections import Counter
 from collections.abc import AsyncIterator
+from contextvars import ContextVar
 from typing import Annotated, Literal
 
 from langchain.agents import create_agent
@@ -26,8 +27,50 @@ log = logging.getLogger(__name__)
 
 READ_WINDOW = 8000
 MAX_TOOL_CALLS = 8  # then the agent has to write the answer
+# Left alone, the agent searches until it runs out of calls, rewording the same query (traced: 8
+# near-identical semantic_search calls for a question the corpus cannot answer). Remind it earlier.
+NUDGE_AFTER = 4
+NUDGE = ("You have used {used} of {max_calls} tool calls. If the passages so far do not answer the "
+         "question, call write_answer now and say that this corpus does not answer it: searching "
+         "again with similar wording returns the same passages.")
 LANGUAGE_NAMES = {"de": "German", "fr": "French", "it": "Italian", "rm": "Romansh", "en": "English"}
 RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
+
+# Asking the agent not to repeat a search only works if it notices that it is, so each turn
+# remembers what it has searched for. Queries are compared as token sets, because the repeats are
+# rewordings, not copies ("DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO Wettbewerbsrecht").
+# The store is per turn, not per process: `make_tools` runs once and its tools are shared.
+SAME_SEARCH = 0.8  # Jaccard overlap at which two searches count as the same
+_searches: ContextVar[list[frozenset[str]] | None] = ContextVar("searches", default=None)
+
+
+def _tokens(text: str) -> frozenset[str]:
+    """Words of three letters or more: "de", "la", "der" are in every query and distinguish nothing."""
+    return frozenset(w for w in re.findall(r"\w+", text.lower()) if len(w) >= 3)
+
+
+def _already_searched(text: str) -> str | None:
+    """Remembers this search and, when it repeats one from this turn, says which.
+
+    Two measures, because the traced repeats were of both kinds: rewording keeps most of the words
+    (Jaccard), and dropping words searches for nothing the earlier query did not already cover
+    (how much of this query it contained) — "DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO
+    Wettbewerbsrecht" only reaches a Jaccard of 0.73, but is fully contained.
+    """
+    searches = _searches.get()
+    if searches is None:  # outside a turn (a tool called directly, e.g. from a test)
+        return None
+    tokens = _tokens(text)
+    for n, seen in enumerate(searches, 1):
+        if not tokens or not seen:
+            continue
+        both = len(tokens & seen)
+        if max(both / len(tokens | seen), both / len(tokens)) >= SAME_SEARCH:
+            return (f"This is search {n} again, so it returns the same passages. Search for something "
+                    f"different, use another tool, or call write_answer and report what the passages "
+                    f"found so far do and do not say.")
+    searches.append(tokens)
+    return None
 
 
 # ── structured answer ───────────────────────────────────────────────────
@@ -69,12 +112,14 @@ Research the user's question with the tools, then call write_answer.
 - citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
 - write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. You have at most {max_calls} tool calls.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
+Never repeat a search you have already made: near-identical wording returns the same passages. If two searches with clearly different wording bring back nothing on point, stop and call write_answer. This corpus is a subset of Swiss case law, so many questions — foreign law such as the EU GDPR, statutes no court here applied, recent events — have no answer in it at all. Reporting that is a correct answer; assembling one out of loosely related passages is not.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
 
 ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using only the tool results in this conversation, answer the user's last question as a JSON object {"answer": [...]} whose parts alternate between text and citations:
 - A "text" part holds one or two sentences of the answer (Markdown allowed). Write in the language of the user's question and name decisions by court and docket number.
 - A "citation" part follows the text it supports. It gives the decision_id of a passage from the tool results, its chunk_id (only for search results; null for text read with read_decision), a "quote" copied character for character from that passage in the decision's own language (never translated or shortened; one to three consecutive sentences, at most about 300 characters), and an "explanation": one sentence in the user's language on why the passage supports the text.
-- Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results. If the results do not answer the question, say so and summarize what was found.
+- Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results — neither from your own legal knowledge nor from an earlier answer in this conversation. Earlier turns tell you what is being asked; they are never a source, and an earlier answer is never repeated as the new one.
+- If the tool results do not answer the question, say so plainly in one or two text parts with no citations at all: name what was searched for and what those passages are actually about. Do not stretch a loosely related passage into an answer.
 
 Shape:
 {"answer": [
@@ -82,6 +127,11 @@ Shape:
   {"type": "citation", "decision_id": "<from a tool result>", "chunk_id": "<from a tool result>", "quote": "<verbatim>", "explanation": "<why it supports the statement>"},
   {"type": "text", "text": "Second statement."},
   {"type": "citation", "decision_id": "...", "chunk_id": "...", "quote": "...", "explanation": "..."}
+]}
+
+When the results do not answer the question, the whole answer is text:
+{"answer": [
+  {"type": "text", "text": "The decisions found do not answer this. Searches for X returned only passages about Y."}
 ]}"""
 
 
@@ -125,6 +175,8 @@ def make_tools(corpus: Corpus) -> list:
         way a Swiss court writes in that language, with its legal terms and statute abbreviations
         (OR / CO / CO). Each query searches only the decisions in its language. Returns the best
         passages with decision_id and chunk_id."""
+        if repeat := _already_searched(f"{query_de} {query_fr} {query_it}"):
+            return repeat, {"summary": "repeats an earlier search"}
         try:
             hits = await corpus.semantic_search_by_language({"de": query_de, "fr": query_fr, "it": query_it})
         except Exception as e:
@@ -139,6 +191,8 @@ def make_tools(corpus: Corpus) -> list:
     async def keyword_search(keyword: str) -> tuple[str, dict]:
         """Full-text search for exact words in the decisions. Text in double quotes is an exact
         phrase ("Art. 271a OR", "4A_705/2016"); other words must all appear. Returns passages."""
+        if repeat := _already_searched(keyword):
+            return repeat, {"summary": "repeats an earlier search"}
         try:
             text, artifact = _hits_result(await corpus.keyword_search(keyword))
         except Exception as e:
@@ -219,7 +273,10 @@ class ResearchThenAnswer(AgentMiddleware):
         used = sum(isinstance(m, ToolMessage) for m in request.messages)
         choice = ({"type": "function", "function": {"name": "write_answer"}}
                   if used >= self.max_tool_calls else "required")
-        response = await handler(request.override(tool_choice=choice))
+        messages = request.messages
+        if NUDGE_AFTER <= used < self.max_tool_calls:
+            messages = [*messages, HumanMessage(NUDGE.format(used=used, max_calls=self.max_tool_calls))]
+        response = await handler(request.override(tool_choice=choice, messages=messages))
         result = response.result if isinstance(response, ModelResponse) else [response]
         calls = [tc for m in result if isinstance(m, AIMessage) for tc in m.tool_calls]
         if not any(tc["name"] == "write_answer" for tc in calls):
@@ -228,8 +285,13 @@ class ResearchThenAnswer(AgentMiddleware):
         # (a French question got a German answer), so name it when the question makes it clear.
         question = next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), "")
         language = LANGUAGE_NAMES.get(detect_language(str(question), default=""))
-        final = "Write the final answer now." + (
-            f" Write its text parts and explanations in {language}." if language else "")
+        # Name the question. This instruction is the last message the answer model sees, and when it
+        # only said "write the final answer now", a follow-up got the previous turn's answer again.
+        final = (f"The user's last question is:\n{question}\n\nAnswer that question now, from the tool "
+                 f"results above. An earlier answer in this conversation is not a source for it and is "
+                 f"never repeated as the answer.")
+        if language:
+            final += f" Write its text parts and explanations in {language}."
         return await self.answer_llm.ainvoke([SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)])
 
 
@@ -441,14 +503,15 @@ class _Citations:
 
 # ── agent ───────────────────────────────────────────────────────────────
 def _history(messages: list[Message], limit: int = 8) -> list[BaseMessage]:
-    """Earlier turns as plain text, citations replaced by docket numbers."""
+    """Earlier turns as plain text, with their citation markers removed.
+
+    The markers used to be replaced by the docket number of the decision behind them, which made an
+    earlier answer look sourced — invented sentences included — to the model writing the next one.
+    """
     out: list[BaseMessage] = []
     for m in messages[-limit:]:
-        if m.role == "user":
-            out.append(HumanMessage(m.content))
-        else:
-            dockets = {s.n: s.decision.docket for s in m.sources or []}
-            out.append(AIMessage(re.sub(r"\[(\d+)\]", lambda x: f" ({dockets.get(int(x[1]), 'source')})", m.content)))
+        out.append(HumanMessage(m.content) if m.role == "user"
+                   else AIMessage(re.sub(r"\s*\[\d+\]", "", m.content)))
     return out
 
 
@@ -504,6 +567,7 @@ class ReactAgent:
 
     async def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus)
+        _searches.set([])  # this turn's searches; the tools are shared between turns, the store is not
         stream, writing = AnswerStream(), False
         claim: list[str] = []  # the sentences since the last citation
         previous = ""  # several citations in a row all support the same sentence

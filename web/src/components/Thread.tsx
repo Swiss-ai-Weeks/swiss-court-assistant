@@ -105,6 +105,11 @@ const TOOL_LABEL: Record<string, string> = {
   keyword_search: "Keyword search",
   read_decision: "Read decision",
   citing_decisions: "Who cites it",
+  search_laws: "Search statutes",
+  read_law: "Read article",
+  search_decisions: "Search decisions",
+  count_decisions: "Count by",
+  list_values: "Index values",
 };
 
 function toolArg(c: ToolCall): string {

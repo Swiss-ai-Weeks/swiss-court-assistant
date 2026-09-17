@@ -81,14 +81,27 @@ It works in two phases:
 
 1. **Research.** Every model call must be a tool call (`tool_choice="required"`), so the model
    cannot answer from memory or in free text. It calls a fourth tool, `write_answer`, once it has
-   enough (it is forced to after 8 tool calls).
+   enough (it is forced to after 8 tool calls). Left to itself it did not stop: for a question this
+   corpus cannot answer, it spent all 8 calls rewording one search and was then forced to answer
+   from whatever had come back. Three things end the loop now — the prompt says that reporting
+   "this corpus does not answer it" *is* a correct answer, a reminder to that effect is added to the
+   request after 4 tool calls (`NUDGE_AFTER`), and a search that repeats an earlier one is refused
+   instead of run: `_already_searched()` keeps the turn's queries as token sets (in a `ContextVar`,
+   because `make_tools` runs once and its tools are shared between turns) and rejects a query whose
+   overlap with an earlier one reaches `SAME_SEARCH = 0.8` by Jaccard **or** by containment.
+   Containment is what catches real repeats — rewording drops words, so "DSGVO Wettbewerbsrecht
+   Sanktionen SVKG" followed by "DSGVO Wettbewerbsrecht" is only 0.73 Jaccard but fully contained.
 2. **Answer.** A middleware (`ResearchThenAnswer`) intercepts `write_answer` and makes one call
    whose output is constrained to the JSON schema of `AgentAnswer` (vLLM structured outputs):
    `{"answer": [{"type": "text", "text": …} | {"type": "citation", "decision_id": …, "chunk_id": …, "quote": …, "explanation": …}, …]}`.
    Free-form JSON from the model was often invalid; constrained decoding always yields valid JSON.
    The model occasionally pads that JSON with whitespace without end, so the stream stops an
    answer after 64 blank characters and keeps the parts already written. (A whitespace-free EBNF
-   grammar rules this out, but decodes about six times slower on this NIM.)
+   grammar rules this out, but decodes about six times slower on this NIM.) The instruction closing
+   that call names the question being answered: while it only said "write the final answer now", a
+   follow-up question was answered with the *previous* turn's answer. For the same reason
+   `_history()` strips the `[n]` markers from earlier answers — they used to be replaced by the
+   cited docket number, which made an earlier answer's invented sentences look sourced.
 
 The answer streams: text parts as they are written, each citation once it is complete. The
 server locates the `quote` in the decision's full text (tolerant to whitespace, quote styles and
@@ -177,8 +190,66 @@ Settings (environment): `SCA_TRANSLATE_URI` (default `localhost:50051`), `SCA_TR
 (default `localhost:50053`), `SCA_ASR_LANGUAGE` (unset: `auto` when the NIM offers it, else the
 question's language), `SCA_VOICE_PAUSE` (default 1.2 s of silence before answering), `SCA_LLM_URL` (default `http://localhost:9100/v1`), `SCA_LLM_MODEL`
 (default: the first model the server lists), `SCA_LLM_THINKING=0` (stops the reasoning before each research step, which the UI streams as a grey "Thinking" line; ~1 s per step), `SCA_EMBED_MODEL`,
-`SCA_EMBED_DEVICE` (default `cuda:1`), `SCA_RERANK=0`, `SCA_DECISIONS`, `SCA_VECTOR_DB`, `SCA_DB`.
+`SCA_EMBED_DEVICE` (default `cuda:1`), `SCA_RERANK=0`, `SCA_DECISIONS`, `SCA_VECTOR_DB`, `SCA_DB`,
+`SCA_MLFLOW_URI` (unset: no tracing), `SCA_MLFLOW_EXPERIMENT` (default `swiss-court-assistant`).
 `SCA_AGENT=stub` swaps in a canned agent (`server/agent.py`) that needs no LLM.
+
+## Tracing the agent loop (MLflow)
+
+Every turn is recorded as one MLflow trace: each research step with the exact prompt sent to the
+model, every tool call with its arguments and result, the constrained final-answer call and the
+grounding checks. `server/tracing.py` enables LangChain autologging and opens a root `turn` span
+holding what the user saw — the answer, its citations and their verdicts — tagged with the
+conversation id. Tracing is off unless `SCA_MLFLOW_URI` is set, and a tracing failure never costs
+an answer.
+
+```bash
+docker run -d --name mlflow --restart unless-stopped -p 5000:5000 \
+  -v "$PWD/data/mlflow:/mlflow" ghcr.io/mlflow/mlflow:v3.16.1 \
+  mlflow server --host 0.0.0.0 --port 5000 \
+  --backend-store-uri sqlite:////mlflow/mlflow.db --artifacts-destination /mlflow/artifacts
+
+SCA_MLFLOW_URI=http://localhost:5000 uv run python -m swiss_court_assistant.server --reload
+```
+
+The UI is at http://localhost:5000 (on LaunchPad, through the code-server proxy:
+`https://<environment>.apps.launchpad.nvidia.com/coder/proxy/5000/`). Only the lightweight
+`mlflow-tracing` client is a project dependency; the tracking server itself runs in the container.
+
+## Full-corpus index
+
+`swiss_court_assistant/index.py` builds one index over the whole upstream dataset — decisions,
+passages, embeddings, keyword index and citation graph — with our own NIM embeddings, and updates it
+incrementally. The dataset is fetched at build time; nothing is called at query time.
+
+```bash
+uv run python -m swiss_court_assistant.index build --courts bger,bge   # start small
+uv run python -m swiss_court_assistant.index build                     # every shard
+uv run python -m swiss_court_assistant.index update                    # apply new daily deltas
+uv run python -m swiss_court_assistant.index citations                 # graph over what is indexed
+uv run python -m swiss_court_assistant.index status
+```
+
+Everything is resumable and idempotent. Each upstream file is recorded by sha256 in `index_sources`,
+so a rerun skips what has not changed; `pending_embeddings` holds passages still waiting for a
+vector, committed batch by batch, so an interrupted run loses at most one batch. Updates ride on the
+dataset's own `artifacts/manifest.json` — a dated snapshot plus one parquet per day, each with a
+sha256, verified before it is applied — and `index_state.delta_date` is the watermark. Run `build`
+before `update`: a shard carries the snapshot, so ingesting one after a delta would put those
+decisions back to their older text (`build` clears the watermark so `update` replays them).
+
+Chunk ids are append-only, because `chunks.id` is the rowid of both the vector table and the
+keyword index. A decision that changes has its old passages deleted from all three (the contentless
+FTS5 table needs the original text to delete a row) and new ones appended at the end.
+
+Note that the upstream dataset holds **decisions only** — the citation and statute-reference graphs
+and the Erwägungen structure, but no statute text, commentary or scholarship (the legislation export
+goes to a private dataset). Statute text would need a separate Fedlex build.
+
+Scale, measured on this box: 16.3 passages per decision and ~107 passages/s through the Nemotron
+embedder, so the full corpus (~1.07M decisions ≈ 17.5M passages) is about **42 h of embedding and
+~143 GB of vectors** for one model, plus the keyword index. A single court, or `--limit`, is the way
+to try it first.
 
 ## Data
 

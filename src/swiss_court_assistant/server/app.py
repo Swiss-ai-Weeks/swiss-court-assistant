@@ -17,6 +17,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, WebSocke
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import tracing
 from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict
 from .decisions import DecisionStore
 from .language import detect_language
@@ -53,6 +54,7 @@ class Services:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    tracing.setup()  # before the agent is built, so LangChain autologging patches it
     decisions = DecisionStore(DECISIONS)
     citations = open_index(CITATION_INDEX, set(decisions.df["decision_id"].to_list()))
     app.state.services = Services(decisions, ConversationStore(DB), _make_agent(decisions, citations), Translator(),
@@ -213,45 +215,51 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
         s.store.add_message(conv.id, msg)
         return msg
 
-    try:
-        async for ev in s.agent.answer(question, history):
-            match ev:
-                case Status():
-                    yield {"type": "status", "stage": ev.stage, "detail": ev.detail}
-                case Thought():
-                    yield {"type": "thinking", "text": ev.text}
-                case ToolStart():
-                    calls[ev.id] = ToolCall(id=ev.id, name=ev.name, args=ev.args, thought=ev.thought)
-                    yield {"type": "tool_start", "call": calls[ev.id].model_dump(by_alias=True)}
-                case ToolEnd():
-                    if ev.id in calls:
-                        calls[ev.id].summary, calls[ev.id].error = ev.summary, ev.error
-                    yield {"type": "tool_end", "id": ev.id, "summary": ev.summary, "error": ev.error}
-                case Delta():
-                    parts.append(ev.text)
-                    yield {"type": "delta", "text": ev.text}
-                case Cite():
-                    if all(x.n != ev.source.n for x in sources):
-                        sources.append(ev.source)
-                    parts.append(f"[{ev.source.n}]")
-                    yield {"type": "citation", "source": ev.source.model_dump(by_alias=True)}
-                case Verdict():
-                    for source in sources:  # saved with the message, so the check survives a reload
-                        if source.n == ev.n:
-                            source.supported = ev.supported
-                    yield {"type": "verdict", "n": ev.n, "supported": ev.supported}
-    except asyncio.CancelledError:
-        # keep the abandoned turn in the history, so the next one answers the new question instead of
-        # carrying on with the old one
-        parts.append(" … [cut off when the user started speaking]" if parts
-                     else "[the user asked something else before this was answered]")
-        save()
-        raise
-    except Exception:
-        log.exception("agent failed on %r", question)
-        yield {"type": "error", "message": "The assistant failed to answer. Please try again."}
-        return
-    yield {"type": "done", "message": save().model_dump(by_alias=True)}
+    with tracing.turn(question, conv.id, language) as trace:
+        try:
+            async for ev in s.agent.answer(question, history):
+                trace.event(ev)
+                match ev:
+                    case Status():
+                        yield {"type": "status", "stage": ev.stage, "detail": ev.detail}
+                    case Thought():
+                        yield {"type": "thinking", "text": ev.text}
+                    case ToolStart():
+                        calls[ev.id] = ToolCall(id=ev.id, name=ev.name, args=ev.args, thought=ev.thought)
+                        yield {"type": "tool_start", "call": calls[ev.id].model_dump(by_alias=True)}
+                    case ToolEnd():
+                        if ev.id in calls:
+                            calls[ev.id].summary, calls[ev.id].error = ev.summary, ev.error
+                        yield {"type": "tool_end", "id": ev.id, "summary": ev.summary, "error": ev.error}
+                    case Delta():
+                        parts.append(ev.text)
+                        yield {"type": "delta", "text": ev.text}
+                    case Cite():
+                        if all(x.n != ev.source.n for x in sources):
+                            sources.append(ev.source)
+                        parts.append(f"[{ev.source.n}]")
+                        yield {"type": "citation", "source": ev.source.model_dump(by_alias=True)}
+                    case Verdict():
+                        for source in sources:  # saved with the message, so the check survives a reload
+                            if source.n == ev.n:
+                                source.supported = ev.supported
+                        yield {"type": "verdict", "n": ev.n, "supported": ev.supported}
+        except asyncio.CancelledError:
+            # keep the abandoned turn in the history, so the next one answers the new question instead of
+            # carrying on with the old one
+            parts.append(" … [cut off when the user started speaking]" if parts
+                         else "[the user asked something else before this was answered]")
+            trace.finish("".join(parts), sources)
+            save()
+            raise
+        except Exception:
+            log.exception("agent failed on %r", question)
+            trace.finish("".join(parts), sources)
+            yield {"type": "error", "message": "The assistant failed to answer. Please try again."}
+            return
+        msg = save()
+        trace.finish(msg.content, sources)
+        yield {"type": "done", "message": msg.model_dump(by_alias=True)}
 
 
 async def _stream(s: Services, conv: ConversationSummary, question: str,
