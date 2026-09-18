@@ -95,7 +95,17 @@ export default function App() {
         setPending((p) => p && { ...p, language: ev.language });
         break;
       case "status":
-        setPending((p) => p && { ...p, status: { stage: ev.stage, detail: ev.detail } });
+        // Leaving the research stage ends the reasoning stream, so the last step's thinking line would
+        // sit there stale through the whole of the drafting and the checks. Drop it and follow the
+        // status instead — that phase is now the longest stretch with nothing else to show.
+        setPending(
+          (p) =>
+            p && {
+              ...p,
+              status: { stage: ev.stage, detail: ev.detail },
+              thinking: ev.stage === "thinking" ? p.thinking : "",
+            },
+        );
         break;
       case "thinking":
         setPending((p) => p && { ...p, thinking: (p.thinking ?? "") + ev.text });
@@ -257,7 +267,7 @@ export default function App() {
           </button>
           <button role="tab" aria-selected={page === "matters"} className={page === "matters" ? "active" : ""}
             onClick={() => setPage("matters")}>
-            Matters
+            Case Prep
           </button>
         </div>
       </nav>
@@ -278,9 +288,9 @@ export default function App() {
         ) : (
           <Sidebar
             items={matters}
-            label="Matters"
-            newLabel="New matter"
-            emptyLabel="No matters yet."
+            label="Case Prep"
+            newLabel="New case"
+            emptyLabel="No cases yet."
             activeId={matterId}
             open={sidebarOpen}
             onNew={() => openMatter(null)}

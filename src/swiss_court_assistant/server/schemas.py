@@ -6,7 +6,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-Stage = Literal["thinking", "answer"]
+# What the agent is doing this moment: researching, checking the drafted answer against the passages
+# it found (drafting, checking citations, revising), or writing out what passed.
+Stage = Literal["thinking", "checking", "answer"]
 
 
 class Model(BaseModel):
@@ -146,6 +148,9 @@ class Health(Model):
     agent: str
     decisions: int
     speech_languages: list[str] = []  # what the ASR NIM understands; empty when it is not reachable
+    # which engine runs the vector search ("cuVS brute-force float16, GPU 1", "numpy float32, CPU",
+    # "sqlite-vec"), with the GPU's search count and average time since startup
+    vector_search: dict[str, Any] | None = None
 
 
 # ── matters: one client case, worked through intake, research, assessment and drafting ──

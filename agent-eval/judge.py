@@ -6,7 +6,7 @@ next to the answer in the run's transcripts: the grades are reviewable, not just
 
 Each judgment is its own short call rather than one call returning a large object. Two reasons: this
 NIM pads long constrained JSON with whitespace until it runs out of tokens (the same failure the
-answer stream guards against in `react_agent.AnswerStream.stuck`), and a question asked on its own
+answer call guards against in `react_agent.ResearchThenAnswer._generate`), and a question asked on its own
 is answered better than the same question as one field among seven — asked inside a big object, the
 judge called a plain "these decisions do not answer the question" a non-abstention. The calls share
 one long prefix (question, reference, answer, passages), so the server's prefix cache carries almost

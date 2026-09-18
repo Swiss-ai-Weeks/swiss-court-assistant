@@ -124,7 +124,10 @@ export interface Conversation extends ConversationSummary {
   messages: Message[];
 }
 
-export type Stage = "thinking" | "answer";
+/** What the agent is doing: researching with its tools ("thinking", the only stage that streams
+ *  reasoning), checking the answer it drafted against the passages it found and revising it
+ *  ("checking"), or writing out what passed the checks ("answer"). */
+export type Stage = "thinking" | "checking" | "answer";
 
 export type ChatEvent =
   | { type: "conversation"; conversation: ConversationSummary }
@@ -137,7 +140,9 @@ export type ChatEvent =
   | { type: "delta"; text: string }
   /** Cites `source` right after the text so far; the same source may be cited again. */
   | { type: "citation"; source: Source }
-  /** The grounding check on citation `n`, once the passage has been compared with the sentence. */
+  /** The grounding check on citation `n`, once the passage has been compared with the sentence.
+   *  Citations the check rejects are removed from the answer before it is sent, so in practice every
+   *  verdict that arrives is `true`; `supported` stays null on a citation that could not be checked. */
   | { type: "verdict"; n: number; supported: boolean }
   /** The assistant asks the user something instead of answering; the turn ends after it. */
   | { type: "clarify"; clarification: Clarification }

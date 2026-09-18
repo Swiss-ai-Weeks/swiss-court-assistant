@@ -52,6 +52,16 @@ AGENT = os.environ.get("SCA_AGENT", "react")  # react | stub
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
 
 log = logging.getLogger(__name__)
+# uvicorn configures only its own loggers, so this package's INFO lines — what the agent checked in a
+# draft and why it revised it — would otherwise be dropped (warnings reached stderr via the last-resort
+# handler). One handler for the package, at INFO.
+_package = logging.getLogger("swiss_court_assistant")
+if not _package.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+    _package.addHandler(_handler)
+    _package.setLevel(logging.INFO)
+    _package.propagate = False
 
 
 @dataclass
@@ -110,7 +120,19 @@ async def health(s: Svc) -> Health:
         languages = sorted(await asyncio.to_thread(s.listener.languages))
     except Exception:  # voice mode is optional: the rest of the app works without the ASR NIM
         languages = []
-    return Health(status="ok", agent=s.agent.name, decisions=len(s.decisions), speech_languages=languages)
+    return Health(status="ok", agent=s.agent.name, decisions=len(s.decisions), speech_languages=languages,
+                  vector_search=_vector_search(s.agent))
+
+
+def _vector_search(agent: Agent) -> dict | None:
+    corpus = getattr(agent, "corpus", None)
+    if corpus is None:
+        return None
+    matrix = corpus.matrix
+    if matrix is None:
+        return {"backend": "sqlite-vec"}
+    return {"backend": matrix.backend, "vectors": len(matrix.ids),
+            **(matrix.stats() if hasattr(matrix, "stats") else {})}
 
 
 @app.get("/api/conversations", response_model=list[ConversationSummary])

@@ -110,12 +110,12 @@ You are given the facts and, for each legal issue, what case-law research found.
 
 **Where the client stands** — two or three sentences.
 **In our favour** — bullets. Each bullet must rest on something the research found; keep the [n] citation markers from the research text exactly as they are, so the reader can check it.
-**Against us** — bullets: what the other side will argue, and where the case law is unhelpful or silent.
-**What is still open** — bullets: facts or documents needed before this can be advised on.
+**Against us** — bullets: what the other side will argue. Where a bullet rests on a decision the research found — one that cuts the other way, or is silent — keep its [n] marker too, exactly as it appears in the research text; only a bullet that states no case law was found may go without one.
+**What is still open** — bullets: facts or documents needed before this can be advised on; these describe a gap, so they carry no [n].
 
 Write the four headings in {language} as well, in bold — not in English.
 
-Rules: use only the facts given and the research results below. Where the research found nothing on point, say that plainly instead of filling the gap from your own knowledge. Do not predict a percentage chance of success. Do not give the client instructions; this is a note for the lawyer's file."""
+Rules: use only the facts given and the research results below. Every claim about what a decision holds must carry the [n] that supports it — never state what the case law says without its marker. Where the research found nothing on point, say that plainly instead of filling the gap from your own knowledge. Do not predict a percentage chance of success. Do not give the client instructions; this is a note for the lawyer's file."""
 
 
 def _digest(matter: Matter) -> str:

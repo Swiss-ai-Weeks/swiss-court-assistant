@@ -1,6 +1,69 @@
 # Results
 
-## Update — 18 September: two of the findings fixed
+## 18 September — current corpus, clean A/B
+
+**The current agent: 64 % of cases correct, mean score 67.5/100** (two runs, 64 % and 64 %;
+67.2 and 67.9), against 52 % and 65.0 on the old 48,774-decision subset. The corpus is now 254,146
+decisions plus 725,481 statute articles, and the agent has two law tools (`search_laws`,
+`read_law`). The client sends `allowQuestions: false`, so an answer is always graded, never a
+question asked back.
+
+### Does `MIN_TOOL_CALLS` help? A little.
+
+Both arms were served from the same snapshot of the code, differing only in `MIN_TOOL_CALLS`
+(A: 0, write_answer always offered, as before the change; B: 2) and the prompt sentence that
+describes it. Each arm ran on a fresh server on :8093 without auto-reload, so edits elsewhere could
+not reach it, and each ran twice, interleaved A B A B. Means of the two runs, each run in brackets:
+
+| | exam A | exam B | behaviour A | behaviour B |
+|---|---|---|---|---|
+| correct | 60 % (62, 57) | 64 % (62, 67) | 62 % (67, 58) | 62 % (67, 58) |
+| score | 67.4 (68.0, 66.9) | 68.7 (66.5, 70.9) | 66.8 (63.6, 70.0) | 65.6 (68.5, 62.6) |
+| rubric coverage | 68 % (69, 66) | **71 % (72, 70)** | 72 % (65, 80) | 72 % (78, 66) |
+| answered after one search | 19 % | 0 % | 8 % | 0 % |
+| tool calls | 2.6 | 2.8 | 3.6 | 3.2 |
+| seconds per turn | 17.8 | 19.1 | 17.6 | 17.5 |
+
+On the exam questions, rubric coverage — the thing the change targets — is higher in both B runs
+than in either A run. That is the only difference that clears the run-to-run spread: pass rate and
+score overlap, and the behavioural suite shows nothing. Across all four runs four cases failed both
+times without the minimum and passed at least once with it; one did the reverse. It costs about a
+second per exam turn.
+
+The effect is small because the problem it fixed has mostly gone: on this corpus, with the law
+tools, the agent without the minimum answers after a single search on 15 % of turns, where on the
+old subset it did so on 58 %. Worth keeping; not worth much more than that.
+
+**The morning's figures below are superseded.** They put the gain at 43 % → 56 % correct on the
+exam questions, but that patched run was confounded: edits to the retrieval code reloaded the dev
+server several times while it ran, so its cases did not all run the same code. The A/B above was set
+up to rule that out.
+
+### What fails every time
+
+Seven cases failed in all four runs, whichever arm. Reviewed by hand:
+
+- **It confirms a false premise.** `false-premise-pregnancy`: told that a termination during
+  pregnancy is "merely abusive but valid", the answer agrees in all four runs — "zwar
+  missbräuchlich, aber wirksam". It is void (art. 336c para. 2 OR). On the old subset it at least
+  corrected the first half. The most serious failure in the suite.
+- **It answers out-of-corpus questions that sound answerable** (`abstain-eu-gdpr`,
+  `abstain-invented-doctrine`), as on the old subset; implausible ones (a 2027 ruling, docket
+  4A_999/2099) are still refused.
+- **It answers a neighbouring question** (`fr-lpga-16`, `it-lpga-16`): asked how invalidity is
+  assessed for someone in gainful employment, it explains the mixed method for part-time workers
+  (art. 27bis RAI). What it says is right for part-timers — so the judge's legal objection here is
+  partly spurious — but the question was the income comparison of art. 16 LPGA, and the rubric
+  scores of 20–40 % are deserved. The newly indexed ordinances make 27bis RAI easy to find.
+- **Thin answers** (`de-or-24-grundlagenirrtum`, `fr-co-336c-grossesse`): 20–40 % of the rubric.
+
+Runs: `runs/ab-A/` and `runs/ab-B/` (local, not committed).
+
+## 18 September, morning — superseded
+
+*Kept for the record; the A/B above replaces its numbers. The code changes it describes stand.*
+
+### Two of the findings fixed
 
 The baseline below found three failures. Two are fixed in `src/swiss_court_assistant/server/react_agent.py`;
 the third — answering out-of-corpus questions that sound answerable — is not touched yet.
@@ -42,7 +105,7 @@ inside that spread. Twelve cases, three of them abstentions that flip between ru
 to judge from a single run: repeat the agent run, not just the judging, before reading anything
 into this suite.
 
-## Baseline — 17 September
+## Baseline — 17 September, 48,774-decision subset
 
 The `react` agent over 48,774 Swiss court decisions, 33 cases, judged by
 `nvidia/nemotron-3.5-lightning` on the same machine. Reproduce with `uv run python agent-eval/run.py`;

@@ -71,7 +71,7 @@ export default function MatterIntake({ busy, error, onStart }: Props) {
 
   return (
     <div className="intake">
-      <p className="eyebrow">Matter · intake to memo</p>
+      <p className="eyebrow">Case Prep · intake to memo</p>
       <h1>Start from what the client gave you.</h1>
       <p className="intake-lead">
         A document, a recording of the first conversation, or your own notes. The assistant reads it, names
