@@ -140,9 +140,13 @@ chamber too, and cantonal courts are named from their code ("Obergericht (ZH)", 
 (ZH)") instead of "Cantonal court ZH". The research list shows each step's filters as chips.
 
 **Asking back.** A fifth research tool, `ask_user(question, options, found_so_far)`, lets the agent end
-the turn with one question instead of an answer, when the answer turns on a fact the question leaves
-open and the passages go different ways on it ("Kündigungsfrist für meinen Vertrag" — employment or
-lease?). The middleware turns that call into the end of the turn; the question streams as the
+the turn with one question instead of an answer. Two things call for it: the answer turns on a fact
+the question leaves open and the passages go different ways on it ("Kündigungsfrist für meinen
+Vertrag" — employment or lease?), or the research found the article or the line of decisions that
+would govern but they apply only under a premise the question never states (Art. 337 OR only if the
+contract was ended with immediate effect), in which case the agent names what it found and asks the
+user to confirm it rather than answering on the assumption. The middleware turns that call into the
+end of the turn; the question streams as the
 turn's text, a `clarify` event carries two to four suggested answers (buttons under the question, on
 the last turn only; "other" options are dropped, the user can type) and `found_so_far` plus the
 decision ids found, saved as `Message.clarification`. The reply turn researches the *original*

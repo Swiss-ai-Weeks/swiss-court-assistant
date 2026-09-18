@@ -1,10 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, type Matter, type MatterEvent, type MatterInput, type MatterStage, type Source } from "../api";
 import Answer from "./Answer";
+import CitedMarkdown from "./CitedMarkdown";
 import MatterIntake from "./MatterIntake";
 import { toolTitle } from "./Thread";
+
+/** Every issue's cited sources, concatenated and renumbered on one running series — the same
+ *  authorities list the memo builds server-side (see `numbered()` in matters.py), so a [n] marker
+ *  in the assessment or the memo points at the same source here as it does there. */
+function citationSources(matter: Matter): Source[] {
+  const out: Source[] = [];
+  for (const issue of matter.issues) {
+    for (const s of issue.sources ?? []) out.push({ ...s, n: out.length + 1 });
+  }
+  return out;
+}
 
 interface Props {
   matterId: string | null;
@@ -165,6 +175,8 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
     }
   };
 
+  const authorities = useMemo(() => (matter ? citationSources(matter) : []), [matter]);
+
   if (!matter) return <div className="matter"><MatterIntake busy={busy} error={error} onStart={start} /></div>;
 
   const done = matter.stage === "done";
@@ -190,9 +202,6 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
                 Stop
               </button>
             )}
-            <button className="btn-outline" onClick={() => onOpenMatter(null)}>
-              New matter
-            </button>
           </div>
         </header>
 
@@ -296,9 +305,11 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
         {(matter.assessment || live.assessment) && (
           <section className="matter-block">
             <h2>Assessment</h2>
-            <div className="md">
-              <Markdown remarkPlugins={[remarkGfm]}>{matter.assessment ?? live.assessment}</Markdown>
-            </div>
+            <CitedMarkdown
+              text={matter.assessment || live.assessment}
+              sources={authorities}
+              onCite={(n) => onOpenSource(authorities, n)}
+            />
           </section>
         )}
 
@@ -310,8 +321,8 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
                 Download as Word
               </a>
             </div>
-            <div className="memo md">
-              <Markdown remarkPlugins={[remarkGfm]}>{matter.memo}</Markdown>
+            <div className="memo">
+              <CitedMarkdown text={matter.memo} sources={authorities} onCite={(n) => onOpenSource(authorities, n)} />
             </div>
           </section>
         )}

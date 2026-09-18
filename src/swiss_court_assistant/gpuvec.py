@@ -103,8 +103,10 @@ class GpuVectorMatrix:
                 self._index[key] = brute_force.build(vectors, metric="inner_product")
         log.info("vectors on GPU %d: %d x %d float16 (%.1f GB) in %.0f s", device, meta["rows"], dim,
                  meta["rows"] * dim * 2 / 1e9, time.time() - t0)
-        # cuVS and CuPy calls hop between the knn worker threads; one at a time, each well under 1 ms
+        # cuVS and CuPy calls hop between the knn worker threads; one at a time, each a few ms
         self._lock = threading.Lock()
+        self.backend = f"cuVS brute-force float16, GPU {device}"
+        self.searches, self._ms = 0, 0.0  # shown by /api/health: proof the GPU is doing the searching
 
     @classmethod
     def open(cls, db: Path, model: str, con: sqlite3.Connection, device: int = 1) -> GpuVectorMatrix | None:
@@ -127,6 +129,9 @@ class GpuVectorMatrix:
             log.warning("cuVS is not installed (`uv sync --extra gpu`); searching on the CPU")
             return None
 
+    def stats(self) -> dict:
+        return {"searches": self.searches, "avg_ms": round(self._ms / self.searches, 2) if self.searches else None}
+
     def warm(self) -> None:
         """Nothing to page in: the vectors were uploaded when the matrix was opened."""
 
@@ -139,6 +144,7 @@ class GpuVectorMatrix:
         q = np.asarray(query, dtype=np.float16).reshape(1, -1)
         best: list[tuple[int, float]] = []
         with self._lock, cp.cuda.Device(self.device):
+            t0 = time.perf_counter()
             d_q = cp.asarray(q)
             for key, (a, b) in self.segments.items():
                 if not key.startswith(f"{kind}/") or (language is not None and key != f"{kind}/{language}"):
@@ -158,6 +164,8 @@ class GpuVectorMatrix:
                 if keep is not None:
                     ok[ok] &= keep[nbr[ok]]
                 best += [(int(self.ids[a + r]), float(s)) for r, s in zip(nbr[ok], dist[ok])]
+            self.searches += 1
+            self._ms += (time.perf_counter() - t0) * 1000
         return sorted(best, key=lambda x: -x[1])[:k]
 
 

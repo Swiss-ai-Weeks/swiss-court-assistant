@@ -257,7 +257,7 @@ export default function App() {
           </button>
           <button role="tab" aria-selected={page === "matters"} className={page === "matters" ? "active" : ""}
             onClick={() => setPage("matters")}>
-            Matters
+            Case Prep
           </button>
         </div>
       </nav>
@@ -278,9 +278,9 @@ export default function App() {
         ) : (
           <Sidebar
             items={matters}
-            label="Matters"
-            newLabel="New matter"
-            emptyLabel="No matters yet."
+            label="Case Prep"
+            newLabel="New case"
+            emptyLabel="No cases yet."
             activeId={matterId}
             open={sidebarOpen}
             onNew={() => openMatter(null)}

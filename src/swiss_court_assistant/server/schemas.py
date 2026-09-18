@@ -146,6 +146,9 @@ class Health(Model):
     agent: str
     decisions: int
     speech_languages: list[str] = []  # what the ASR NIM understands; empty when it is not reachable
+    # which engine runs the vector search ("cuVS brute-force float16, GPU 1", "numpy float32, CPU",
+    # "sqlite-vec"), with the GPU's search count and average time since startup
+    vector_search: dict[str, Any] | None = None
 
 
 # ── matters: one client case, worked through intake, research, assessment and drafting ──

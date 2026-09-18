@@ -110,7 +110,19 @@ async def health(s: Svc) -> Health:
         languages = sorted(await asyncio.to_thread(s.listener.languages))
     except Exception:  # voice mode is optional: the rest of the app works without the ASR NIM
         languages = []
-    return Health(status="ok", agent=s.agent.name, decisions=len(s.decisions), speech_languages=languages)
+    return Health(status="ok", agent=s.agent.name, decisions=len(s.decisions), speech_languages=languages,
+                  vector_search=_vector_search(s.agent))
+
+
+def _vector_search(agent: Agent) -> dict | None:
+    corpus = getattr(agent, "corpus", None)
+    if corpus is None:
+        return None
+    matrix = corpus.matrix
+    if matrix is None:
+        return {"backend": "sqlite-vec"}
+    return {"backend": matrix.backend, "vectors": len(matrix.ids),
+            **(matrix.stats() if hasattr(matrix, "stats") else {})}
 
 
 @app.get("/api/conversations", response_model=list[ConversationSummary])

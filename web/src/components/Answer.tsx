@@ -6,7 +6,7 @@ import { erwLabel } from "../format";
 import ReadAloud from "./ReadAloud";
 
 /** Turn [1], [1, 2], [1–3] into markdown links the renderer shows as citation chips. */
-function linkCitations(md: string, max: number): string {
+export function linkCitations(md: string, max: number): string {
   return md.replace(/\[(\d+(?:\s*[-–,;]\s*\d+)*)\](?!\()/g, (whole, inner: string) => {
     const nums: number[] = [];
     for (const part of inner.split(/\s*[,;]\s*/)) {

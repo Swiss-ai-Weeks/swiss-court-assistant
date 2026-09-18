@@ -119,6 +119,8 @@ def export(db: Path, model: str) -> None:
 class VectorMatrix:
     """Exact nearest-neighbour search over the exported matrix. Thread-safe: it only reads."""
 
+    backend = "numpy float32, CPU"
+
     def __init__(self, path: Path, meta: dict):
         self.meta = meta
         dim = meta["index"]["dim"]
