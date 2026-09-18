@@ -26,6 +26,13 @@ dependencies = [
     "uvicorn[standard]>=0.53.0",
 ]
 
+[project.optional-dependencies]
+# vector search on the GPU with NVIDIA cuVS (gpuvec.py, SCA_VECTORS=gpu); CUDA 13 driver
+gpu = [
+    "cuvs-cu13>=26.8.0",
+    "cupy-cuda13x>=13.6",
+]
+
 [project.scripts]
 swiss-court-assistant = "swiss_court_assistant:main"
 

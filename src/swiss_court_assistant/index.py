@@ -530,18 +530,20 @@ def citations() -> None:
 def vectors(model: str) -> None:
     """Re-export the in-memory search matrix (vecmatrix.py) after the vectors changed. The app does not
     use a matrix older than the index: it falls back to sqlite-vec, whose scans take ~11 s. The search
-    filters (facets.py) are rebuilt with it."""
+    filters (facets.py) are rebuilt with it, and so is the GPU copy (gpuvec.py) where there is one."""
     import sqlite3
 
-    from swiss_court_assistant import facets, vecmatrix
+    from swiss_court_assistant import facets, gpuvec, vecmatrix
 
-    if vecmatrix.current(DB, model):
+    if not vecmatrix.current(DB, model):
+        vecmatrix.export(DB, model)
+        con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+        facets.build(DB, model, vecmatrix.VectorMatrix.open(DB, model, con))
+        con.close()
+    else:
         print("vector matrix is current")
-        return
-    vecmatrix.export(DB, model)
-    con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
-    facets.build(DB, model, vecmatrix.VectorMatrix.open(DB, model, con))
-    con.close()
+    if vecmatrix._file(vecmatrix.base(DB, model), ".f16.json").exists() and not gpuvec.current(DB, model):
+        gpuvec.export(DB, model)
 
 
 def status() -> None:

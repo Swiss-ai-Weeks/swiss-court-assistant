@@ -173,10 +173,12 @@ It works in two phases:
    Containment is what catches real repeats — rewording drops words, so "DSGVO Wettbewerbsrecht
    Sanktionen SVKG" followed by "DSGVO Wettbewerbsrecht" is only 0.73 Jaccard but fully contained.
    The opposite failure showed up once the agent eval existed: offered `write_answer` from the first
-   step, it answered after a single search on 19 of 33 questions. `write_answer` is now left out of
-   the tool list until two research calls have been made (`MIN_TOOL_CALLS`), which raised rubric
-   coverage on the exam questions from 63 % to 69 % and their pass rate from 43 % to 56 %, averaged
-   over three judgings (`agent-eval/RESULTS.md`), at no cost in latency.
+   step, it answered after a single search on 19 of 33 questions of the 48,774-decision subset.
+   `write_answer` is now left out of the tool list until two research calls have been made
+   (`MIN_TOOL_CALLS`). On the current corpus, with the law tools, the agent already answers after
+   one search far less often (15 % of turns), so the minimum matters less: in an A/B test, two runs
+   per arm, it raised rubric coverage on the exam questions from 68 % to 71 % — both runs with it
+   above both runs without — for about a second per turn (`agent-eval/RESULTS.md`).
 2. **Answer.** A middleware (`ResearchThenAnswer`) intercepts `write_answer` and makes one call
    whose output is constrained to the JSON schema of `AgentAnswer` (vLLM structured outputs):
    `{"answer": [{"type": "text", "text": …} | {"type": "citation", "decision_id": …, "chunk_id": …, "quote": …, "explanation": …}, …]}`.

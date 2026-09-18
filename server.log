@@ -1845,3 +1845,170 @@ INFO:     31.10.154.208:0 - "GET /api/decisions/bger_2C_96_2023 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/decisions/bger_2C_96_2023/citations?limit=8 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/matters/9e1995e026c2 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1463761]
+INFO:     Stopping reloader process [1453058]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 4 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [1505493] using WatchFiles
+INFO:     Started server process [1505496]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:40856 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40872 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40882 - "GET / HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-yVtNEUvz.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/9e1995e026c2 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-yVtNEUvz.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_415_2015 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_415_2015/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+the answer degenerated into whitespace; keeping the parts written so far
+final answer does not match the schema: 1 validation error for AgentAnswer
+  Invalid JSON: EOF while parsing a list at line 1 column 693 [type=json_invalid, input_value='{"answer": [{"type": "te...annulment was upheld."}', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_415_2015 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_415_2015/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_C_23408_2023: 'Wenn die Arbeitgeberin das Arbeitsverhältnis sofort auflöst, ohne dass dies gerechtfertigt ist, hat der Arbeitnehmer Anspruch darauf, was er hätte verdienen können, wenn das Arbeitsverhältnis zum Abla'
+quote not found verbatim in bge_133 III 657: "L'art. 337b al. 1 CO dispose que si les justes motifs de la résiliation immédiate du contrat consistent dans son inobservation par l'une des parties, celle-ci doit réparer intégralement le dommage cau"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_341_fr_0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_337c_de_0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_arbeitsgericht_AN210006-L/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_arbeitsgericht_AN210006-L HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/d932077724ff HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/e88c17c78d82 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/d932077724ff HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/bc51747e46e0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "DELETE /api/conversations/bc51747e46e0 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_obergericht_LA220028: 'Über das Vorhandensein solcher Umstände entscheidet das Gericht nach seinem Ermessen (wobei es aber – was hier nicht weiter relevant ist – in keinem Fall die unverschuldete Verhinderung des Arbeitnehm'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters/d9a38ae3d307/run HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_40_2017_PHC/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_40_2017_PHC HTTP/1.1" 200 OK
+quote cited from ge_gerichte_CAPH_100_2022 found in ge_gerichte_C_26041_2019 instead
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307/memo HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/9e1995e026c2 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-yVtNEUvz.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in gr_gerichte_PVG 2006 5: '– Für Diplomaten und Konsularbeamte gelten vorrangig die einschlägigen Wiener Übereinkommen von 1961 und 1963 auch bei Verkehrsdelikten (E.2a). – Ein Anspruch auf Immunität besteht nur, wenn die Ausüb'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/gpuvec.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1505496]
+INFO:     Started server process [1563396]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/corpus.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1563396]
+INFO:     Started server process [1564586]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/gpuvec.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1564586]
+INFO:     Started server process [1567057]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/gpuvec.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1567057]
+INFO:     Started server process [1568001]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/index.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1568001]
+INFO:     Started server process [1570180]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1570180]
+INFO:     Stopping reloader process [1505493]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [1584508] using WatchFiles
+INFO:     Started server process [1584511]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-yVtNEUvz.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_mietgericht_MJ250038-L: 'Treuwidrig sind Kündigungen, die Ausdruck widersprüchlichen Verhaltens sind oder eine schonungslose Rechtsausübung darstellen (BGE 148 III 215 E. 3.1.2; 142 III 91 E. 2.1; 140 III 496 E. 4.1; Urteil d'
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_VD_730.01.1_4_fr_3 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36298 - "GET /api/health HTTP/1.1" 200 OK

@@ -19,7 +19,7 @@ from swiss_court_assistant import retrieval as R
 from swiss_court_assistant.facets import Facets
 from swiss_court_assistant.fts import KeywordIndex
 from swiss_court_assistant.statutes import localize
-from swiss_court_assistant.vecmatrix import VectorMatrix
+from swiss_court_assistant.gpuvec import open_matrix
 from swiss_court_assistant.vectordb import VectorDB
 
 from .citations import CitationIndex
@@ -91,8 +91,9 @@ class Corpus:
             log.warning("%s covers only %d/%d chunks", embed_model, m["n_embedded"], m["n_chunks"])
         self.embed_model = embed_model
         self.vdb.search("Aufwärmen", embed_model, k=1)  # load the encoder now, not on the first question
-        # the vectors as a matrix in memory, when exported: sqlite-vec reads all of them on every query
-        self.matrix = VectorMatrix.open(db, embed_model, self.vdb.con)
+        # the vectors as a matrix in memory (or on the GPU, SCA_VECTORS=gpu), when exported: sqlite-vec
+        # reads all of them on every query
+        self.matrix = open_matrix(db, embed_model, self.vdb.con)
         if self.matrix is not None:
             threading.Thread(target=self.matrix.warm, name="warm-vectors", daemon=True).start()
         else:
@@ -108,7 +109,7 @@ class Corpus:
         if self.fts is None:
             log.warning("no keyword index at %s; run `python -m swiss_court_assistant.fts build`", fts)
         log.info("corpus: embeddings=%s (%s), vector matrix=%s, keyword index=%s", embed_model, device,
-                 bool(self.matrix), bool(self.fts))
+                 type(self.matrix).__name__ if self.matrix else None, bool(self.fts))
 
     def _open_knn(self, db: Path) -> None:
         self._local.vdb = VectorDB(db)  # no encoder: it gets query vectors

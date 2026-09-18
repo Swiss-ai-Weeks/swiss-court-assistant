@@ -124,6 +124,28 @@ sentence, language match, abstention); what the turns cost; every case with the 
 and the judge's comment on each failure. The transcripts are the point of appeal: every grade can be
 read back against the answer that earned it.
 
+## Testing a change to the agent
+
+Do not measure a change against the dev server on :8090. It reloads whenever a file under `src/`
+changes, so an edit made anywhere while a run is going changes the code half-way through it — the
+first measurement of `MIN_TOOL_CALLS` was spoiled exactly that way. Instead serve each arm from its
+own copy of `src/`, differing only in the change, on a spare port without `--reload`:
+
+```bash
+cp -r src /tmp/ab/A-src && cp -r src /tmp/ab/B-src      # then make the change in one copy only
+PYTHONPATH=/tmp/ab/A-src SCA_DB=/tmp/ab/conv.sqlite SCA_MATTERS_DB=/tmp/ab/matters.sqlite \
+  uv run python -m swiss_court_assistant.server --host 127.0.0.1 --port 8093
+uv run python agent-eval/run.py --server http://127.0.0.1:8093 --out agent-eval/runs/ab-A
+```
+
+`PYTHONPATH` puts the copy ahead of the installed package, and the separate conversation databases
+keep the runs out of the app's sidebar. Run each arm at least twice, interleaved, and compare with
+`compare.py`; the vectors are memory-mapped, so a second server shares them with the first.
+
+The client sends `allowQuestions: false`: the assistant can ask a question back instead of
+answering, and a graded case needs the answer. A case that is asked back anyway is recorded as
+failed.
+
 ## What this measures, and what it does not
 
 The judge is the same model the assistant answers with (`nvidia/nemotron-3.5-lightning`), because
