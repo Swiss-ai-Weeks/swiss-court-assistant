@@ -40,7 +40,8 @@ class Source(Model):
     chunk_id: str
     decision_id: str
     text: str
-    section: Literal["regeste", "erwaegung", "body", "law"]  # "law": a statute article, law_id in decision_id
+    # "law": a statute article, law_id in decision_id; "document": a document the user attached, its id there
+    section: Literal["regeste", "erwaegung", "body", "law", "document"]
     erwaegungen: list[str]
     char_start: int | None 
     char_end: int | None
@@ -76,6 +77,21 @@ class Clarification(Model):
     notes: str = ""  # what the research found before asking; read back by the next turn
 
 
+class DocumentInfo(Model):
+    """A document the user attached, as parsed and stored (see parsing.py)."""
+
+    id: str
+    name: str
+    # a file the user attached, a recording of the client (kept as WAV, its text the transcript), or typed notes
+    kind: Literal["document", "recording", "notes"] = "document"
+    pages: int
+    chars: int
+    parser: str  # "nemotron-parse", "python-docx", "text", "nemotron-asr" or "typed"
+    language: str | None = None
+    seconds: float | None = None  # length of a recording
+    created_at: str
+
+
 class Message(Model):
     id: str
     role: Literal["user", "assistant"]
@@ -86,6 +102,7 @@ class Message(Model):
     language: str | None = None  # of the question, on assistant messages
     statutes: list[StatuteRef] | None = None  # articles the answer names, linked to their text
     clarification: Clarification | None = None  # set when the assistant asked back instead of answering
+    attachments: list[DocumentInfo] | None = None  # documents attached to a user message
     created_at: str
 
 
@@ -103,6 +120,7 @@ class ChatRequest(Model):
     conversation_id: str | None = None
     message: str = Field(min_length=1, max_length=4000)
     allow_questions: bool = True  # whether the assistant may ask back instead of answering (off for evals)
+    document_ids: list[str] = Field(default=[], max_length=5)  # uploaded with POST /api/documents
 
 
 Language = Literal["de", "fr", "it", "rm", "en"]
@@ -180,14 +198,17 @@ class MatterSummary(Model):
     title: str
     stage: MatterStage = "new"
     source_name: str | None = None
-    source_kind: Literal["document", "recording", "text"] = "text"
+    # "bundle": several files, recordings and notes together
+    source_kind: Literal["document", "recording", "text", "bundle"] = "text"
+    document_id: str | None = None  # the first asset (matters opened before assets kept only this)
     created_at: str
     updated_at: str
 
 
 class Matter(MatterSummary):
     language: str
-    facts: str  # the client's story as text, however it arrived
+    facts: str  # the client's story as text, however it arrived: every asset's text, one after the other
+    assets: list[DocumentInfo] = []  # the case file: documents, recordings and notes, kept in the document store
     intake: Intake | None = None
     issues: list[Issue] = []
     assessment: str | None = None

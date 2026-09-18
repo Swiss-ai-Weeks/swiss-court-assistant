@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type ChatEvent, type ConversationSummary, type Health, type MatterSummary, type Message,
+import { api, type ChatEvent, type ConversationSummary, type DocumentInfo, type Health, type MatterSummary, type Message,
   type Source } from "./api";
 import { startVoice, type VoiceEvent, type VoiceSession } from "./voice";
 import Composer from "./components/Composer";
@@ -158,14 +158,15 @@ export default function App() {
     }
   };
 
-  const send = async (text: string) => {
+  const send = async (text: string, attachments: DocumentInfo[] = []) => {
     const ctrl = new AbortController();
     abort.current = ctrl;
     setSelection(null);
-    setMessages((m) => [...m, { id: `local-${Date.now()}`, role: "user", content: text, createdAt: new Date().toISOString() }]);
+    setMessages((m) => [...m, { id: `local-${Date.now()}`, role: "user", content: text, attachments,
+      createdAt: new Date().toISOString() }]);
     setPending({ status: null, tools: [], sources: [], content: "" });
     try {
-      for await (const ev of api.chat(activeId, text, ctrl.signal)) applyEvent(ev);
+      for await (const ev of api.chat(activeId, text, ctrl.signal, attachments.map((d) => d.id))) applyEvent(ev);
     } catch (e) {
       if ((e as Error).name !== "AbortError") setPending((p) => p && { ...p, error: (e as Error).message });
       else setPending(null);

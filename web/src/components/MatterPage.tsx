@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api, type Matter, type MatterEvent, type MatterInput, type MatterStage, type Source } from "../api";
+import { api, type DocumentInfo, type Matter, type MatterEvent, type MatterInput, type MatterStage,
+  type Source } from "../api";
 import Answer from "./Answer";
 import CitedMarkdown from "./CitedMarkdown";
 import MatterIntake from "./MatterIntake";
@@ -14,6 +15,85 @@ function citationSources(matter: Matter): Source[] {
     for (const s of issue.sources ?? []) out.push({ ...s, n: out.length + 1 });
   }
   return out;
+}
+
+/** An asset opened in the preview panel as a whole text: no passage is cited, so nothing is highlighted. */
+function assetSource(d: DocumentInfo): Source {
+  const label = d.kind === "recording" ? "Client recording" : d.kind === "notes" ? "Notes" : "Attached document";
+  return {
+    n: 0, chunkId: `${d.id}#0`, decisionId: d.id, text: "", section: "document", erwaegungen: [],
+    charStart: null, charEnd: null, score: 0,
+    decision: { decisionId: d.id, court: "document", courtLabel: label, canton: null, chamber: null, docket: d.name,
+      date: d.createdAt.slice(0, 10), language: d.language ?? "en", title: null, regeste: null, legalArea: null,
+      sourceUrl: null, pdfUrl: api.documentFileUrl(d.id) },
+  };
+}
+
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+
+function assetMeta(d: DocumentInfo): string {
+  // which model read it is in the tooltip and the preview; the row keeps its width for the name
+  if (d.kind === "recording") return `${clock(d.seconds ?? 0)} min`;
+  if (d.kind === "notes") return `${d.chars.toLocaleString("en")} characters`;
+  return `${d.pages} page${d.pages === 1 ? "" : "s"}`;
+}
+
+/** "2 documents · 1 recording · notes" — what the matter was opened on, at a glance. */
+function contents(assets: DocumentInfo[]): string {
+  const n = (k: string) => assets.filter((a) => (a.kind ?? "document") === k).length;
+  const parts = [];
+  if (n("document")) parts.push(`${n("document")} document${n("document") === 1 ? "" : "s"}`);
+  if (n("recording")) parts.push(`${n("recording")} recording${n("recording") === 1 ? "" : "s"}`);
+  if (n("notes")) parts.push("notes");
+  return parts.join(" · ");
+}
+
+/** Everything the matter holds: what the client handed over, and what the assistant produced from it. */
+function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sources: Source[], n: number) => void }) {
+  const assets = matter.assets ?? [];
+  if (!assets.length && !matter.memo) return null;
+  return (
+    <section className="matter-block case-file">
+      <h2>Case file · {assets.length + (matter.memo ? 1 : 0)} item{assets.length + (matter.memo ? 1 : 0) === 1 ? "" : "s"}</h2>
+      <ul>
+        {assets.map((d) => (
+          <li key={d.id} className={`case-asset ${d.kind ?? "document"}`}>
+            <div className="case-asset-head">
+              <span className="case-kind">{d.kind === "recording" ? "Recording" : d.kind === "notes" ? "Notes" : "Document"}</span>
+              <span className="case-name" title={d.name}>{d.name}</span>
+              <span className="case-meta" title={`${d.kind === "recording" ? "transcribed" : "read"} with ${d.parser}`}>
+                {assetMeta(d)}
+              </span>
+              <span className="case-actions">
+                <button className="link-btn" onClick={() => onOpenSource([assetSource(d)], 0)}>
+                  {d.kind === "recording" ? "Transcript" : "Text"}
+                </button>
+                {d.kind !== "notes" && (
+                  <a href={api.documentFileUrl(d.id)} target="_blank" rel="noreferrer" download={d.kind === "recording" || undefined}>
+                    {d.kind === "recording" ? "Download" : "Original ↗"}
+                  </a>
+                )}
+              </span>
+            </div>
+            {d.kind === "recording" && <audio controls preload="none" src={api.documentFileUrl(d.id)} />}
+          </li>
+        ))}
+        {matter.memo && (
+          <li className="case-asset generated">
+            <div className="case-asset-head">
+              <span className="case-kind">Generated</span>
+              <span className="case-name">Memo</span>
+              <span className="case-meta">drafted {matter.updatedAt.slice(0, 10)}</span>
+              <span className="case-actions">
+                <a href={api.memoUrl(matter.id)} download>Word</a>
+                <a href={api.memoUrl(matter.id, "md")} download>Markdown</a>
+              </span>
+            </div>
+          </li>
+        )}
+      </ul>
+    </section>
+  );
 }
 
 interface Props {
@@ -156,13 +236,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
   }, [matterId, run]);
 
   const start = async (input: MatterInput) => {
-    setBusy(
-      input.filename?.endsWith(".pcm")
-        ? "Transcribing the recording…"
-        : input.file
-          ? "Reading the document…"
-          : "Reading the facts…",
-    );
+    setBusy("Opening the matter…");
     setError(null);
     try {
       const created = await api.createMatter(input);
@@ -187,8 +261,10 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
       <div className="matter-inner">
         <header className="matter-head">
           <p className="eyebrow">
-            {matter.sourceKind === "recording" ? "Recording" : matter.sourceKind === "document" ? "Document" : "Notes"}
-            {matter.sourceName ? ` · ${matter.sourceName}` : ""} · {matter.language.toUpperCase()}
+            {matter.assets?.length ? contents(matter.assets)
+              : { recording: "Recording", document: "Document", text: "Notes", bundle: "Case file" }[matter.sourceKind]}
+            {matter.sourceName && !matter.assets?.length ? ` · ${matter.sourceName}` : ""}
+            {" · "}{matter.language.toUpperCase()}
           </p>
           <h1>{matter.title}</h1>
           <div className="matter-actions">
@@ -204,6 +280,8 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
             )}
           </div>
         </header>
+
+        <CaseFile matter={matter} onOpenSource={onOpenSource} />
 
         <ol className="stage-rail">
           {STAGES.map((s) => (

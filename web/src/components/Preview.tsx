@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type Citations as CitationsInfo, type Decision, type Source } from "../api";
+import { api, type Citations as CitationsInfo, type CitingDecision, type Decision, type Source } from "../api";
 import { erwLabel, formatDate, langName } from "../format";
 import ReadAloud from "./ReadAloud";
 
@@ -56,8 +56,22 @@ function segments(text: string, ranges: { n: number; start: number; end: number 
 // Translations outlive the component, so switching between citations does not refetch them.
 const translations = new Map<string, string>();
 
-/** How often later decisions cite this one: whether the courts still rely on it. */
-function CitedBy({ decisionId }: { decisionId: string }) {
+/** Where to read a decision this app does not hold: the Federal Supreme Court publishes its own
+ *  (the link only opens in the reader's browser; the app itself calls nothing outside). */
+function officialUrl(c: CitingDecision): string | null {
+  const base = "https://www.bger.ch/ext/eurospider/live/de/php";
+  const bge = c.docket?.match(/^BGE (\d+) ([IVX]+[a-z]?) (\d+)$/);
+  if (bge) return `${base}/clir/http/index.php?lang=de&type=show_document&highlight_docid=atf://${bge[1]}-${bge[2]}-${bge[3]}:de`;
+  const bger = c.docket?.match(/^(\d+[A-Z])[ _](\d+)\/(\d{4})$/);
+  const day = c.date?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (bger && day)
+    return `${base}/aza/http/index.php?lang=de&type=show_document&highlight_docid=aza://${day[3]}-${day[2]}-${day[1]}-${bger[1]}_${bger[2]}-${bger[3]}`;
+  return null;
+}
+
+/** How often later decisions cite this one: whether the courts still rely on it. Decisions in the
+ *  corpus open in the preview; federal ones outside it link to bger.ch. */
+function CitedBy({ decisionId, onOpen }: { decisionId: string; onOpen: (id: string) => void }) {
   const [data, setData] = useState<CitationsInfo | null>(null);
 
   useEffect(() => {
@@ -91,7 +105,17 @@ function CitedBy({ decisionId }: { decisionId: string }) {
           <li key={c.decisionId}>
             <span className="when">{c.date ? formatDate(c.date) : "undated"}</span>
             <span className="what">
-              {c.docket ?? c.decisionId}
+              {c.inCorpus ? (
+                <button className="graph-link" onClick={() => onOpen(c.decisionId)} title="Open here">
+                  {c.docket ?? c.decisionId}
+                </button>
+              ) : officialUrl(c) ? (
+                <a className="graph-link" href={officialUrl(c)!} target="_blank" rel="noreferrer" title="Not in this corpus: opens bger.ch">
+                  {c.docket ?? c.decisionId} ↗
+                </a>
+              ) : (
+                <span title="Not in this corpus">{c.docket ?? c.decisionId}</span>
+              )}
               {c.court ? ` · ${c.court}` : ""}
             </span>
           </li>
@@ -184,7 +208,11 @@ function RefTools({ source, language }: { source: Source; language: string | nul
 
 export default function Preview({ sources, activeN, language, onSelect, onClose }: Props) {
   const active = sources.find((s) => s.n === activeN);
-  const decisionId = active?.decisionId;
+  // decisions opened from the citation graph, on top of the cited one; Back pops them
+  const [trail, setTrail] = useState<string[]>([]);
+  useEffect(() => setTrail([]), [activeN, active?.decisionId]);
+  const browsing = trail.length > 0;
+  const decisionId = browsing ? trail[trail.length - 1] : active?.decisionId;
   const [doc, setDoc] = useState<Decision | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
@@ -204,7 +232,10 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decisionId]);
 
-  const cited = useMemo(() => sources.filter((s) => s.decisionId === decisionId), [sources, decisionId]);
+  const cited = useMemo(
+    () => (browsing ? [] : sources.filter((s) => s.decisionId === decisionId)),
+    [sources, decisionId, browsing],
+  );
   const parts = useMemo(() => {
     if (!doc) return [];
     const ranges = cited
@@ -225,11 +256,32 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   }, [parts, activeN]);
 
   if (!active) return null;
+  const open = (id: string) => setTrail((t) => [...t, id]);
+  const back = browsing && (
+    <button className="back-btn" onClick={() => setTrail((t) => t.slice(0, -1))}>
+      ← Back
+    </button>
+  );
+  if (browsing && !doc)
+    return (
+      <aside className="preview" aria-label="Source decision">
+        <div className="preview-bar">
+          {back}
+          <span className="spacer" />
+          <button className="icon-btn" onClick={onClose} aria-label="Close preview" title="Close">
+            ×
+          </button>
+        </div>
+        <p className="preview-empty">{error ? `Could not load the decision: ${error}` : "Loading decision…"}</p>
+      </aside>
+    );
   const d = doc ?? active.decision;
-  const isLaw = active.section === "law"; // a statute article, described in the decision's fields
-  const regesteActive = active.section === "regeste";
+  const isLaw = !browsing && active.section === "law"; // a statute article, described in the decision's fields
+  const isDocument = !browsing && active.section === "document"; // a document the user attached
+  const regesteActive = !browsing && active.section === "regeste";
   const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
-  const tools = <RefTools key={activeN} source={active} language={language} />;
+  // an asset of a matter opened whole (n 0, see MatterPage) cites no passage: nothing to explain or read out
+  const tools = browsing || (isDocument && activeN === 0) ? null : <RefTools key={activeN} source={active} language={language} />;
   // selected text can be read aloud, translated into the conversation's language, or quoted in a reply
   const selectable = {
     "data-select-lang": d.language,
@@ -238,9 +290,10 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   };
 
   return (
-    <aside className="preview" aria-label={isLaw ? "Statute" : "Source decision"}>
+    <aside className="preview" aria-label={isLaw ? "Statute" : isDocument ? "Attached document" : "Source decision"}>
       <div className="preview-bar">
-        {isLaw ? "Statute" : "Source decision"}
+        {back}
+        {browsing ? "Cited decision" : isLaw ? "Statute" : isDocument ? d.courtLabel : "Source decision"}
         <span className="spacer" />
         <button className="icon-btn" onClick={onClose} aria-label="Close preview" title="Close">
           ×
@@ -259,7 +312,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
           <dl className="meta-grid">
             {!isLaw && (
               <>
-                <dt>Decided</dt>
+                <dt>{isDocument ? "Attached" : "Decided"}</dt>
                 <dd>{formatDate(d.date)}</dd>
               </>
             )}
@@ -269,7 +322,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
                 <dd>{d.chamber}</dd>
               </>
             )}
-            <dt>{isLaw ? "Article ID" : "Decision ID"}</dt>
+            <dt>{isLaw ? "Article ID" : isDocument ? "Document ID" : "Decision ID"}</dt>
             <dd>{d.decisionId}</dd>
           </dl>
           <div className="preview-links">
@@ -280,14 +333,14 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
             )}
             {d.pdfUrl && (
               <a href={d.pdfUrl} target="_blank" rel="noreferrer">
-                PDF ↗
+                {isDocument ? "Original file ↗" : "PDF ↗"}
               </a>
             )}
           </div>
-          {!isLaw && <CitedBy decisionId={d.decisionId} />}
+          {!isLaw && !isDocument && <CitedBy decisionId={d.decisionId} onOpen={open} />}
         </header>
 
-        {activeN !== 0 && ( // 0: an article the answer names, not one of its numbered citations
+        {activeN !== 0 && !browsing && ( // 0: an article the answer names, not one of its numbered citations
         <div className="cited-in">
           Cited in this answer:
           {cited.map((s) => (

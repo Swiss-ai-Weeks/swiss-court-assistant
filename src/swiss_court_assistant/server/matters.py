@@ -38,7 +38,7 @@ from .agent import Agent, Cite, Delta, ToolStart, Verdict
 from .language import detect_language
 from .mentions import statute_links
 from .llm import LLM_KEY, LLM_URL, served_model
-from .schemas import Intake, Issue, Matter, MatterSummary, Source
+from .schemas import DocumentInfo, Intake, Issue, Matter, MatterSummary, Source
 from .store import new_id, now
 
 log = logging.getLogger(__name__)
@@ -198,7 +198,8 @@ def memo(matter: Matter) -> str:
             d = s.decision
             # one entry per cited passage, not per decision, so the considerandum tells two passages
             # of the same decision apart
-            erw = f"E. {', '.join(s.erwaegungen)}" if s.erwaegungen else None
+            erw = (", ".join(s.erwaegungen) if s.section == "document" else f"E. {', '.join(s.erwaegungen)}") \
+                if s.erwaegungen else None  # a page of the client's document: "p. 2"
             where = " · ".join(x for x in (d.court_label, d.docket, erw, d.date) if x)
             link = f" — {d.source_url}" if d.source_url else ""
             mark = "" if s.supported is not False else "  ⚠ check: the passage may not state this"
@@ -353,10 +354,12 @@ class MatterStore:
 
 
 def create_matter(store: MatterStore, facts: str, source_name: str | None, source_kind: str,
-           title: str | None = None) -> Matter:
+           title: str | None = None, assets: list[DocumentInfo] | None = None) -> Matter:
+    assets = assets or []
     stamp = datetime.now(UTC).isoformat(timespec="milliseconds")
     matter = Matter(id=new_id(), title=title or (source_name or facts[:60].strip() or "New matter"),
                     stage="new", source_name=source_name, source_kind=source_kind,  # type: ignore[arg-type]
+                    document_id=assets[0].id if assets else None, assets=assets,
                     language=detect_language(facts), facts=facts, created_at=stamp, updated_at=stamp)
     return store.save(matter)
 
@@ -399,7 +402,14 @@ class Pipeline:
         parts: list[str] = []
         sources: list[Source] = []
         yield {"type": "issue_start", "n": issue.n}
-        async for ev in self.agent.answer(question, [], ask=False):  # no one to ask mid-memo
+        # The client's own document, so the research can quote it for the facts. Without it the answer
+        # stated the facts in a sentence cited to a court decision, the check found the decision did not
+        # say them, and dropped the sentence together with the law in it.
+        documents = getattr(self.agent, "documents", None)
+        attached = list(matter.assets)
+        if not attached and matter.document_id and documents and (info := documents.info(matter.document_id)):
+            attached = [info]  # a matter opened before the case file was kept
+        async for ev in self.agent.answer(question, [], ask=False, attachments=attached):  # no one to ask mid-memo
             match ev:
                 case ToolStart():
                     arg = " ".join(str(v) for v in ev.args.values() if v not in (None, "", False))

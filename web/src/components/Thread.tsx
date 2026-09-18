@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import type { Clarification, Message, Source, Stage, StatuteRef, ToolCall } from "../api";
+import type { Clarification, DocumentInfo, Message, Source, Stage, StatuteRef, ToolCall } from "../api";
 import Answer from "./Answer";
-import { QuoteCard } from "./Composer";
+import { AttachmentChip, QuoteCard } from "./Composer";
 
 export interface PendingTurn {
   status: { stage: Stage; detail: string } | null;
@@ -53,7 +53,7 @@ export default function Thread({ messages, pending, selection, onOpenSource, onO
       <div className="thread-inner">
         {messages.map((m, i) =>
           m.role === "user" ? (
-            <UserTurn key={m.id} text={m.content} />
+            <UserTurn key={m.id} text={m.content} attachments={m.attachments ?? []} />
           ) : (
             <AssistantTurn
               key={m.id}
@@ -94,7 +94,7 @@ export default function Thread({ messages, pending, selection, onOpenSource, onO
   );
 }
 
-function UserTurn({ text }: { text: string }) {
+function UserTurn({ text, attachments }: { text: string; attachments: DocumentInfo[] }) {
   // "> " lines quote a selection the user replied to (see SelectionTools)
   const lines = text.split("\n");
   const quote = lines.filter((l) => l.startsWith(">")).map((l) => l.replace(/^>\s?/, ""));
@@ -103,6 +103,11 @@ function UserTurn({ text }: { text: string }) {
   return (
     <div className="msg msg-user">
       <div className="bubble">
+        {attachments.length > 0 && (
+          <div className="attachments">
+            {attachments.map((d) => <AttachmentChip key={d.id} name={d.name} info={d} />)}
+          </div>
+        )}
         {quote.length > 0 && <QuoteCard text={quote.join("\n")} source={source} />}
         {rest}
       </div>
@@ -112,7 +117,7 @@ function UserTurn({ text }: { text: string }) {
 
 /** What each tool looks at — the court decisions or the statutes — and what it does there. The two
  *  searches work the same way, so the label says how and the tag says where. */
-type Domain = "case" | "statute";
+type Domain = "case" | "statute" | "document";
 const TOOLS: Record<string, { domain: Domain; label: string }> = {
   semantic_search: { domain: "case", label: "Search by meaning" },
   keyword_search: { domain: "case", label: "Search exact words" },
@@ -123,8 +128,10 @@ const TOOLS: Record<string, { domain: Domain; label: string }> = {
   read_law: { domain: "statute", label: "Read article" },
   search_decisions: { domain: "case", label: "Search exact words" },
   count_decisions: { domain: "case", label: "Count" },
+  read_document: { domain: "document", label: "Read document" },
+  search_document: { domain: "document", label: "Find in document" },
 };
-const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes" };
+const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes", document: "Your document" };
 
 export const TOOL_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(TOOLS).map(([name, t]) => [name, t.label]),
@@ -146,11 +153,13 @@ function researchSummary(calls: ToolCall[]): string {
   const count = (d: Domain) => calls.filter((c) => TOOLS[c.name]?.domain === d).length;
   const cases = count("case");
   const statutes = count("statute");
-  const other = calls.length - cases - statutes;
+  const documents = count("document");
+  const other = calls.length - cases - statutes - documents;
   const steps = (n: number) => `${n} step${n === 1 ? "" : "s"}`;
   const parts = [];
   if (cases) parts.push(`${steps(cases)} in case law`);
   if (statutes) parts.push(`${parts.length ? statutes : steps(statutes)} in statutes`);
+  if (documents) parts.push(`${parts.length ? documents : steps(documents)} in the document`);
   if (other) parts.push(`${steps(other)} elsewhere`);
   return parts.join(" · ");
 }
@@ -162,8 +171,10 @@ function toolArg(c: ToolCall): string {
   const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
   const main = perLanguage.length
     ? perLanguage.join(" · ")
-    : c.name === "list_decisions"
+    : c.name === "list_decisions" || c.name === "read_document"
       ? ""
+      : c.name === "search_document"
+      ? (a.words ?? "")
       : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
   const offset = typeof a.offset === "number" && a.offset > 0 ? ` · from character ${a.offset.toLocaleString("en")}` : "";
   return `${String(main)}${offset}`;

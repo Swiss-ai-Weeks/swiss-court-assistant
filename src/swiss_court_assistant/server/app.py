@@ -15,25 +15,26 @@ from typing import Annotated, Any
 
 from fastapi import (Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket,
                      WebSocketDisconnect)
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import tracing
 from .agent import (Agent, Cite, Clarify, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict,
                     original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
-from .documents import UnreadableError, extract, transcribe
+from .documents import MAX_CHARS, UnreadableError, transcribe
 from .matters import MatterStore, Pipeline, create_matter, docx_memo, memo
 from .language import detect_language
 from .mentions import statute_links
+from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Clarification, Conversation, ConversationSummary,
-                      Decision, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
+                      Decision, DocumentInfo, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
                       TranslateRequest, TranslateResponse)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
-from .voice import Listener, narrate
+from .voice import SAMPLE_RATE as ASR_RATE, Listener, narrate
 
 # Which index the app serves: "corpus", the full-corpus index that `index.py` builds and updates
 # (254k decisions since 1980 plus statute articles), or "subset", the 50k-decision evaluation
@@ -75,6 +76,7 @@ class Services:
     citations: CitationIndex | None
     matters: MatterStore
     pipeline: Pipeline
+    documents: DocumentStore
 
 
 @asynccontextmanager
@@ -83,16 +85,19 @@ async def lifespan(app: FastAPI):
     decisions = (SqliteDecisionStore(VECTOR_DB) if INDEX == "corpus" and AGENT != "stub"
                  else DecisionStore(DECISIONS))
     citations = open_index(CITATION_INDEX, decisions.ids())
-    agent = _make_agent(decisions, citations)
+    documents = DocumentStore()
+    agent = _make_agent(decisions, citations, documents)
     matters = MatterStore(MATTERS_DB)
     app.state.services = Services(decisions, ConversationStore(DB), agent, Translator(),
-                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters, decisions))
+                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters, decisions),
+                                  documents)
     log.info("index=%s (%s): %d decisions; agent=%s", INDEX, VECTOR_DB, len(decisions),
              app.state.services.agent.name)
     yield
 
 
-def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: CitationIndex | None = None) -> Agent:
+def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: CitationIndex | None = None,
+                documents: DocumentStore | None = None) -> Agent:
     if AGENT == "stub":
         return StubAgent(CHUNKS, decisions)
     import torch
@@ -103,7 +108,7 @@ def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: Citat
     device = os.environ.get("SCA_EMBED_DEVICE", "cuda:1" if torch.cuda.device_count() > 1 else "cpu")
     corpus = Corpus(VECTOR_DB, KEYWORD_INDEX, decisions, os.environ.get("SCA_EMBED_MODEL"), device,
                     rerank=os.environ.get("SCA_RERANK", "1") == "1", citations=citations)
-    return ReactAgent(corpus)
+    return ReactAgent(corpus, documents)
 
 
 def services(request: Request) -> Services:
@@ -166,7 +171,13 @@ async def delete_conversation(conversation_id: str, s: Svc) -> Response:
 
 @app.get("/api/decisions/{decision_id}", response_model=Decision)
 async def get_decision(decision_id: str, s: Svc) -> Decision:
-    """A decision, or a statute article (a law_id), which answers cite the same way."""
+    """A decision, a statute article (a law_id) or an attached document (a doc_ id), which answers cite
+    the same way."""
+    if decision_id.startswith("doc_"):
+        d = await asyncio.to_thread(s.documents.as_decision, decision_id)
+        if d is None:
+            raise HTTPException(404, "Document not found")
+        return d
     d = s.decisions.get(decision_id) or s.decisions.law(decision_id)
     if d is None:
         raise HTTPException(404, "Decision not found")
@@ -223,25 +234,83 @@ def _sse(event: dict[str, Any]) -> str:
     return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
 
+# ── attached documents: parsed by Nemotron Parse and kept on disk ─────────
+async def _ingest(s: Services, file: UploadFile) -> DocumentInfo:
+    """Keep an upload in the document store: a document parsed to text, or a recording (16 kHz PCM, which
+    the browser decoded for us, named *.pcm) transcribed by the ASR NIM."""
+    data = await file.read()
+    name = file.filename or "document"
+    if len(data) > MAX_UPLOAD:
+        raise HTTPException(413, "That file is larger than 25 MB.")
+    try:
+        if name.endswith(".pcm"):
+            transcript = await transcribe(s.listener, data)
+            return await asyncio.to_thread(s.documents.keep_recording, name, data, transcript, ASR_RATE)
+        return await s.documents.ingest(name, data)
+    except UnreadableError as e:
+        raise HTTPException(422, str(e)) from e
+    except ParserUnavailable as e:
+        raise HTTPException(503, str(e)) from e
+    except Exception as e:
+        log.exception("could not read %s", name)
+        raise HTTPException(502, "That file could not be read right now.") from e
+
+
+@app.post("/api/documents", response_model=DocumentInfo)
+async def upload_document(s: Svc, file: UploadFile = File(...)) -> DocumentInfo:
+    """Parse and store a document the user attaches to a question or a matter; they are sent with its id.
+    A recording (*.pcm) is transcribed and kept as audio."""
+    return await _ingest(s, file)
+
+
+@app.get("/api/documents/accepted")
+async def accepted_documents() -> list[str]:
+    return ACCEPTED
+
+
+@app.get("/api/documents/{document_id}", response_model=DocumentInfo)
+async def get_document(document_id: str, s: Svc) -> DocumentInfo:
+    info = s.documents.info(document_id)
+    if info is None:
+        raise HTTPException(404, "Document not found")
+    return info
+
+
+@app.get("/api/documents/{document_id}/file")
+async def document_file(document_id: str, s: Svc) -> FileResponse:
+    """The document as it was uploaded (a recording as WAV)."""
+    info, path = s.documents.info(document_id), s.documents.file(document_id)
+    if info is None or path is None:
+        raise HTTPException(404, "Document not found")
+    name = info.name if info.name.lower().endswith(path.suffix) else f"{Path(info.name).stem}{path.suffix}"
+    return FileResponse(path, filename=name, content_disposition_type="inline")
+
+
 # ── matters: a client case through intake, research, assessment and drafting ──
-async def _facts(s: Services, file: UploadFile | None, text: str | None) -> tuple[str, str | None, str]:
-    """What the client handed over, as text: a document, a recording, or typed notes."""
-    if file is not None and file.filename:
-        data = await file.read()
-        if len(data) > MAX_UPLOAD:
-            raise HTTPException(413, "That file is larger than 25 MB.")
-        try:
-            if file.filename.endswith(".pcm"):  # the browser decoded the recording for us
-                return await transcribe(s.listener, data), file.filename, "recording"
-            return await asyncio.to_thread(extract, file.filename, data), file.filename, "document"
-        except UnreadableError as e:
-            raise HTTPException(422, str(e)) from e
-        except Exception as e:
-            log.exception("could not read %s", file.filename)
-            raise HTTPException(502, "That file could not be read right now.") from e
-    if text and text.strip():
-        return text.strip(), None, "text"
-    raise HTTPException(422, "Add a document, a recording, or the facts as text.")
+_LABEL = {"document": "Document", "recording": "Recording of the client", "notes": "Notes"}
+
+
+def _facts(s: Services, assets: list[DocumentInfo]) -> str:
+    """The client's story as one text: every asset's text, headed by what it is when there are several."""
+    texts = [(a, _without_page_lines(s.documents.text(a.id) or "")) for a in assets]
+    if len(texts) == 1:
+        return texts[0][1][:MAX_CHARS]
+    each = MAX_CHARS // len(texts)  # a long file must not crowd the others out of the intake prompt
+    return "\n\n".join(f"## {_LABEL[a.kind]}: {a.name}\n\n{text[:each]}" for a, text in texts)
+
+
+def _without_page_lines(text: str) -> str:
+    """The client's story without the "[Page n]" lines the stored text marks pages with."""
+    return re.sub(r"(?m)^\[Page \d+\]\n+", "", text).strip()
+
+
+def _open_matter(s: Services, assets: list[DocumentInfo], title: str | None) -> Matter:
+    if not assets:
+        raise HTTPException(422, "Add a document, a recording, or the facts as text.")
+    one = assets[0] if len(assets) == 1 else None
+    kind = ({"document": "document", "recording": "recording", "notes": "text"}[one.kind] if one else "bundle")
+    name = (None if one.kind == "notes" else one.name) if one else f"{len(assets)} items"
+    return create_matter(s.matters, _facts(s, assets), name, kind, title, assets)
 
 
 @app.get("/api/matters", response_model=list[MatterSummary])
@@ -250,15 +319,32 @@ async def list_matters(s: Svc) -> list[MatterSummary]:
 
 
 @app.post("/api/matters", response_model=Matter)
-async def new_matter(s: Svc, file: UploadFile | None = File(None), text: str | None = Form(None),
-                     title: str | None = Form(None)) -> Matter:
-    facts, name, kind = await _facts(s, file, text)
-    return create_matter(s.matters, facts, name, kind, title)
+async def new_matter(s: Svc, document_ids: list[str] = Form([]), file: UploadFile | None = File(None),
+                     text: str | None = Form(None), title: str | None = Form(None)) -> Matter:
+    """Open a matter on its case file: documents and recordings already uploaded with POST /api/documents
+    (`document_ids`, in order), a file sent along (`file`), and typed notes (`text`)."""
+    assets = []
+    for document_id in dict.fromkeys(document_ids):
+        if (info := s.documents.info(document_id)) is None:
+            raise HTTPException(422, f"Document {document_id} not found — add it again.")
+        assets.append(info)
+    if file is not None and file.filename:
+        assets.append(await _ingest(s, file))
+    if text and text.strip():
+        assets.append(await asyncio.to_thread(s.documents.keep_notes, text.strip()))
+    return _open_matter(s, assets, title)
 
 
 @app.post("/api/matters/text", response_model=Matter)
 async def new_matter_from_text(req: MatterRequest, s: Svc) -> Matter:
-    return create_matter(s.matters, req.text.strip(), None, "text", req.title)
+    return _open_matter(s, [await asyncio.to_thread(s.documents.keep_notes, req.text.strip())], req.title)
+
+
+def _with_assets(s: Services, matter: Matter) -> Matter:
+    """Matters opened before the case file was kept have only their one document's id."""
+    if not matter.assets and matter.document_id and (info := s.documents.info(matter.document_id)):
+        matter.assets = [info]
+    return matter
 
 
 @app.get("/api/matters/{matter_id}", response_model=Matter)
@@ -266,13 +352,16 @@ async def get_matter(matter_id: str, s: Svc) -> Matter:
     matter = s.matters.get(matter_id)
     if matter is None:
         raise HTTPException(404, "Matter not found")
-    return matter
+    return _with_assets(s, matter)
 
 
 @app.delete("/api/matters/{matter_id}", status_code=204)
 async def delete_matter(matter_id: str, s: Svc) -> Response:
-    if not s.matters.delete(matter_id):
+    matter = s.matters.get(matter_id)
+    if matter is None or not s.matters.delete(matter_id):
         raise HTTPException(404, "Matter not found")
+    for asset in _with_assets(s, matter).assets:  # the case file goes with the matter
+        s.documents.delete(asset.id)
     return Response(status_code=204)
 
 
@@ -310,6 +399,11 @@ async def run_matter(matter_id: str, s: Svc) -> StreamingResponse:
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
+    attachments = []
+    for document_id in dict.fromkeys(req.document_ids):
+        if (info := s.documents.info(document_id)) is None:
+            raise HTTPException(422, f"Document {document_id} not found — attach it again.")
+        attachments.append(info)
     if req.conversation_id:
         conv = s.store.get(req.conversation_id)
         if conv is None:
@@ -318,13 +412,14 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
     else:
         created = s.store.create(_title(req.message))
         cid, title, history = created.id, created.title, []
-    user = Message(id=new_id(), role="user", content=req.message, created_at=now())
+    user = Message(id=new_id(), role="user", content=req.message, attachments=attachments or None,
+                   created_at=now())
     s.store.add_message(cid, user)
     summary = ConversationSummary(id=cid, title=title, updated_at=user.created_at)
     return StreamingResponse(
         # a reply to a question asked back is short ("Wohnmietvertrag"); its language is the question's
         _stream(s, summary, req.message, history, detect_language(original_question(req.message, history)),
-                req.allow_questions),
+                req.allow_questions, attachments),
         media_type="text/event-stream",
         # no-transform: compressing proxies (code-server's port proxy, CDNs) would otherwise buffer the stream
         headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
@@ -332,7 +427,8 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
 
 
 async def _events(s: Services, conv: ConversationSummary, question: str, history: list[Message],
-                  language: str, ask: bool = True) -> AsyncIterator[dict[str, Any]]:
+                  language: str, ask: bool = True,
+                  attachments: list[DocumentInfo] | None = None) -> AsyncIterator[dict[str, Any]]:
     """One assistant turn as events (the SSE route and the voice socket both send these), saved when done.
     If the caller stops early (voice barge-in), what was written so far is still saved."""
     yield {"type": "conversation", "conversation": conv.model_dump(by_alias=True)}
@@ -351,7 +447,7 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
 
     with tracing.turn(question, conv.id, language) as trace:
         try:
-            async for ev in s.agent.answer(question, history, ask=ask):
+            async for ev in s.agent.answer(question, history, ask=ask, attachments=attachments):
                 trace.event(ev)
                 match ev:
                     case Status():
@@ -400,9 +496,9 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
         yield {"type": "done", "message": msg.model_dump(by_alias=True)}
 
 
-async def _stream(s: Services, conv: ConversationSummary, question: str,
-                  history: list[Message], language: str, ask: bool = True) -> AsyncIterator[str]:
-    async for event in _events(s, conv, question, history, language, ask):
+async def _stream(s: Services, conv: ConversationSummary, question: str, history: list[Message], language: str,
+                  ask: bool = True, attachments: list[DocumentInfo] | None = None) -> AsyncIterator[str]:
+    async for event in _events(s, conv, question, history, language, ask, attachments):
         yield _sse(event)
 
 
