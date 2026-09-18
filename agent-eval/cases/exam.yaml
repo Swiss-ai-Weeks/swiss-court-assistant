@@ -1,0 +1,709 @@
+# Swiss law exam questions: substantive questions a Swiss bar-exam candidate should be able to
+# answer, over areas the corpus of court decisions actually covers.
+#
+# `reference` is the model answer a Swiss lawyer would give — it is the judge's yardstick for legal
+# accuracy, not a string the agent has to reproduce. `rubric` lists the points the answer must make;
+# each is graded covered / partial / missing. `expect` overrides the defaults
+# (abstain: false, cites: true, language: the case's language).
+
+- id: de-or-271-missbraeuchliche-kuendigung
+  suite: exam
+  area: Tenancy law (OR)
+  language: de
+  level: basic
+  question: |
+    Wann ist die ordentliche Kündigung einer Wohnung durch den Vermieter missbräuchlich, und was
+    kann der Mieter dagegen unternehmen?
+  reference: |
+    Eine ordentliche Kündigung braucht keinen Grund: Beide Parteien können ein unbefristetes
+    Mietverhältnis unter Einhaltung der Fristen und Termine kündigen (Art. 266a OR). Die Schranke
+    ist Treu und Glauben — eine dagegen verstossende Kündigung ist anfechtbar (Art. 271 Abs. 1 OR).
+    Treuwidrig ist eine Kündigung nach der Praxis des Bundesgerichts namentlich dann, wenn sie ohne
+    objektives, ernsthaftes und schützenswertes Interesse, also aus reiner Schikane erfolgt, wenn
+    die Interessen der Parteien in einem krassen Missverhältnis zueinander stehen, oder wenn der
+    angegebene Kündigungsgrund bloss vorgeschoben und der wahre Grund nicht feststellbar ist.
+    Massgebend ist der Zeitpunkt, in dem die Kündigung ausgesprochen wird; fällt der Grund später
+    dahin, wird die Kündigung nicht nachträglich treuwidrig. Dass die Kündigung für den Mieter eine
+    Härte bedeutet, genügt für sich allein nicht — Härte ist nur für die Erstreckung nach Art. 272
+    OR erheblich. Art. 271a OR zählt weitere Tatbestände auf, insbesondere die Rachekündigung,
+    nachdem der Mieter nach Treu und Glauben Ansprüche geltend gemacht hat, und die Sperrfristen
+    während und nach einem Verfahren. Die Beweislast für die Treuwidrigkeit trägt grundsätzlich der
+    Mieter, doch muss der Vermieter die Kündigung auf Verlangen begründen (Art. 271 Abs. 2 OR); eine
+    fehlende oder falsche Begründung ist ein Indiz. Der Mieter muss die Kündigung innert 30 Tagen
+    nach Empfang bei der Schlichtungsbehörde anfechten (Art. 273 Abs. 1 OR); in derselben Frist kann
+    er eine Erstreckung verlangen (Art. 273 Abs. 2 OR).
+  rubric:
+    - "Die ordentliche Kündigung braucht keinen Grund; Schranke ist Treu und Glauben (Art. 271 Abs. 1 OR)"
+    - "Treuwidrig namentlich ohne objektives, ernsthaftes und schützenswertes Interesse / aus reiner Schikane"
+    - "Treuwidrig auch bei krassem Missverhältnis der Interessen oder vorgeschobenem Kündigungsgrund"
+    - "Massgebend ist der Zeitpunkt der Kündigung"
+    - "Blosse Härte für den Mieter genügt nicht; sie zählt nur für die Erstreckung (Art. 272 OR)"
+    - "Anfechtung innert 30 Tagen bei der Schlichtungsbehörde (Art. 273 OR)"
+
+- id: de-or-337-fristlose-kuendigung
+  suite: exam
+  area: Employment law (OR)
+  language: de
+  level: basic
+  question: |
+    Unter welchen Voraussetzungen darf ein Arbeitgeber fristlos kündigen, und welche Folgen hat eine
+    ungerechtfertigte fristlose Entlassung?
+  reference: |
+    Nach Art. 337 Abs. 1 OR kann jede Partei das Arbeitsverhältnis jederzeit aus wichtigen Gründen
+    auflösen. Als wichtiger Grund gilt jeder Umstand, bei dessen Vorhandensein dem Kündigenden nach
+    Treu und Glauben die Fortsetzung des Arbeitsverhältnisses nicht mehr zugemutet werden darf
+    (Art. 337 Abs. 2 OR). Das Bundesgericht handhabt die fristlose Entlassung restriktiv: Nur eine
+    besonders schwere Verletzung der arbeitsvertraglichen Pflichten rechtfertigt sie ohne Weiteres;
+    eine weniger schwere Verletzung nur dann, wenn sie trotz Verwarnung wiederholt wurde. Über das
+    Vorliegen des wichtigen Grundes entscheidet das Gericht nach seinem Ermessen (Art. 337 Abs. 3 OR
+    i.V.m. Art. 4 ZGB); das Bundesgericht überprüft solche Ermessensentscheide zurückhaltend. Die
+    Kündigung muss zudem umgehend nach Kenntnis des Grundes ausgesprochen werden — die Praxis
+    gewährt in der Regel zwei bis drei Arbeitstage Überlegungsfrist, längeres Zuwarten gilt als
+    Verzicht. Die fristlose Kündigung beendet das Arbeitsverhältnis in jedem Fall sofort, auch wenn
+    sie ungerechtfertigt ist. Ist sie ungerechtfertigt, schuldet der Arbeitgeber nach Art. 337c
+    Abs. 1 OR alles, was der Arbeitnehmer bis zum Ablauf der ordentlichen Kündigungsfrist verdient
+    hätte, unter Anrechnung dessen, was er eingespart oder anderweitig verdient bzw. zu verdienen
+    absichtlich unterlassen hat; dazu kommt nach Art. 337c Abs. 3 OR eine Entschädigung nach
+    richterlichem Ermessen von höchstens sechs Monatslöhnen.
+  rubric:
+    - "Wichtiger Grund = Fortsetzung nach Treu und Glauben nicht mehr zumutbar (Art. 337 Abs. 2 OR)"
+    - "Nur eine besonders schwere Pflichtverletzung rechtfertigt sie ohne Verwarnung; sonst ist eine Verwarnung nötig"
+    - "Die Kündigung muss umgehend erfolgen (Praxis: wenige Arbeitstage)"
+    - "Ersatz dessen, was bis zum Ablauf der ordentlichen Kündigungsfrist verdient worden wäre, mit Anrechnung (Art. 337c Abs. 1 OR)"
+    - "Zusätzliche Entschädigung von höchstens sechs Monatslöhnen (Art. 337c Abs. 3 OR)"
+
+- id: de-or-340-konkurrenzverbot
+  suite: exam
+  area: Employment law (OR)
+  language: de
+  level: advanced
+  question: |
+    Welche Voraussetzungen muss ein nachvertragliches Konkurrenzverbot im Arbeitsvertrag erfüllen,
+    und wann fällt es dahin?
+  reference: |
+    Das Konkurrenzverbot bedarf der Schriftform und setzt einen handlungsfähigen Arbeitnehmer voraus
+    (Art. 340 Abs. 1 OR). Verbindlich ist es nur, wenn das Arbeitsverhältnis dem Arbeitnehmer
+    Einblick in den Kundenkreis oder in Fabrikations- und Geschäftsgeheimnisse gewährt und die
+    Verwendung dieser Kenntnisse den Arbeitgeber erheblich schädigen könnte (Art. 340 Abs. 2 OR).
+    Verlangt ist ein Kausalzusammenhang zwischen dem Einblick und der möglichen Schädigung: Beruht
+    der Kundenkontakt auf den persönlichen Fähigkeiten des Arbeitnehmers, so dass die Kunden ihm
+    wegen seiner Person folgen, verneint das Bundesgericht die Verbindlichkeit (klassisch bei Ärzten,
+    Anwälten und ähnlichen persönlich geprägten Dienstleistungen). Das Verbot ist nach Ort, Zeit und
+    Gegenstand angemessen zu begrenzen, so dass es das wirtschaftliche Fortkommen des Arbeitnehmers
+    nicht unbillig erschwert; es darf nur unter besonderen Umständen drei Jahre überschreiten
+    (Art. 340a Abs. 1 OR). Ein übermässiges Verbot wird vom Richter nach seinem Ermessen eingeschränkt
+    (Art. 340a Abs. 2 OR) — es ist also nicht nichtig, sondern wird auf das zulässige Mass
+    zurückgeführt. Das Verbot fällt dahin, wenn der Arbeitgeber am Verbot kein erhebliches Interesse
+    mehr hat; ferner, wenn der Arbeitgeber ohne begründeten Anlass kündigt oder der Arbeitnehmer aus
+    einem Anlass kündigt, den der Arbeitgeber zu verantworten hat (Art. 340c OR). Bei Verletzung
+    schuldet der Arbeitnehmer Schadenersatz; ist eine Konventionalstrafe vereinbart, kann er sich
+    durch deren Bezahlung befreien, sofern nichts anderes abgemacht ist (Art. 340b Abs. 2 OR), und die
+    Realvollstreckung (Beseitigung des vertragswidrigen Zustands) setzt eine ausdrückliche schriftliche
+    Abrede und eine Rechtfertigung durch die verletzten Interessen voraus (Art. 340b Abs. 3 OR).
+  rubric:
+    - "Schriftform und Handlungsfähigkeit des Arbeitnehmers (Art. 340 Abs. 1 OR)"
+    - "Einblick in Kundenkreis oder Fabrikations-/Geschäftsgeheimnisse und Möglichkeit erheblicher Schädigung (Art. 340 Abs. 2 OR)"
+    - "Kein Konkurrenzverbot, wenn der Kundenkontakt auf den persönlichen Fähigkeiten beruht"
+    - "Begrenzung nach Ort, Zeit und Gegenstand; in der Regel höchstens drei Jahre, richterliche Herabsetzung (Art. 340a OR)"
+    - "Dahinfallen bei fehlendem erheblichem Interesse oder Kündigung ohne begründeten Anlass durch den Arbeitgeber (Art. 340c OR)"
+
+- id: de-zgb-28-persoenlichkeitsverletzung
+  suite: exam
+  area: Persons law (ZGB)
+  language: de
+  level: basic
+  question: |
+    Wann ist eine Persönlichkeitsverletzung nach Art. 28 ZGB widerrechtlich, und welche Klagen stehen
+    der verletzten Person zur Verfügung?
+  reference: |
+    Art. 28 Abs. 1 ZGB gibt demjenigen, der in seiner Persönlichkeit widerrechtlich verletzt wird,
+    Klagen gegen jeden, der an der Verletzung mitwirkt. Die Prüfung erfolgt zweistufig. Zunächst ist
+    zu fragen, ob überhaupt eine Verletzung eines Persönlichkeitsguts vorliegt (Ehre, Privat- und
+    Geheimsphäre, Bild, Name, berufliches Ansehen); Massstab ist ein objektiver, nicht das subjektive
+    Empfinden der betroffenen Person. Liegt eine Verletzung vor, so ist sie nach Art. 28 Abs. 2 ZGB
+    ohne Weiteres widerrechtlich; die Widerrechtlichkeit entfällt nur, wenn ein Rechtfertigungsgrund
+    vorliegt: Einwilligung des Verletzten, ein überwiegendes privates oder öffentliches Interesse
+    oder das Gesetz. Die Rechtfertigung ist vom Verletzer zu behaupten und zu beweisen; bei
+    Medienberichterstattung wägt das Bundesgericht das Informationsinteresse der Öffentlichkeit gegen
+    das Persönlichkeitsinteresse ab, wobei wahre Tatsachenberichte über die Privatsphäre nicht
+    automatisch gerechtfertigt sind. Nach Art. 28a Abs. 1 ZGB kann die klagende Partei eine drohende
+    Verletzung verbieten (Unterlassungsklage), eine bestehende beseitigen (Beseitigungsklage) oder
+    die Widerrechtlichkeit feststellen lassen, wenn sich die Verletzung weiterhin störend auswirkt.
+    Vorbehalten bleiben Klagen auf Schadenersatz, Genugtuung (Art. 49 OR) und Gewinnherausgabe nach
+    den Regeln der Geschäftsführung ohne Auftrag (Art. 28a Abs. 3 ZGB); für Genugtuung ist eine
+    Verletzung von einer gewissen Schwere und ein Verschulden erforderlich. Vorsorglicher Rechtsschutz
+    richtet sich nach Art. 261 ff. ZPO.
+  rubric:
+    - "Zweistufige Prüfung: zuerst Verletzung eines Persönlichkeitsguts, objektiver Massstab"
+    - "Die Verletzung ist widerrechtlich, sofern kein Rechtfertigungsgrund vorliegt (Art. 28 Abs. 2 ZGB)"
+    - "Rechtfertigungsgründe: Einwilligung, überwiegendes privates oder öffentliches Interesse, Gesetz"
+    - "Klagen nach Art. 28a ZGB: Unterlassung, Beseitigung, Feststellung"
+    - "Zusätzlich Schadenersatz, Genugtuung (Art. 49 OR) und Gewinnherausgabe"
+
+- id: de-or-58-werkeigentuemerhaftung
+  suite: exam
+  area: Tort law (OR)
+  language: de
+  level: advanced
+  question: |
+    Ein Passant stürzt auf einer vereisten Treppe vor einem Geschäftshaus. Nach welchen
+    Voraussetzungen haftet der Werkeigentümer nach Art. 58 OR, und kann er sich entlasten?
+  reference: |
+    Art. 58 OR begründet eine Kausalhaftung: Der Eigentümer eines Gebäudes oder eines anderen Werks
+    haftet für den Schaden, den dieses infolge fehlerhafter Anlage oder Herstellung oder mangelhafter
+    Unterhaltung verursacht, ohne dass ihm ein Verschulden nachzuweisen wäre. Voraussetzungen sind
+    ein Werk (ein künstlich hergestellter, mit dem Boden direkt oder indirekt verbundener,
+    stabiler Gegenstand — dazu zählen Treppen, Zugänge, Strassen), ein Werkmangel, ein Schaden und
+    der natürliche und adäquate Kausalzusammenhang zwischen Mangel und Schaden. Ob ein Mangel
+    vorliegt, beurteilt sich nach dem Zweck des Werks: Mangelhaft ist es, wenn es für den
+    bestimmungsgemässen Gebrauch nicht genügend Sicherheit bietet. Massstab ist, womit ein
+    durchschnittlicher, aufmerksamer Benutzer rechnen darf; wer das Werk zweckwidrig oder grob
+    unvorsichtig benutzt, ist nicht geschützt (Selbstverantwortung). Begrenzt wird die Pflicht
+    ausserdem durch die Zumutbarkeit: Schutzmassnahmen, deren Kosten in keinem Verhältnis zum
+    Schutzzweck stehen, sind nicht verlangt, und bei winterlicher Glätte darf nicht jederzeit
+    schneefreier Zustand erwartet werden, wohl aber ein zumutbarer Räumungs- und Streudienst nach den
+    örtlichen Verhältnissen. Der Eigentümer kann sich nicht durch den Nachweis der gehörigen
+    Sorgfalt entlasten — anders als bei Art. 41 oder Art. 55 OR gibt es keinen Sorgfaltsbeweis. Er
+    kann nur den Mangel, die Kausalität oder den Schaden bestreiten; Selbstverschulden des
+    Geschädigten oder das Verhalten eines Dritten führen zur Herabsetzung oder ausnahmsweise zur
+    Unterbrechung des Kausalzusammenhangs (Art. 44 OR). Auf den Hersteller oder den
+    Unterhaltspflichtigen steht ihm der Rückgriff offen (Art. 58 Abs. 2 OR).
+  rubric:
+    - "Kausalhaftung ohne Verschulden des Eigentümers"
+    - "Werk, Werkmangel (fehlerhafte Anlage/Herstellung oder mangelhafter Unterhalt), Schaden, Kausalzusammenhang"
+    - "Mangel beurteilt sich nach dem bestimmungsgemässen Gebrauch und dem, womit ein durchschnittlicher Benutzer rechnen darf"
+    - "Zumutbarkeit der Schutzmassnahmen begrenzt die Pflicht; Selbstverantwortung des Benutzers"
+    - "Kein Entlastungsbeweis durch Sorgfalt; nur Herabsetzung wegen Selbstverschuldens (Art. 44 OR)"
+
+- id: de-or-24-grundlagenirrtum
+  suite: exam
+  area: Contract law (OR)
+  language: de
+  level: advanced
+  question: |
+    Was sind die Voraussetzungen eines Grundlagenirrtums nach Art. 24 Abs. 1 Ziff. 4 OR und welche
+    Rechtsfolgen hat er?
+  reference: |
+    Ein Vertrag ist für die Partei unverbindlich, die sich beim Abschluss in einem wesentlichen
+    Irrtum befand (Art. 23 OR). Der Grundlagenirrtum nach Art. 24 Abs. 1 Ziff. 4 OR liegt vor, wenn
+    der Irrtum einen bestimmten Sachverhalt betrifft, der von der irrenden Partei nach Treu und
+    Glauben im Geschäftsverkehr als notwendige Grundlage des Vertrags betrachtet wurde. Nach der
+    Rechtsprechung des Bundesgerichts braucht es dafür kumulativ die subjektive Wesentlichkeit — die
+    irrende Partei hätte den Vertrag ohne den Irrtum nicht oder nicht so geschlossen — und die
+    objektive Wesentlichkeit: Der Sachverhalt musste auch nach Treu und Glauben im Geschäftsverkehr
+    als notwendige Vertragsgrundlage erscheinen, und dies musste für die Gegenpartei erkennbar sein.
+    Der Irrtum muss einen gegenwärtigen oder vergangenen Sachverhalt betreffen; eine blosse
+    Fehlprognose über die künftige Entwicklung genügt nicht, es sei denn, die Parteien hätten den
+    künftigen Sachverhalt als sicher vorausgesetzt. Der blosse Motivirrtum ist unbeachtlich
+    (Art. 24 Abs. 2 OR), ebenso grundsätzlich der Rechnungsfehler, der nur zu berichtigen ist
+    (Art. 24 Abs. 3 OR). Rechtsfolge ist die einseitige Unverbindlichkeit: Der Vertrag gilt als
+    genehmigt, wenn der Irrende nicht binnen Jahresfrist seit Entdeckung des Irrtums erklärt, dass er
+    ihn nicht halte (Art. 31 OR). Wer sich auf seinen Irrtum beruft, hat der anderen Partei den
+    daraus entstandenen Schaden zu ersetzen, wenn der Irrtum auf seine eigene Fahrlässigkeit
+    zurückzuführen ist, sofern die Gegenpartei den Irrtum weder kannte noch kennen sollte
+    (Art. 26 OR); die Berufung auf den Irrtum ist ausserdem ausgeschlossen, wenn sie Treu und Glauben
+    widerspricht (Art. 25 OR).
+  rubric:
+    - "Subjektive Wesentlichkeit: ohne den Irrtum wäre der Vertrag nicht oder nicht so geschlossen worden"
+    - "Objektive Wesentlichkeit nach Treu und Glauben im Geschäftsverkehr, erkennbar für die Gegenpartei"
+    - "Der Irrtum muss einen gegenwärtigen oder vergangenen Sachverhalt betreffen, nicht eine blosse Zukunftserwartung"
+    - "Rechtsfolge: einseitige Unverbindlichkeit, Erklärung binnen Jahresfrist (Art. 31 OR)"
+    - "Schadenersatzpflicht bei eigener Fahrlässigkeit (Art. 26 OR)"
+
+- id: de-stgb-15-notwehr
+  suite: exam
+  area: Criminal law (StGB)
+  language: de
+  level: basic
+  question: |
+    Wann ist eine Verteidigungshandlung durch Notwehr gerechtfertigt, und wie wird ein
+    Notwehrexzess behandelt?
+  reference: |
+    Nach Art. 15 StGB ist, wer ohne Recht angegriffen oder unmittelbar mit einem Angriff bedroht
+    wird, sowie jeder andere berechtigt, den Angriff in einer den Umständen angemessenen Weise
+    abzuwehren. Vorausgesetzt ist damit ein rechtswidriger Angriff, der gegenwärtig ist oder
+    unmittelbar bevorsteht; ist der Angriff beendet, entfällt die Notwehrlage, und eine Abwehr, die
+    erst später erfolgt, ist blosse Vergeltung. Erforderlich ist ferner der Abwehrwille. Kernstück
+    ist die Angemessenheit der Abwehr: Nach der Rechtsprechung sind die gesamten Umstände zu würdigen,
+    namentlich die Schwere des Angriffs, die auf dem Spiel stehenden Rechtsgüter des Angegriffenen
+    und des Angreifers sowie die Art des Abwehrmittels und dessen tatsächliche Verwendung. Der
+    Angegriffene muss nicht das mildeste Mittel wählen, wenn dieses die Abwehr nicht sicher
+    gewährleistet, hat aber unter den wirksamen Mitteln das am wenigsten einschneidende zu wählen;
+    der Einsatz gefährlicher Werkzeuge und namentlich von Schusswaffen unterliegt strengen
+    Anforderungen und setzt in der Regel eine vorgängige Androhung voraus. Überschreitet der
+    Abwehrende die Grenzen der Notwehr, so mildert das Gericht die Strafe (Art. 16 Abs. 1 StGB);
+    überschreitet er sie in entschuldbarer Aufregung oder Bestürzung über den Angriff, so handelt er
+    nicht schuldhaft und bleibt straflos (Art. 16 Abs. 2 StGB). Wer sich irrig eine Notwehrlage
+    vorstellt (Putativnotwehr), wird nach Art. 13 StGB nach seiner irrigen Vorstellung beurteilt.
+  rubric:
+    - "Rechtswidriger Angriff, der gegenwärtig ist oder unmittelbar bevorsteht"
+    - "Angemessenheit der Abwehr nach den gesamten Umständen (Schwere des Angriffs, betroffene Rechtsgüter, Abwehrmittel)"
+    - "Unter den wirksamen Mitteln ist das am wenigsten einschneidende zu wählen; strenge Anforderungen an gefährliche Waffen"
+    - "Notwehrexzess: obligatorische Strafmilderung (Art. 16 Abs. 1 StGB)"
+    - "Straflosigkeit bei entschuldbarer Aufregung oder Bestürzung (Art. 16 Abs. 2 StGB)"
+
+- id: de-stpo-in-dubio-pro-reo
+  suite: exam
+  area: Criminal procedure (StPO)
+  language: de
+  level: advanced
+  question: |
+    Welche Bedeutung hat der Grundsatz in dubio pro reo, und wie überprüft das Bundesgericht seine
+    Verletzung?
+  reference: |
+    Die Unschuldsvermutung ist in Art. 10 Abs. 1 StPO, Art. 32 Abs. 1 BV und Art. 6 Ziff. 2 EMRK
+    verankert; der Grundsatz in dubio pro reo ist ihre Ausprägung (Art. 10 Abs. 3 StPO). Er hat nach
+    ständiger Rechtsprechung zwei Bedeutungen. Als Beweislastregel besagt er, dass es Sache der
+    Anklagebehörde ist, die Schuld der beschuldigten Person zu beweisen, und nicht Sache der
+    beschuldigten Person, ihre Unschuld nachzuweisen; verletzt ist die Regel, wenn das Gericht eine
+    Verurteilung allein damit begründet, die beschuldigte Person habe ihre Unschuld nicht dargetan.
+    Als Beweiswürdigungsregel besagt er, dass sich das Gericht nicht von der Existenz eines für die
+    beschuldigte Person ungünstigen Sachverhalts überzeugt erklären darf, wenn bei objektiver
+    Betrachtung erhebliche und nicht zu unterdrückende Zweifel bestehen; abstrakte und theoretische
+    Zweifel genügen nicht, da solche immer möglich sind, und absolute Gewissheit ist nicht
+    verlangt. Die Beweise sind im Übrigen frei nach der aus dem gesamten Verfahren gewonnenen
+    Überzeugung zu würdigen (Art. 10 Abs. 2 StPO). Vor Bundesgericht gilt: Die Beweislastregel prüft
+    es frei, weil sie ein verfassungsmässiger Verfahrensgrundsatz ist; der Beweiswürdigungsregel
+    kommt dagegen neben dem Willkürverbot (Art. 9 BV) keine selbstständige Bedeutung zu — die
+    Sachverhaltsfeststellung wird nur auf Willkür überprüft (Art. 97 Abs. 1 und Art. 105 BGG), und
+    die Rüge muss den qualifizierten Anforderungen von Art. 106 Abs. 2 BGG genügen.
+  rubric:
+    - "Verankerung in Art. 10 StPO, Art. 32 Abs. 1 BV und Art. 6 Ziff. 2 EMRK"
+    - "Beweislastregel: die Anklagebehörde muss die Schuld beweisen, nicht die beschuldigte Person ihre Unschuld"
+    - "Beweiswürdigungsregel: keine Verurteilung bei erheblichen und nicht zu unterdrückenden Zweifeln"
+    - "Abstrakte oder theoretische Zweifel genügen nicht; absolute Gewissheit ist nicht verlangt"
+    - "Das Bundesgericht prüft die Beweiswürdigung nur unter dem Gesichtspunkt der Willkür, die Beweislastregel dagegen frei"
+
+- id: de-schkg-82-provisorische-rechtsoeffnung
+  suite: exam
+  area: Debt enforcement (SchKG)
+  language: de
+  level: advanced
+  question: |
+    Was muss ein Gläubiger für die provisorische Rechtsöffnung vorlegen, was kann der Schuldner
+    dagegen einwenden, und wie geht es nach der Rechtsöffnung weiter?
+  reference: |
+    Beruht die Forderung auf einer durch öffentliche Urkunde festgestellten oder durch Unterschrift
+    bekräftigten Schuldanerkennung, so kann der Gläubiger die provisorische Rechtsöffnung verlangen
+    (Art. 82 Abs. 1 SchKG). Eine Schuldanerkennung im Sinne dieser Bestimmung ist eine vom Schuldner
+    unterzeichnete Urkunde, aus der sich sein vorbehalt- und bedingungsloser Wille ergibt, dem
+    Gläubiger eine bestimmte oder leicht bestimmbare Geldsumme zu zahlen; sie kann sich auch aus
+    mehreren Urkunden zusammen ergeben, sofern die unterzeichnete Urkunde auf die übrigen verweist.
+    Bei zweiseitigen Verträgen muss der Gläubiger zusätzlich die Erfüllung seiner eigenen Leistung
+    nachweisen. Das Rechtsöffnungsverfahren ist ein summarisches Urkundenverfahren (Art. 251 lit. a
+    ZPO); der Rechtsöffnungsrichter entscheidet nur über die Vollstreckbarkeit des Titels, nicht
+    über den materiellen Bestand der Forderung, und seinem Entscheid kommt keine materielle
+    Rechtskraft zu. Der Schuldner kann die Rechtsöffnung abwenden, indem er Einwendungen, welche die
+    Schuldanerkennung entkräften, sofort glaubhaft macht (Art. 82 Abs. 2 SchKG) — verlangt ist also
+    blosses Glaubhaftmachen, nicht der volle Beweis; typische Einwendungen sind Tilgung, Stundung,
+    Verrechnung, Simulation oder Willensmängel. Wird die provisorische Rechtsöffnung erteilt, kann
+    der Schuldner innert zwanzig Tagen auf dem Weg des ordentlichen Prozesses Aberkennungsklage
+    erheben (Art. 83 Abs. 2 SchKG); diese ist eine negative Feststellungsklage, in der die
+    Beweislast nach materiellem Recht verteilt bleibt. Nach Ablauf der Frist oder bei Abweisung der
+    Klage wird die Rechtsöffnung definitiv; während der Frist kann der Gläubiger die provisorische
+    Pfändung verlangen (Art. 83 Abs. 1 SchKG).
+  rubric:
+    - "Schuldanerkennung: unterzeichnete Urkunde mit vorbehaltloser Verpflichtung zur Zahlung einer bestimmten Geldsumme"
+    - "Summarisches Verfahren; der Richter entscheidet nur über die Vollstreckbarkeit, nicht über den Bestand der Forderung"
+    - "Der Schuldner muss Einwendungen nur glaubhaft machen (Art. 82 Abs. 2 SchKG)"
+    - "Aberkennungsklage innert 20 Tagen (Art. 83 Abs. 2 SchKG)"
+    - "Provisorische Pfändung während der Frist (Art. 83 Abs. 1 SchKG)"
+
+- id: de-bv-9-willkuer
+  suite: exam
+  area: Constitutional law (BV)
+  language: de
+  level: basic
+  question: |
+    Wann ist ein kantonaler Entscheid willkürlich im Sinne von Art. 9 BV?
+  reference: |
+    Art. 9 BV gibt jeder Person Anspruch darauf, von den staatlichen Organen ohne Willkür behandelt
+    zu werden. Nach ständiger Rechtsprechung liegt Willkür in der Rechtsanwendung nicht schon dann
+    vor, wenn eine andere Lösung ebenfalls vertretbar erscheint oder sogar vorzuziehen wäre. Das
+    Bundesgericht hebt einen Entscheid nur auf, wenn er offensichtlich unhaltbar ist, mit der
+    tatsächlichen Situation in klarem Widerspruch steht, eine Norm oder einen unumstrittenen
+    Rechtsgrundsatz krass verletzt oder in stossender Weise dem Gerechtigkeitsgedanken zuwiderläuft.
+    Erforderlich ist zudem, dass der Entscheid nicht nur in der Begründung, sondern auch im Ergebnis
+    willkürlich ist. Willkürliche Beweiswürdigung oder Sachverhaltsfeststellung liegt vor, wenn das
+    Gericht den Sinn und die Tragweite eines Beweismittels offensichtlich verkannt, ohne sachlichen
+    Grund ein wichtiges und entscheidwesentliches Beweismittel unberücksichtigt gelassen oder aus den
+    vorhandenen Beweisen unhaltbare Schlüsse gezogen hat. Bei der Auslegung und Anwendung kantonalen
+    Rechts ist die Kognition des Bundesgerichts ohnehin auf Willkür beschränkt, da die Verletzung
+    kantonalen Rechts für sich allein kein Beschwerdegrund ist (Art. 95 BGG). Die Willkürrüge
+    unterliegt schliesslich dem strengen Rügeprinzip: Sie muss in der Beschwerde klar und detailliert
+    anhand des angefochtenen Entscheids begründet werden (Art. 106 Abs. 2 BGG); appellatorische
+    Kritik genügt nicht.
+  rubric:
+    - "Willkür nicht schon, wenn eine andere Lösung ebenfalls vertretbar oder vorzuziehen wäre"
+    - "Offensichtlich unhaltbar, klarer Widerspruch zur tatsächlichen Situation, krasse Normverletzung oder stossender Widerspruch zum Gerechtigkeitsgedanken"
+    - "Der Entscheid muss auch im Ergebnis willkürlich sein"
+    - "Willkürliche Beweiswürdigung: Verkennen von Sinn und Tragweite, Übergehen wichtiger Beweismittel, unhaltbare Schlüsse"
+    - "Qualifizierte Rüge- und Begründungspflicht (Art. 106 Abs. 2 BGG)"
+
+- id: de-zgb-273-persoenlicher-verkehr
+  suite: exam
+  area: Family law (ZGB)
+  language: de
+  level: basic
+  question: |
+    Nach welchen Kriterien wird das Besuchsrecht des nicht obhutsberechtigten Elternteils bemessen,
+    und wann darf es verweigert oder entzogen werden?
+  reference: |
+    Nach Art. 273 Abs. 1 ZGB haben Eltern, denen die elterliche Sorge oder Obhut nicht zusteht, und
+    das unmündige Kind gegenseitig Anspruch auf angemessenen persönlichen Verkehr. Das Besuchsrecht
+    ist ein Pflichtrecht beider Seiten und dient in erster Linie dem Kindeswohl; das Kind ist
+    Rechtssubjekt und nicht Objekt des elterlichen Anspruchs. Bei der Ausgestaltung ist deshalb
+    massgebend, was dem Wohl des Kindes entspricht — zu berücksichtigen sind das Alter des Kindes,
+    die bisherige Beziehung zum Elternteil, die Entfernung der Wohnorte, die Belastbarkeit des
+    Kindes und der Wille des urteilsfähigen Kindes, der mit zunehmendem Alter — praxisgemäss etwa ab
+    zwölf Jahren — erheblich ins Gewicht fällt; das Kind ist in der Regel persönlich anzuhören
+    (Art. 298 ZPO, Art. 314a ZGB). Nach Art. 274 Abs. 1 ZGB haben die Eltern alles zu unterlassen,
+    was das Verhältnis des Kindes zum anderen Elternteil beeinträchtigt oder die Erziehungsaufgabe
+    erschwert. Verweigert oder entzogen wird der persönliche Verkehr nur, wenn er das Wohl des
+    Kindes gefährdet, wenn die Eltern ihre Pflichten verletzen, sich nicht ernsthaft um das Kind
+    gekümmert haben oder andere wichtige Gründe vorliegen (Art. 274 Abs. 2 ZGB). Der Entzug ist
+    ultima ratio: Zuerst sind mildere Massnahmen zu prüfen, namentlich ein begleitetes Besuchsrecht,
+    Weisungen an die Eltern oder eine Beistandschaft (Art. 273 Abs. 2, Art. 307 f., Art. 308 Abs. 2
+    ZGB). Ein blosses Zerwürfnis zwischen den Eltern oder die Weigerung, Unterhalt zu zahlen,
+    rechtfertigen den Entzug nicht.
+  rubric:
+    - "Gegenseitiger Anspruch auf angemessenen persönlichen Verkehr (Art. 273 Abs. 1 ZGB); Pflichtrecht"
+    - "Massgebend ist in erster Linie das Kindeswohl, nicht das Interesse der Eltern"
+    - "Berücksichtigung des Willens des urteilsfähigen Kindes und Anhörung des Kindes"
+    - "Verweigerung oder Entzug nur bei Gefährdung des Kindeswohls oder anderen Gründen nach Art. 274 Abs. 2 ZGB"
+    - "Entzug als ultima ratio; zuerst mildere Massnahmen wie begleitetes Besuchsrecht oder Beistandschaft"
+
+- id: fr-co-336c-grossesse
+  suite: exam
+  area: Employment law (CO)
+  language: fr
+  level: basic
+  question: |
+    Une employée est licenciée alors qu'elle est enceinte. Quelles sont les conséquences juridiques
+    de ce congé en droit suisse du travail ?
+  reference: |
+    Après le temps d'essai, l'employeur ne peut pas résilier le contrat pendant la grossesse et au
+    cours des seize semaines qui suivent l'accouchement (art. 336c al. 1 let. c CO). Un congé donné
+    pendant cette période de protection n'est pas seulement abusif : il est nul (art. 336c al. 2,
+    1re phrase CO). La nullité opère de plein droit, indépendamment de la bonne foi de l'employeur et
+    même s'il ignorait la grossesse ; le contrat subsiste et l'employeur doit, s'il veut mettre fin
+    aux rapports de travail, notifier un nouveau congé après l'échéance de la période de protection.
+    Il faut distinguer selon le moment : si le congé est donné avant la période de protection et que
+    le délai de congé n'a pas expiré avant le début de celle-ci, le délai est suspendu et ne continue
+    à courir qu'après la fin de la période de protection (art. 336c al. 2, 2e phrase CO) ; si les
+    rapports de travail devaient prendre fin à un terme qui ne coïncide pas avec la fin du délai
+    prolongé, le terme est reporté au prochain terme (art. 336c al. 3 CO). La protection ne vaut que
+    contre le congé donné par l'employeur : elle ne s'applique ni à la résiliation par la
+    travailleuse, ni pendant le temps d'essai, ni au licenciement immédiat pour justes motifs
+    (art. 337 CO), ni en cas de résiliation d'un commun accord. Le congé nul doit être distingué du
+    congé abusif de l'art. 336 CO, qui suppose une résiliation valable et n'ouvre droit qu'à une
+    indemnité de six mois de salaire au maximum (art. 336a CO), à condition qu'opposition ait été
+    formée par écrit avant la fin du délai de congé et que l'action soit ouverte dans les 180 jours
+    (art. 336b CO).
+  rubric:
+    - "Le congé donné pendant la grossesse est nul, et non simplement abusif (art. 336c al. 2 CO)"
+    - "La protection s'étend aux seize semaines qui suivent l'accouchement et ne vaut qu'après le temps d'essai"
+    - "L'employeur doit notifier un nouveau congé après la période de protection"
+    - "Congé donné avant la période : le délai de congé est suspendu, puis reporté au prochain terme (art. 336c al. 2 et 3 CO)"
+    - "Distinction avec le congé abusif de l'art. 336 CO, sanctionné par une indemnité de six mois au maximum"
+
+- id: fr-lp-80-mainlevee-definitive
+  suite: exam
+  area: Debt enforcement (LP)
+  language: fr
+  level: advanced
+  question: |
+    Quels moyens le débiteur peut-il encore faire valoir contre une requête de mainlevée définitive
+    fondée sur un jugement exécutoire ?
+  reference: |
+    Lorsque la créance est fondée sur un jugement exécutoire, le créancier peut requérir du juge la
+    mainlevée définitive de l'opposition (art. 80 al. 1 LP) ; sont assimilées à des jugements
+    notamment les transactions et reconnaissances passées en justice, ainsi que les décisions
+    administratives et les prononcés de mainlevée énumérés à l'art. 80 al. 2 LP. Le juge de la
+    mainlevée ne revoit pas le bien-fondé matériel de la créance : il vérifie uniquement l'existence
+    d'un titre exécutoire, son caractère exécutoire et l'identité entre le créancier, le débiteur et
+    la créance en poursuite d'une part et ceux qui résultent du jugement d'autre part. Le débiteur ne
+    peut faire échec à la mainlevée qu'en prouvant par titre que la dette a été éteinte ou qu'il a
+    obtenu un sursis postérieurement au jugement, ou en se prévalant de la prescription
+    (art. 81 al. 1 LP). La preuve doit être immédiate et par titre, ce qui exclut les témoignages et
+    les expertises ; les moyens de fond qui auraient pu être invoqués dans le procès au fond
+    — contestation de la créance, compensation non établie par titre, vices du consentement — sont
+    irrecevables, de même que la critique du jugement lui-même. Lorsque le jugement a été rendu dans
+    un autre canton, le débiteur peut encore faire valoir qu'il n'a pas été régulièrement assigné ou
+    légalement représenté (art. 81 al. 2 LP) ; s'agissant d'un jugement étranger, il peut soulever
+    les moyens prévus par la convention applicable ou, à défaut, par la LDIP (art. 81 al. 3 LP). La
+    décision de mainlevée est une décision de procédure qui n'a pas autorité de chose jugée sur le
+    fond ; le débiteur n'a pas d'action en libération de dette (réservée à la mainlevée provisoire,
+    art. 83 al. 2 LP), mais conserve l'action en répétition de l'indu de l'art. 86 LP.
+  rubric:
+    - "Le juge vérifie seulement le titre exécutoire et l'identité des parties et de la créance, pas le fond"
+    - "Seuls moyens : extinction de la dette, sursis postérieur au jugement, prescription (art. 81 al. 1 LP)"
+    - "La preuve doit être immédiate et apportée par titre"
+    - "Les objections de fond qui relevaient du procès au fond sont irrecevables"
+    - "Pas d'action en libération de dette ; elle est réservée à la mainlevée provisoire (art. 83 al. 2 LP)"
+
+- id: fr-cpp-429-indemnite
+  suite: exam
+  area: Criminal procedure (CPP)
+  language: fr
+  level: advanced
+  question: |
+    Un prévenu bénéficie d'une ordonnance de classement. À quelle indemnité a-t-il droit et à quelles
+    conditions peut-elle être réduite ou refusée ?
+  reference: |
+    Si le prévenu est acquitté totalement ou en partie ou s'il bénéficie d'une ordonnance de
+    classement, il a droit, selon l'art. 429 al. 1 CPP, à une indemnité pour les dépenses occasionnées
+    par l'exercice raisonnable de ses droits de procédure — en pratique surtout les frais de défense,
+    dont le caractère raisonnable s'apprécie d'après la complexité de la cause et le travail
+    nécessaire ; à une indemnité pour le dommage économique subi au titre de sa participation
+    obligatoire à la procédure, notamment la perte de gain ; et à une réparation du tort moral subi
+    en raison d'une atteinte particulièrement grave à sa personnalité, notamment en cas de privation
+    de liberté. L'autorité pénale examine d'office ces prétentions et peut enjoindre au prévenu de les
+    chiffrer et de les justifier (art. 429 al. 2 CPP). Selon l'art. 430 al. 1 CPP, l'autorité peut
+    réduire ou refuser l'indemnité lorsque le prévenu a provoqué illicitement et fautivement
+    l'ouverture de la procédure ou a rendu plus difficile la conduite de celle-ci, lorsque la partie
+    plaignante doit l'indemniser, ou lorsque les dépenses sont insignifiantes. Selon la jurisprudence
+    constante du Tribunal fédéral, la question de l'indemnité doit être tranchée en même temps que
+    celle des frais : si le prévenu supporte les frais en application de l'art. 426 al. 2 CPP, il n'a
+    en principe pas droit à une indemnité, et inversement, s'il n'en supporte pas, l'indemnité ne peut
+    lui être refusée. Pour la détention injustifiée, le Tribunal fédéral retient comme ordre de
+    grandeur un montant de 200 fr. par jour, à adapter vers le haut ou vers le bas selon les
+    circonstances du cas d'espèce.
+  rubric:
+    - "Indemnité pour les dépenses occasionnées par l'exercice raisonnable des droits de procédure (frais de défense)"
+    - "Indemnité pour le dommage économique, notamment la perte de gain"
+    - "Réparation du tort moral en cas d'atteinte particulièrement grave, notamment la détention"
+    - "Réduction ou refus si le prévenu a provoqué illicitement et fautivement la procédure ou l'a entravée (art. 430 al. 1 CPP)"
+    - "Le sort de l'indemnité suit celui des frais (art. 426 al. 2 CPP) ; examen d'office"
+
+- id: fr-lpga-16-comparaison-revenus
+  suite: exam
+  area: Social insurance (AI/LPGA)
+  language: fr
+  level: advanced
+  question: |
+    Comment le taux d'invalidité d'un assuré exerçant une activité lucrative est-il déterminé dans
+    l'assurance-invalidité ?
+  reference: |
+    Chez l'assuré exerçant une activité lucrative, le taux d'invalidité se détermine par la
+    comparaison des revenus prévue à l'art. 16 LPGA : on compare le revenu que l'assuré aurait pu
+    obtenir s'il n'était pas invalide (revenu sans invalidité) avec celui qu'il pourrait obtenir en
+    exerçant l'activité qui peut raisonnablement être exigée de lui après les traitements et mesures
+    de réadaptation, sur un marché du travail équilibré (revenu d'invalide). La comparaison s'opère au
+    moment de la naissance éventuelle du droit à la rente. Le revenu sans invalidité correspond en
+    principe au dernier salaire réalisé avant l'atteinte à la santé, indexé à l'évolution des
+    salaires, sauf circonstances particulières rendant ce salaire non représentatif. Le revenu
+    d'invalide se détermine d'abord d'après le revenu effectivement réalisé, à condition que
+    l'activité mette pleinement en valeur la capacité résiduelle de travail et que les rapports de
+    travail soient stables ; à défaut, il est établi sur la base des salaires statistiques de
+    l'Enquête suisse sur la structure des salaires (ESS). Une déduction sur le salaire statistique
+    peut être opérée pour tenir compte des circonstances personnelles et professionnelles
+    (limitations fonctionnelles, âge, années de service, taux d'occupation, nationalité ou catégorie
+    d'autorisation de séjour) ; selon la jurisprudence, cette déduction globale et unique ne peut
+    excéder 25 %, et son étendue relève du pouvoir d'appréciation. Le marché du travail équilibré est
+    une notion théorique et abstraite, qui suppose un équilibre entre l'offre et la demande et une
+    certaine variété d'emplois. Le droit à la rente dépend ensuite du taux obtenu (art. 28 et 28b
+    LAI) : il n'y a pas de droit en dessous de 40 %, et une rente entière est accordée dès 70 %.
+  rubric:
+    - "Comparaison du revenu sans invalidité et du revenu d'invalide (art. 16 LPGA)"
+    - "Revenu sans invalidité : en principe le dernier salaire réalisé, indexé"
+    - "Revenu d'invalide : revenu effectif s'il est stable et met pleinement en valeur la capacité résiduelle, sinon salaires statistiques ESS"
+    - "Abattement pour circonstances personnelles et professionnelles, limité à 25 % au maximum"
+    - "Notion de marché du travail équilibré ; seuil de 40 % pour le droit à la rente"
+
+- id: fr-co-404-mandat
+  suite: exam
+  area: Contract law (CO)
+  language: fr
+  level: advanced
+  question: |
+    Un mandant révoque son mandat du jour au lendemain. Le mandataire peut-il s'y opposer ou réclamer
+    une indemnité ?
+  reference: |
+    Selon l'art. 404 al. 1 CO, le mandat peut être révoqué ou répudié en tout temps. Le mandataire ne
+    peut donc pas s'opposer à la révocation ni en exiger l'exécution : la révocation met fin au
+    contrat avec effet immédiat, sans qu'un motif doive être invoqué. Selon la jurisprudence
+    constante du Tribunal fédéral — critiquée par une partie de la doctrine mais maintenue —, cette
+    règle est de droit impératif ; les parties ne peuvent donc ni l'exclure, ni la rendre
+    pratiquement inopérante par une indemnité de résiliation dissuasive. Le mandataire conserve ses
+    prétentions pour les prestations déjà fournies : rémunération des services accomplis et
+    remboursement des frais et avances (art. 402 CO). La partie qui révoque ou répudie le contrat en
+    temps inopportun doit en outre indemniser l'autre du dommage qu'elle lui cause (art. 404 al. 2
+    CO). Il y a résiliation en temps inopportun lorsqu'elle intervient sans raison suffisante à un
+    moment où elle expose l'autre partie à un préjudice particulier, par exemple lorsque le mandataire
+    a engagé des dépenses en vue de l'exécution ou ne peut plus se procurer un travail de
+    remplacement. Le dommage réparable est toutefois limité : il ne couvre que le préjudice résultant
+    du caractère inopportun de la résiliation, et non le gain que le mandataire aurait réalisé si le
+    contrat avait duré jusqu'à son terme. La qualification du contrat est déterminante : si les
+    prestations relèvent du contrat d'entreprise (art. 363 ss CO) ou du contrat de travail, l'art. 404
+    CO ne s'applique pas et les règles propres à ces contrats régissent la fin des relations.
+  rubric:
+    - "Le mandat peut être révoqué en tout temps, sans motif (art. 404 al. 1 CO)"
+    - "Le Tribunal fédéral tient cette règle pour impérative"
+    - "Le mandataire garde droit à la rémunération des prestations déjà fournies et au remboursement des frais"
+    - "Indemnité due seulement en cas de résiliation en temps inopportun (art. 404 al. 2 CO)"
+    - "Le dommage réparable ne comprend pas le gain manqué pour la durée restante du contrat"
+
+- id: fr-co-328-mobbing
+  suite: exam
+  area: Employment law (CO)
+  language: fr
+  level: advanced
+  question: |
+    Qu'est-ce que le mobbing selon la jurisprudence, et quelles prétentions le travailleur peut-il
+    faire valoir contre son employeur ?
+  reference: |
+    L'employeur protège et respecte, dans les rapports de travail, la personnalité du travailleur ; il
+    manifeste les égards voulus pour sa santé et veille au maintien de la moralité (art. 328 al. 1
+    CO). Selon la définition retenue par le Tribunal fédéral, le harcèlement psychologique, ou
+    mobbing, se définit comme un enchaînement de propos et/ou d'agissements hostiles, répétés
+    fréquemment pendant une période assez longue, par lesquels une ou plusieurs personnes cherchent à
+    isoler, à marginaliser, voire à exclure une personne de son lieu de travail. La jurisprudence
+    souligne qu'il n'y a pas mobbing du seul fait qu'un conflit existe dans les relations
+    professionnelles, qu'il règne une mauvaise ambiance de travail, ou qu'un supérieur n'a pas
+    satisfait pleinement à ses devoirs envers ses collaborateurs ; un comportement de la victime
+    difficile n'exclut cependant pas le mobbing. Le travailleur doit prouver les faits constitutifs,
+    ce qui est difficile, de sorte que le juge apprécie les indices dans leur ensemble. Si l'employeur
+    viole son devoir de protection — soit en harcelant lui-même, soit en tolérant le harcèlement par
+    des collègues ou des supérieurs —, il répond du dommage selon les règles de la responsabilité
+    contractuelle (art. 97 CO), ce qui peut comprendre la perte de gain et les frais médicaux ; une
+    indemnité pour tort moral peut être allouée aux conditions de l'art. 49 CO, c'est-à-dire en cas
+    d'atteinte d'une certaine gravité. Le congé notifié au travailleur dont l'employeur a toléré le
+    mobbing, ou motivé par les plaintes de celui-ci, peut être abusif au sens de l'art. 336 CO et
+    donner lieu à une indemnité de six mois de salaire au maximum (art. 336a CO). En cas d'atteinte
+    grave, le travailleur peut aussi résilier le contrat avec effet immédiat pour justes motifs
+    (art. 337 CO).
+  rubric:
+    - "Devoir de protection de la personnalité du travailleur (art. 328 al. 1 CO)"
+    - "Définition : agissements hostiles répétés sur une période assez longue visant à isoler, marginaliser ou exclure"
+    - "Un conflit, une mauvaise ambiance ou des manquements du supérieur ne suffisent pas"
+    - "Responsabilité contractuelle pour le dommage (art. 97 CO) et tort moral aux conditions de l'art. 49 CO"
+    - "Le congé lié au mobbing peut être abusif (art. 336 CO), indemnité de six mois au maximum"
+
+- id: it-co-337-disdetta-immediata
+  suite: exam
+  area: Employment law (CO)
+  language: it
+  level: basic
+  question: |
+    A quali condizioni un datore di lavoro può disdire immediatamente il rapporto di lavoro, e cosa
+    accade se la disdetta immediata è ingiustificata?
+  reference: |
+    Secondo l'art. 337 cpv. 1 CO, ciascuna delle parti può recedere in ogni tempo dal rapporto di
+    lavoro per cause gravi. È considerata causa grave, in particolare, ogni circostanza che non
+    permetta per ragioni di buona fede di esigere da chi dà la disdetta che abbia a continuare nel
+    contratto (art. 337 cpv. 2 CO). Il Tribunale federale interpreta la norma in modo restrittivo:
+    solo una violazione particolarmente grave degli obblighi contrattuali giustifica il licenziamento
+    in tronco; una violazione meno grave lo giustifica soltanto se si è ripetuta nonostante un
+    avvertimento. Il giudice decide secondo il suo libero apprezzamento (art. 337 cpv. 3 CO,
+    art. 4 CC) e il Tribunale federale riesamina tali decisioni con riserbo. La disdetta va inoltre
+    notificata immediatamente dopo che si è avuta conoscenza della causa grave: la prassi concede di
+    regola due o tre giorni lavorativi di riflessione, mentre un'attesa più lunga vale come rinuncia.
+    La disdetta immediata pone comunque fine al rapporto di lavoro, anche se ingiustificata. Se lo è,
+    il datore di lavoro deve risarcire al lavoratore tutto ciò che questi avrebbe guadagnato fino alla
+    scadenza del termine ordinario di disdetta, con imputazione di quanto egli ha risparmiato o
+    guadagnato altrove, o ha omesso intenzionalmente di guadagnare (art. 337c cpv. 1 CO); il giudice
+    può inoltre condannarlo a versare un'indennità fino a sei mesi di salario (art. 337c cpv. 3 CO).
+  rubric:
+    - "Causa grave: non è più esigibile secondo buona fede la continuazione del rapporto (art. 337 cpv. 2 CO)"
+    - "Solo una violazione particolarmente grave giustifica la disdetta senza avvertimento"
+    - "La disdetta deve essere notificata immediatamente (di regola entro pochi giorni lavorativi)"
+    - "Risarcimento di quanto il lavoratore avrebbe guadagnato fino al termine ordinario, con imputazione (art. 337c cpv. 1 CO)"
+    - "Indennità fino a sei mesi di salario (art. 337c cpv. 3 CO)"
+
+- id: it-cp-42-sospensione-condizionale
+  suite: exam
+  area: Criminal law (CP)
+  language: it
+  level: advanced
+  question: |
+    A quali condizioni il giudice sospende condizionalmente l'esecuzione di una pena, e quale
+    prognosi deve compiere?
+  reference: |
+    Secondo l'art. 42 cpv. 1 CP, il giudice sospende di regola l'esecuzione di una pena pecuniaria o
+    di una pena detentiva di due anni al massimo se una pena senza condizionale non sembra necessaria
+    per trattenere l'autore dal commettere nuovi crimini o delitti. La giurisprudenza ha precisato che
+    la sospensione condizionale è la regola e che per negarla occorre una prognosi sfavorevole: non è
+    più richiesta, come sotto il diritto anteriore, una prognosi favorevole. Il giudice deve compiere
+    una valutazione globale di tutte le circostanze rilevanti per la prognosi — i precedenti penali,
+    la reputazione, la situazione personale e professionale, l'atteggiamento dell'autore dopo il
+    fatto, l'eventuale riparazione del danno e la capacità di autocritica — senza attribuire un peso
+    preponderante a un singolo elemento. Se l'autore, nei cinque anni precedenti il reato, è stato
+    condannato a una pena detentiva di sei mesi o più, la sospensione è possibile soltanto in presenza
+    di circostanze particolarmente favorevoli (art. 42 cpv. 2 CP). Il giudice fissa un periodo di
+    prova da due a cinque anni (art. 44 cpv. 1 CP) e può impartire norme di condotta o ordinare
+    un'assistenza riabilitativa. È inoltre possibile la sospensione parziale ai sensi dell'art. 43 CP
+    per pene detentive da uno a tre anni, se necessaria per tenere sufficientemente conto della colpa
+    dell'autore; la parte da eseguire non può superare la metà della pena. Se durante il periodo di
+    prova l'autore commette un nuovo crimine o delitto, la revoca è disciplinata dall'art. 46 CP.
+  rubric:
+    - "Sospensione di regola per pene pecuniarie e pene detentive fino a due anni (art. 42 cpv. 1 CP)"
+    - "La sospensione è la regola; occorre una prognosi sfavorevole per negarla"
+    - "Valutazione globale di tutte le circostanze rilevanti per la prognosi"
+    - "Condizioni più severe in caso di condanna anteriore a sei mesi o più nei cinque anni precedenti (art. 42 cpv. 2 CP)"
+    - "Periodo di prova da due a cinque anni (art. 44 CP); possibile sospensione parziale (art. 43 CP)"
+
+- id: it-lpga-16-grado-invalidita
+  suite: exam
+  area: Social insurance (AI/LPGA)
+  language: it
+  level: basic
+  question: |
+    Come si determina il grado d'invalidità di un assicurato che esercitava un'attività lucrativa?
+  reference: |
+    Per l'assicurato che esercitava un'attività lucrativa il grado d'invalidità è determinato secondo
+    il metodo del confronto dei redditi dell'art. 16 LPGA: il reddito che l'assicurato potrebbe
+    conseguire esercitando l'attività ragionevolmente esigibile da lui dopo la cura medica e
+    l'eventuale esecuzione di provvedimenti d'integrazione, tenuto conto di una situazione equilibrata
+    del mercato del lavoro (reddito da invalido), è confrontato con il reddito che avrebbe potuto
+    conseguire se non fosse diventato invalido (reddito senza invalidità). Il confronto va compiuto al
+    momento della nascita del diritto alla rendita. Il reddito senza invalidità corrisponde di regola
+    all'ultimo salario conseguito prima del danno alla salute, adeguato all'evoluzione dei salari. Il
+    reddito da invalido si fonda in primo luogo sul reddito effettivamente realizzato, se il rapporto
+    di lavoro è stabile e la capacità lavorativa residua è pienamente sfruttata; altrimenti ci si
+    basa sui salari statistici dell'Inchiesta svizzera sulla struttura dei salari (ISS). Dal salario
+    statistico può essere operata una deduzione unica e globale per tenere conto delle limitazioni
+    funzionali e di altre circostanze personali (età, anni di servizio, grado d'occupazione,
+    nazionalità o categoria di permesso); secondo la giurisprudenza tale deduzione non può superare
+    il 25 %. Il mercato del lavoro equilibrato è una nozione teorica e astratta. Il diritto alla
+    rendita dipende poi dal grado ottenuto (art. 28 e 28b LAI): nessun diritto al di sotto del 40 %,
+    rendita intera a partire dal 70 %.
+  rubric:
+    - "Confronto tra reddito senza invalidità e reddito da invalido (art. 16 LPGA)"
+    - "Reddito senza invalidità: di regola l'ultimo salario conseguito, adeguato"
+    - "Reddito da invalido: reddito effettivo se il rapporto è stabile, altrimenti salari statistici ISS"
+    - "Deduzione globale massima del 25 % per le circostanze personali"
+    - "Nozione di mercato del lavoro equilibrato; soglia del 40 % per il diritto alla rendita"
+
+- id: en-co-336c-sick-leave
+  suite: exam
+  area: Employment law (CO)
+  language: en
+  level: basic
+  question: |
+    Can a Swiss employer terminate an employee who is on sick leave? Please explain the blocking
+    periods and what happens to a notice given during them.
+  reference: |
+    After the probation period, an employer may not terminate the employment relationship while the
+    employee is prevented from working, through no fault of their own, by illness or accident
+    (art. 336c para. 1 let. b CO). The protection lasts for 30 days in the first year of service, 90
+    days from the second to the fifth year of service, and 180 days from the sixth year of service.
+    A notice given during such a blocking period is void (art. 336c para. 2 CO): it produces no
+    effect at all, and the employer must give notice again once the blocking period has expired. If,
+    by contrast, the notice was given before the blocking period began and the notice period had not
+    yet expired when it started, the notice period is suspended and only resumes after the blocking
+    period ends; if the employment would then end on a day that is not the usual termination date
+    (typically the end of a month), it is extended to the next such date (art. 336c paras. 2 and 3
+    CO). The protection applies only against termination by the employer — it does not cover notice
+    given by the employee, termination during the probation period, termination by mutual agreement,
+    or immediate termination for good cause under art. 337 CO. Each new, medically distinct illness
+    triggers its own blocking period, whereas a relapse of the same illness continues the period
+    already running. The rules on void notice must be distinguished from those on abusive termination
+    (art. 336 CO), which presuppose a valid notice and only give rise to compensation of up to six
+    months' salary (art. 336a CO).
+  rubric:
+    - "Termination during incapacity for work through illness or accident is blocked after the probation period (art. 336c para. 1 let. b CO)"
+    - "Blocking periods of 30 / 90 / 180 days depending on years of service"
+    - "Notice given during a blocking period is void and must be repeated afterwards"
+    - "Notice given before the blocking period: the notice period is suspended and extended to the next termination date"
+    - "No protection during the probation period, against the employee's own notice, or against immediate termination for good cause"

@@ -27,6 +27,11 @@ log = logging.getLogger(__name__)
 
 READ_WINDOW = 8000
 MAX_TOOL_CALLS = 8  # then the agent has to write the answer
+# Offered write_answer from the first step, the agent took it after one search on 19 of 33 eval
+# questions (agent-eval/RESULTS.md) and answered from whatever came back — on exam questions those
+# turns covered 59 % of the reference points against 72 % for turns that looked again. So
+# write_answer is only offered once it has made this many research calls.
+MIN_TOOL_CALLS = 2
 # Left alone, the agent searches until it runs out of calls, rewording the same query (traced: 8
 # near-identical semantic_search calls for a question the corpus cannot answer). Remind it earlier.
 NUDGE_AFTER = 4
@@ -34,6 +39,12 @@ NUDGE = ("You have used {used} of {max_calls} tool calls. If the passages so far
          "question, call write_answer now and say that this corpus does not answer it: searching "
          "again with similar wording returns the same passages.")
 LANGUAGE_NAMES = {"de": "German", "fr": "French", "it": "Italian", "rm": "Romansh", "en": "English"}
+NO_ANSWER = {
+    "de": "Die Recherche ist abgeschlossen, aber es konnte keine Antwort formuliert werden. Bitte stellen Sie die Frage noch einmal.",
+    "fr": "La recherche est terminée, mais aucune réponse n'a pu être rédigée. Veuillez reposer la question.",
+    "it": "La ricerca è conclusa, ma non è stato possibile formulare una risposta. La preghiamo di riformulare la domanda.",
+    "en": "The research finished, but no answer could be written. Please ask the question again.",
+}
 RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
 
 # Asking the agent not to repeat a search only works if it notices that it is, so each turn
@@ -41,7 +52,7 @@ RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
 # rewordings, not copies ("DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO Wettbewerbsrecht").
 # The store is per turn, not per process: `make_tools` runs once and its tools are shared.
 SAME_SEARCH = 0.8  # Jaccard overlap at which two searches count as the same
-_searches: ContextVar[list[frozenset[str]] | None] = ContextVar("searches", default=None)
+_searches: ContextVar[list[tuple[str, frozenset[str]]] | None] = ContextVar("searches", default=None)
 
 
 def _tokens(text: str) -> frozenset[str]:
@@ -49,7 +60,7 @@ def _tokens(text: str) -> frozenset[str]:
     return frozenset(w for w in re.findall(r"\w+", text.lower()) if len(w) >= 3)
 
 
-def _already_searched(text: str) -> str | None:
+def _already_searched(text: str, kind: str = "decisions") -> str | None:
     """Remembers this search and, when it repeats one from this turn, says which.
 
     Two measures, because the traced repeats were of both kinds: rewording keeps most of the words
@@ -61,15 +72,16 @@ def _already_searched(text: str) -> str | None:
     if searches is None:  # outside a turn (a tool called directly, e.g. from a test)
         return None
     tokens = _tokens(text)
-    for n, seen in enumerate(searches, 1):
-        if not tokens or not seen:
+    # the same words searched in the statutes are not a repeat of a search in the decisions
+    for n, (was, seen) in enumerate(searches, 1):
+        if was != kind or not tokens or not seen:
             continue
         both = len(tokens & seen)
         if max(both / len(tokens | seen), both / len(tokens)) >= SAME_SEARCH:
             return (f"This is search {n} again, so it returns the same passages. Search for something "
                     f"different, use another tool, or call write_answer and report what the passages "
                     f"found so far do and do not say.")
-    searches.append(tokens)
+    searches.append((kind, tokens))
     return None
 
 
@@ -81,7 +93,7 @@ class TextPart(BaseModel):
 
 class CitationPart(BaseModel):
     type: Literal["citation"]
-    decision_id: str
+    decision_id: str = Field(description="a decision_id, or the law_id of a statute article")
     chunk_id: str | None = None
     quote: str = Field(description="verbatim span of the decision; highlighted in the UI")
     explanation: str = Field(description="why the passage supports the preceding text")
@@ -103,6 +115,10 @@ SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "sch
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
 MAX_CHECKS = 8  # grounding checks per answer
 
+LAW_TOOLS = """- read_law(code, article): the text of a statute article in German, French and Italian, e.g. code="OR", article="271a". Read the provision a question or a decision turns on, so the answer can quote what it says.
+- search_laws(query_de, query_fr, query_it): finds statute articles by meaning, when you do not know which provision applies. Federal law unless cantonal=true. It searches the {n_articles:,} statute articles, not the decisions. When the question asks which provision, article or rule governs something, search the statutes before concluding that there is none: court passages rarely say that no provision exists.
+"""
+
 RESEARCH_PROMPT = """You are a legal research assistant for Swiss case law, working on a corpus of {n_decisions:,} Swiss court decisions (Federal Supreme Court, other federal courts and cantonal courts), written in German, French or Italian.
 
 Research the user's question with the tools, then call write_answer.
@@ -110,7 +126,7 @@ Research the user's question with the tools, then call write_answer.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
 - citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
-- write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. You have at most {max_calls} tool calls.
+{law_tools}- write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
 Never repeat a search you have already made: near-identical wording returns the same passages. If two searches with clearly different wording bring back nothing on point, stop and call write_answer. This corpus is a subset of Swiss case law, so many questions — foreign law such as the EU GDPR, statutes no court here applied, recent events — have no answer in it at all. Reporting that is a correct answer; assembling one out of loosely related passages is not.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
@@ -119,6 +135,7 @@ ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using 
 - A "text" part holds one or two sentences of the answer (Markdown allowed). Write in the language of the user's question and name decisions by court and docket number.
 - A "citation" part follows the text it supports. It gives the decision_id of a passage from the tool results, its chunk_id (only for search results; null for text read with read_decision), a "quote" copied character for character from that passage in the decision's own language (never translated or shortened; one to three consecutive sentences, at most about 300 characters), and an "explanation": one sentence in the user's language on why the passage supports the text.
 - Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results — neither from your own legal knowledge nor from an earlier answer in this conversation. Earlier turns tell you what is being asked; they are never a source, and an earlier answer is never repeated as the new one.
+- A statute article from search_laws or read_law is cited the same way: its law_id goes in decision_id, with its chunk_id and a quote copied from the article's text. Name it as it is cited ("Art. 271a OR"). Cite the article for what the statute says and a decision for how courts apply it.
 - If the tool results do not answer the question, say so plainly in one or two text parts with no citations at all: name what was searched for and what those passages are actually about. Do not stretch a loosely related passage into an answer.
 
 Shape:
@@ -142,6 +159,12 @@ def _hit_block(i: int, p: Passage) -> str:
     cited = f" · cited by {p.cited_by} later decisions" if p.cited_by else ""
     return (f"Result {i}: decision_id={p.decision_id} chunk_id={p.chunk_id}\n"
             f"{p.court_label} {p.docket} · {p.date or 'undated'} · {p.language}{erw}{regeste}{cited}\n{p.text}")
+
+
+def _law_block(i: int, p: Passage) -> str:
+    # "Text:" on a line of its own: without a boundary the model copied the label into its quotes
+    return (f"Result {i}: law_id={p.decision_id} chunk_id={p.chunk_id}\n"
+            f"{p.docket} · {p.court_label} · {p.language}\nText:\n{p.text}")
 
 
 def _hits_result(hits: list[Passage]) -> tuple[str, dict]:
@@ -251,13 +274,52 @@ def make_tools(corpus: Corpus) -> list:
                 f"decisions (only those with a decision_id can be opened with read_decision):\n" + "\n".join(lines),
                 {"summary": f"cited by {cited_by}", "decisions": [did]})
 
+    @tool(response_format="content_and_artifact")
+    async def search_laws(query_de: str, query_fr: str, query_it: str, cantonal: bool = False) -> tuple[str, dict]:
+        """Find statute articles by meaning: the provisions themselves, not the decisions applying them.
+        Give the same search in German, French and Italian, worded the way the statute would put it.
+        Federal law only unless cantonal is true. Returns articles with law_id and chunk_id, which are
+        cited like decision passages."""
+        if repeat := _already_searched(f"{query_de} {query_fr} {query_it} {cantonal}", "laws"):
+            return repeat, {"summary": "repeats an earlier search"}
+        try:
+            hits = await corpus.semantic_search_laws({"de": query_de, "fr": query_fr, "it": query_it},
+                                                     federal=not cantonal)
+        except Exception as e:
+            return _failed(e)
+        if not hits:
+            return "No statute articles found.", {"summary": "no articles"}
+        return ("\n\n".join(_law_block(i, h) for i, h in enumerate(hits, 1)),
+                {"summary": f"{len(hits)} articles: " + ", ".join(h.docket for h in hits[:4])
+                 + (" …" if len(hits) > 4 else "")})
+
+    @tool(response_format="content_and_artifact")
+    async def read_law(code: str, article: str, canton: str = "CH") -> tuple[str, dict]:
+        """The verbatim text of one statute article, in German, French and Italian. code is the act's
+        abbreviation in any of its languages (OR or CO, ZGB or CC, StGB or CP) or its SR number
+        ("220"); article is the article number ("271a"). canton is "CH" for federal law, otherwise two
+        letters (ZH, GE, TI ...)."""
+        try:
+            found = await asyncio.to_thread(corpus.decisions.find_articles, code, article, canton)
+        except Exception as e:
+            return _failed(e)
+        if not found:
+            return (f"No article {article!r} of {code!r} ({canton}) in the index. Check the abbreviation, or "
+                    f"find the provision with search_laws.", {"summary": "not found", "error": True})
+        blocks = [f"law_id={a['law_id']} chunk_id={a['law_id']}#0\n{a['label']} · {a['language']}"
+                  + (f" · {a['law_title']}" if a.get("law_title") else "") + f"\nText:\n{a['text']}"
+                  for a in found]
+        return "\n\n".join(blocks), {"summary": f"{found[0]['label']}, {len(found)} language"
+                                                  f"{'s' * (len(found) > 1)}"}
+
     @tool
     async def write_answer() -> str:
         """Finish the research and write the answer. Call it once the passages found answer the
         question, or when more searching is unlikely to help."""
         return ""  # never runs: ResearchThenAnswer answers instead
 
-    return [semantic_search, keyword_search, read_decision, citing_decisions, write_answer]
+    laws = [read_law, search_laws] if corpus.has_laws else []
+    return [semantic_search, keyword_search, read_decision, citing_decisions, *laws, write_answer]
 
 
 class ResearchThenAnswer(AgentMiddleware):
@@ -276,10 +338,19 @@ class ResearchThenAnswer(AgentMiddleware):
         messages = request.messages
         if NUDGE_AFTER <= used < self.max_tool_calls:
             messages = [*messages, HumanMessage(NUDGE.format(used=used, max_calls=self.max_tool_calls))]
-        response = await handler(request.override(tool_choice=choice, messages=messages))
+        tools = request.tools
+        if used < MIN_TOOL_CALLS:  # not yet: see MIN_TOOL_CALLS
+            tools = [t for t in tools if _tool_name(t) != "write_answer"]
+        response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
         result = response.result if isinstance(response, ModelResponse) else [response]
-        calls = [tc for m in result if isinstance(m, AIMessage) for tc in m.tool_calls]
-        if not any(tc["name"] == "write_answer" for tc in calls):
+        replies = [m for m in result if isinstance(m, AIMessage)]
+        calls = [tc for m in replies for tc in m.tool_calls]
+        # A research step that returns neither a tool call nor any text would end the turn with no
+        # answer and nothing logged (seen once in 33 eval turns); answer from what was found instead.
+        stalled = not calls and not any(str(m.content).strip() for m in replies)
+        if stalled:
+            log.warning("a research step returned neither a tool call nor text; writing the answer")
+        elif not any(tc["name"] == "write_answer" for tc in calls):
             return response
         # Passages and searches in three languages pull the answer away from the question's language
         # (a French question got a German answer), so name it when the question makes it clear.
@@ -292,7 +363,29 @@ class ResearchThenAnswer(AgentMiddleware):
                  f"never repeated as the answer.")
         if language:
             final += f" Write its text parts and explanations in {language}."
-        return await self.answer_llm.ainvoke([SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)])
+        prompt = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
+        answer = await self.answer_llm.ainvoke(prompt)
+        if not _answer_parts(answer):
+            # {"answer": []} is valid against the schema, so nothing downstream would complain
+            log.warning("the answer call returned no answer; asking once more")
+            answer = await self.answer_llm.ainvoke(prompt)
+        return answer
+
+
+def _tool_name(tool) -> str | None:
+    return getattr(tool, "name", None) or (tool.get("name") if isinstance(tool, dict) else None)
+
+
+def _answer_parts(message: AIMessage) -> bool:
+    """Whether the answer call produced anything to show: at least one part, or prose."""
+    text = str(message.content).strip()
+    if not text.startswith(("{", "`")):
+        return bool(text)  # prose is passed through by AnswerStream
+    try:
+        parts = json.loads(text[text.find("{"):text.rfind("}") + 1]).get("answer")
+    except (ValueError, AttributeError):
+        return True  # malformed but not empty: AnswerStream salvages what it can
+    return bool(parts)
 
 
 # ── streaming the final JSON ────────────────────────────────────────────
@@ -442,6 +535,25 @@ def locate_quote(text: str, quote: str) -> tuple[int, int] | None:
     return idx[start], idx[end - 1] + 1
 
 
+def _locate_trimmed(text: str, quote: str) -> tuple[int, int] | None:
+    """`locate_quote`, and failing that the quote without its first words.
+
+    A statute result starts with a label line ("Art. 271a OR · de · Bundesgesetz …"), and the model has
+    copied it into the quote in front of the article's words. Dropping leading words until the rest is
+    found keeps the check verbatim: what remains must still appear in the article, character for
+    character, and must be long enough to mean something."""
+    if span := locate_quote(text, quote):
+        return span
+    words = quote.split()
+    for start in range(1, min(len(words), 40)):
+        rest = " ".join(words[start:])
+        if len(rest) < 40:
+            break
+        if span := locate_quote(text, rest):
+            return span
+    return None
+
+
 class _Citations:
     """Turns CitationParts into numbered Sources; the same span keeps its number."""
 
@@ -450,7 +562,50 @@ class _Citations:
         self.by_span: dict[tuple, Source] = {}
         self.seen: set[str] = set()  # decisions the tools returned this turn
 
+    async def _law(self, c: CitationPart) -> Source | None:
+        """A citation of a statute article (its law_id in decision_id), or None if it is not one."""
+        store = self.corpus.decisions
+        chunk = await self.corpus.law_chunk(c.chunk_id) if c.chunk_id and c.chunk_id.startswith("law_") else None
+        law_id = c.decision_id if c.decision_id.startswith("law_") else (chunk.decision_id if chunk else None)
+        if not law_id or store.law(law_id) is None:
+            return None
+        # the quote may come from another language version of the same article than the one named
+        versions = [law_id] + [re.sub(r"_(de|fr|it)_(\d+)$", rf"_{lang}_\2", law_id) for lang in ("de", "fr", "it")]
+        span = None
+        for version in dict.fromkeys(versions):
+            law = store.law(version)
+            if law and (span := _locate_trimmed(law.full_text, c.quote)):
+                if version != law_id:
+                    log.warning("quote cited from %s found in %s instead", law_id, version)
+                law_id = version
+                break
+        law = store.law(law_id)
+        verified = span is not None
+        if not span and chunk and chunk.decision_id == law_id and chunk.char_start is not None:
+            span = (chunk.char_start, chunk.char_end)  # not verbatim: the whole passage
+        if not verified:
+            log.warning("quote not found verbatim in %s: %r", law_id, c.quote[:200])
+        key = (law_id, span or "law")
+        if key in self.by_span:
+            return self.by_span[key]
+        cid = f"{law_id}#0"
+        if span:
+            inside = [p for p in await self.corpus.law_chunks_of(law_id)
+                      if p.char_start is not None and p.char_start <= span[0] < p.char_end]
+            cid = inside[-1].chunk_id if inside else cid
+        source = Source(
+            n=len(self.by_span) + 1, chunk_id=cid, decision_id=law_id,
+            text=law.full_text[span[0]:span[1]] if span else c.quote, section="law", erwaegungen=[],
+            char_start=span[0] if span else None, char_end=span[1] if span else None, score=0.0,
+            decision=store.law_summary(law_id), explanation=c.explanation, verified=verified,
+        )
+        self.by_span[key] = source
+        return source
+
     async def resolve(self, c: CitationPart) -> Source | None:
+        if (c.decision_id.startswith("law_") or (c.chunk_id or "").startswith("law_")) \
+                and hasattr(self.corpus, "law_chunk"):
+            return await self._law(c)
         store = self.corpus.decisions
         chunk = await self.corpus.chunk(c.chunk_id) if c.chunk_id else None
         ids = store.find(c.decision_id) or ([chunk.decision_id] if chunk else [])
@@ -546,7 +701,9 @@ class ReactAgent:
         # a separate short call per citation: does the passage actually say what the sentence claims?
         self.check_llm = ChatOpenAI(**{**common, "temperature": 0}, max_tokens=32, extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": SUPPORT_FORMAT})
-        prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS)
+        law_tools = LAW_TOOLS.format(n_articles=corpus.n_articles) if corpus.has_laws else ""
+        prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS,
+                                        min_calls=MIN_TOOL_CALLS, law_tools=law_tools)
         self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
                                   middleware=[ResearchThenAnswer(answer_llm)])
         log.info("react agent: %s at %s (thinking=%s)", self.model, LLM_URL, LLM_THINKING)
@@ -575,8 +732,9 @@ class ReactAgent:
         yield Status("thinking", "Planning the research")
 
         async def emit(parts: list[TextPart | CitationPart]) -> AsyncIterator[AgentEvent]:
-            nonlocal previous
+            nonlocal previous, shown
             for p in parts:
+                shown = True
                 if isinstance(p, TextPart):
                     claim.append(p.text)
                     yield Delta(p.text)
@@ -592,11 +750,17 @@ class ReactAgent:
             {"messages": [*_history(history), HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates"])
         thought: list[str] = []  # reasoning since the last tool call
+        call = None  # the model call the chunks come from
+        shown = False  # whether any part of an answer has been sent
         async for mode, data in events:
             if mode == "messages":
                 chunk = data[0]
                 if not isinstance(chunk, AIMessageChunk):
                     continue
+                if chunk.id and chunk.id != call:
+                    call = chunk.id
+                    if not shown:  # a retried answer call starts over, not after the empty first try
+                        stream = AnswerStream()
                 if (text := chunk.additional_kwargs.get("reasoning")) and not writing:
                     thought.append(text)
                     yield Thought(text)
@@ -628,6 +792,9 @@ class ReactAgent:
         await events.aclose()  # cancels the model call if we broke off
         async for ev in emit(stream.finish()):
             yield ev
+        if not shown:  # never end a turn in silence: the client cannot tell it from an answer
+            log.warning("the turn ended without an answer")
+            yield Delta(NO_ANSWER.get(detect_language(question, default="en"), NO_ANSWER["en"]))
         for finished in asyncio.as_completed(checks):  # the checks ran while the answer was streaming
             n, supported = await finished
             if supported is not None:

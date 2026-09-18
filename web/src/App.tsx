@@ -20,6 +20,8 @@ export default function App() {
   const [matterId, setMatterId] = useState<string | null>(null);
   // a cited passage opened from a matter; the chat page opens its own from `selection`
   const [matterPreview, setMatterPreview] = useState<{ sources: Source[]; n: number } | null>(null);
+  // an article named in a chat answer's text, opened in the same panel as a citation
+  const [statutePreview, setStatutePreview] = useState<Source | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [pending, setPending] = useState<PendingTurn | null>(null);
@@ -66,6 +68,7 @@ export default function App() {
     abort.current?.abort();
     setPending(null);
     setSelection(null);
+    setStatutePreview(null);
     setQuote(null);
     setSidebarOpen(false);
     setActiveId(id);
@@ -256,7 +259,7 @@ export default function App() {
         </div>
       </nav>
 
-      <div className={`body${(page === "chat" ? showPreview : !!matterPreview) ? " with-preview" : ""}`}>
+      <div className={`body${(page === "chat" ? showPreview || !!statutePreview : !!matterPreview) ? " with-preview" : ""}`}>
         {page === "chat" ? (
           <Sidebar
             items={conversations}
@@ -295,7 +298,14 @@ export default function App() {
                 messages={messages}
                 pending={pending}
                 selection={selection}
-                onOpenSource={(messageId, n) => setSelection({ messageId, n })}
+                onOpenSource={(messageId, n) => {
+                  setStatutePreview(null);
+                  setSelection({ messageId, n });
+                }}
+                onOpenStatute={(source) => {
+                  setSelection(null);
+                  setStatutePreview(source);
+                }}
               />
             )}
             {(voice || voiceError) && (
@@ -322,7 +332,16 @@ export default function App() {
         )}
         <SelectionTools onReply={setQuote} />
 
-        {page === "chat" && showPreview && (
+        {page === "chat" && statutePreview && (
+          <Preview
+            sources={[statutePreview]}
+            activeN={statutePreview.n}
+            language={messages.find((m) => m.statutes?.some((s) => s.source === statutePreview))?.language ?? null}
+            onSelect={() => {}}
+            onClose={() => setStatutePreview(null)}
+          />
+        )}
+        {page === "chat" && showPreview && !statutePreview && (
           <Preview
             sources={selectedSources}
             activeN={selection!.n}

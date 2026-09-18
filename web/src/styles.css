@@ -171,6 +171,13 @@ textarea { font: inherit; }
 .activity li.done .dot { background: var(--ink); border-color: var(--ink); }
 .activity li.error .dot { background: var(--error); border-color: var(--error); }
 .activity .tool { font-weight: 700; color: var(--ink); }
+/* where a research step looks: the decisions, or the statutes (filled, so the two never read alike) */
+.src-tag {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; line-height: 16px;
+  padding: 0 5px; border-radius: var(--rounded-sm); align-self: center; white-space: nowrap;
+}
+.src-tag.case { border: 1px solid var(--hairline-strong); color: var(--body); }
+.src-tag.statute { border: 1px solid var(--ink); background: var(--highlight); color: var(--ink); }
 .activity .arg { color: var(--body); overflow-wrap: anywhere; }
 .activity .result { color: var(--mute); }
 .activity .result::before { content: "→ "; }
@@ -504,3 +511,10 @@ mark.hl.active { background: #fbdc6a; }
 .working-main { font-size: 18px; font-weight: 700; color: var(--ink); margin: var(--space-sm) 0 0; }
 .working-hint { font-size: 14px; color: var(--mute); margin: 0; }
 .matter .status-line { margin-bottom: var(--space-xl); }
+
+/* an article named in an answer's text: opens the statute, unlike a numbered citation chip */
+.statute-link {
+  background: none; border: 0; padding: 0 1px; font: inherit; color: var(--ink);
+  border-bottom: 1px dashed var(--ink); border-radius: 0; cursor: pointer;
+}
+.statute-link:hover, .statute-link:focus-visible { background: var(--highlight); outline: none; }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Message, Source, Stage, ToolCall } from "../api";
+import type { Message, Source, Stage, StatuteRef, ToolCall } from "../api";
 import Answer from "./Answer";
 import { QuoteCard } from "./Composer";
 
@@ -24,11 +24,13 @@ interface Props {
   pending: PendingTurn | null;
   selection: Selection | null;
   onOpenSource: (messageId: string, n: number) => void;
+  /** An article named in an answer's text (not a numbered citation). */
+  onOpenStatute: (source: Source) => void;
 }
 
 const PENDING_ID = "pending";
 
-export default function Thread({ messages, pending, selection, onOpenSource }: Props) {
+export default function Thread({ messages, pending, selection, onOpenSource, onOpenStatute }: Props) {
   const end = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -55,6 +57,8 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
               id={m.id}
               content={m.content}
               sources={m.sources ?? []}
+              statutes={m.statutes ?? []}
+              onOpenStatute={onOpenStatute}
               tools={m.toolCalls ?? []}
               language={m.language ?? null}
               streaming={false}
@@ -100,34 +104,67 @@ function UserTurn({ text }: { text: string }) {
   );
 }
 
-export const TOOL_LABEL: Record<string, string> = {
-  semantic_search: "Semantic search",
-  keyword_search: "Keyword search",
-  read_decision: "Read decision",
-  citing_decisions: "Who cites it",
-  search_laws: "Search statutes",
-  read_law: "Read article",
-  search_decisions: "Search decisions",
-  count_decisions: "Count by",
-  list_values: "Index values",
+/** What each tool looks at — the court decisions or the statutes — and what it does there. The two
+ *  searches work the same way, so the label says how and the tag says where. */
+type Domain = "case" | "statute";
+const TOOLS: Record<string, { domain: Domain; label: string }> = {
+  semantic_search: { domain: "case", label: "Search by meaning" },
+  keyword_search: { domain: "case", label: "Search exact words" },
+  read_decision: { domain: "case", label: "Read decision" },
+  citing_decisions: { domain: "case", label: "Who cites it" },
+  search_laws: { domain: "statute", label: "Search by meaning" },
+  read_law: { domain: "statute", label: "Read article" },
+  search_decisions: { domain: "case", label: "Search exact words" },
+  count_decisions: { domain: "case", label: "Count" },
 };
+const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes" };
+
+export const TOOL_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(TOOLS).map(([name, t]) => [name, t.label]),
+);
+
+/** "Statutes · Read article", for places that show a tool call as one line of text. */
+export function toolTitle(name: string): string {
+  const t = TOOLS[name];
+  return t ? `${DOMAIN_NAME[t.domain]} · ${t.label}` : name;
+}
+
+function DomainTag({ name }: { name: string }) {
+  const t = TOOLS[name];
+  return t ? <span className={`src-tag ${t.domain}`}>{DOMAIN_NAME[t.domain]}</span> : null;
+}
+
+/** "3 steps in case law · 1 in statutes" — where the research went, at a glance. */
+function researchSummary(calls: ToolCall[]): string {
+  const count = (d: Domain) => calls.filter((c) => TOOLS[c.name]?.domain === d).length;
+  const cases = count("case");
+  const statutes = count("statute");
+  const other = calls.length - cases - statutes;
+  const steps = (n: number) => `${n} step${n === 1 ? "" : "s"}`;
+  const parts = [];
+  if (cases) parts.push(`${steps(cases)} in case law`);
+  if (statutes) parts.push(`${parts.length ? statutes : steps(statutes)} in statutes`);
+  if (other) parts.push(`${steps(other)} elsewhere`);
+  return parts.join(" · ");
+}
 
 function toolArg(c: ToolCall): string {
   const a = c.args;
+  if (c.name === "read_law" && a.article)
+    return `Art. ${a.article} ${a.code ?? ""}${a.canton && a.canton !== "CH" ? ` (${a.canton})` : ""}`;
   const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
   const main = perLanguage.length
     ? perLanguage.join(" · ")
     : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
   const offset = typeof a.offset === "number" && a.offset > 0 ? ` · from character ${a.offset.toLocaleString("en")}` : "";
-  return `${String(main)}${offset}`;
+  const cantonal = c.name === "search_laws" && a.cantonal ? " · incl. cantonal law" : "";
+  return `${String(main)}${offset}${cantonal}`;
 }
 
 function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
   return (
     <details className="activity" open={live || undefined}>
-      <summary>
-        Research - {calls.length} searches{calls.length === 1 ? "" : "s"}
-      </summary>
+      <summary>Research · {researchSummary(calls)}</summary>
       <ol>
         {calls.map((c) => {
           const state = c.error ? "error" : c.summary == null ? "running" : "done";
@@ -139,6 +176,7 @@ function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
                 </span>
               )}
               <span className="dot" />
+              <DomainTag name={c.name} />
               <span className="tool">{TOOL_LABEL[c.name] ?? c.name}</span>
               <span className="arg">{toolArg(c)}</span>
               {c.summary != null && <span className="result">{c.summary}</span>}
@@ -154,6 +192,8 @@ interface TurnProps {
   id: string;
   content: string;
   sources: Source[];
+  statutes?: StatuteRef[];
+  onOpenStatute?: (source: Source) => void;
   tools: ToolCall[];
   status?: PendingTurn["status"];
   thinking?: string;
@@ -164,8 +204,8 @@ interface TurnProps {
   onOpenSource: (messageId: string, n: number) => void;
 }
 
-function AssistantTurn({ id, content, sources, tools, status, thinking, error, language, streaming, activeN,
-  onOpenSource }: TurnProps) {
+function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, status, thinking, error, language,
+  streaming, activeN, onOpenSource }: TurnProps) {
   const open = (n: number) => onOpenSource(id, n);
   const thought = streaming && !content && !error && thinking ? thinking.replace(/\s+/g, " ").trim() : "";
   return (
@@ -187,8 +227,8 @@ function AssistantTurn({ id, content, sources, tools, status, thinking, error, l
         </p>
       )}
       {content && (
-        <Answer id={id} text={content} sources={sources} language={language} streaming={streaming} activeN={activeN}
-          onCite={open} />
+        <Answer id={id} text={content} sources={sources} statutes={statutes} onStatute={onOpenStatute}
+          language={language} streaming={streaming} activeN={activeN} onCite={open} />
       )}
       {error && <p className="msg-error">{error}</p>}
     </div>

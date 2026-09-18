@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
@@ -16,10 +17,11 @@ import httpx
 from swiss_court_assistant import retrieval as R
 from swiss_court_assistant.fts import KeywordIndex
 from swiss_court_assistant.statutes import localize
+from swiss_court_assistant.vecmatrix import VectorMatrix
 from swiss_court_assistant.vectordb import VectorDB
 
 from .citations import CitationIndex
-from .decisions import DecisionStore
+from .decisions import DecisionStore, SqliteDecisionStore
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +43,7 @@ class Passage:
     language: str
     score: float = 0.0
     cited_by: int = 0  # later decisions citing this one, from the citation graph
+    kind: str = "decision"  # or "law": a statute article, whose law_id is in decision_id
 
 
 class Corpus:
@@ -50,7 +53,8 @@ class Corpus:
     on one worker thread and the async methods hop onto it.
     """
 
-    def __init__(self, db: Path, fts: Path, decisions: DecisionStore, embed_model: str | None = None,
+    def __init__(self, db: Path, fts: Path, decisions: DecisionStore | SqliteDecisionStore,
+                 embed_model: str | None = None,
                  device: str = "cpu", rerank: bool = True, candidates: int = 40,
                  citations: "CitationIndex | None" = None):
         self.decisions = decisions
@@ -80,22 +84,46 @@ class Corpus:
             log.warning("%s covers only %d/%d chunks", embed_model, m["n_embedded"], m["n_chunks"])
         self.embed_model = embed_model
         self.vdb.search("Aufwärmen", embed_model, k=1)  # load the encoder now, not on the first question
+        # the vectors as a matrix in memory, when exported: sqlite-vec reads all of them on every query
+        self.matrix = VectorMatrix.open(db, embed_model, self.vdb.con)
+        if self.matrix is not None:
+            threading.Thread(target=self.matrix.warm, name="warm-vectors", daemon=True).start()
+        else:
+            log.info("no current vector matrix for %s; searching with sqlite-vec", db)
+        # statute articles: indexed with `index.py build --laws`, searchable by meaning through the matrix
+        self.has_laws = (self.matrix is not None and any(k.startswith("law/") for k in self.matrix.segments)
+                         and hasattr(self.decisions, "find_articles"))
+        self.n_articles = (self.vdb.con.execute("SELECT COUNT(*) FROM laws").fetchone()[0]
+                           if self.has_laws else 0)
         self.fts = KeywordIndex(fts) if fts.exists() else None
         if self.fts is None:
             log.warning("no keyword index at %s; run `python -m swiss_court_assistant.fts build`", fts)
-        log.info("corpus: embeddings=%s (%s), keyword index=%s", embed_model, device, bool(self.fts))
+        log.info("corpus: embeddings=%s (%s), vector matrix=%s, keyword index=%s", embed_model, device,
+                 bool(self.matrix), bool(self.fts))
 
     def _open_knn(self, db: Path) -> None:
         self._local.vdb = VectorDB(db)  # no encoder: it gets query vectors
 
-    def _knn(self, vector, language: str) -> list[dict]:
-        return self._local.vdb.search(vector, self.embed_model, self.candidates, language=language)
+    def _knn(self, vector, language: str | None) -> list[dict]:
+        """The nearest decision passages, optionally in one language, with a `similarity` each."""
+        if self.matrix is None:
+            return self._local.vdb.search(vector, self.embed_model, self.candidates, language=language)
+        hits = self.matrix.search(vector, self.candidates, "decision", language)
+        if not hits:
+            return []
+        rows = {r["id"]: dict(r) for r in self._local.vdb.con.execute(
+            f"SELECT {_CHUNK_COLS} FROM chunks WHERE id IN ({','.join('?' * len(hits))})", [i for i, _ in hits])}
+        return [rows[i] | {"similarity": score} for i, score in hits if i in rows]
 
     async def _call(self, fn, *args: Any, **kwargs: Any) -> Any:
         return await asyncio.get_running_loop().run_in_executor(self._pool, partial(fn, *args, **kwargs))
 
-    def _passage(self, row: dict, score: float = 0.0) -> Passage:
+    def _passage(self, row: dict, score: float = 0.0) -> Passage | None:
+        """A decision passage; None for a statute article, which shares the passage table in the
+        full-corpus index but is not a decision."""
         d = self.decisions.summary(row["decision_id"])
+        if d is None:
+            return None
         erw = row["erwaegungen"]
         return Passage(
             chunk_id=row["chunk_id"], decision_id=row["decision_id"], section=row["section"],
@@ -115,9 +143,65 @@ class Corpus:
                                          sorted({h.decision_id for h in hits}))
         return [replace(h, cited_by=counts.get(h.decision_id, 0)) for h in hits]
 
+    def _law_passage(self, row: dict, score: float = 0.0) -> Passage | None:
+        law = self.decisions.law_summary(row["decision_id"])
+        if law is None:
+            return None
+        return Passage(
+            chunk_id=row["chunk_id"], decision_id=row["decision_id"], section="law", erwaegungen=[],
+            char_start=row["char_start"], char_end=row["char_end"], text=row["text"], docket=law.docket,
+            court_label=law.court_label, date=None, language=law.language, score=score, kind="law")
+
+    def _knn_laws(self, vector, language: str | None, federal: bool) -> list[dict]:
+        """The nearest statute passages. Federal law only by default: cantonal acts are nearly half the
+        articles, and their procedural and tax rules crowd out the federal provision a question is about."""
+        hits = self.matrix.search(vector, self.candidates * (6 if federal else 1), "law", language)
+        if not hits:
+            return []
+        rows = {r["id"]: dict(r) for r in self._local.vdb.con.execute(
+            f"""SELECT c.id, c.chunk_id, c.decision_id, c.section, c.erwaegungen, c.char_start, c.char_end,
+                       c.text, l.canton FROM chunks c JOIN laws l ON l.law_id = c.decision_id
+                WHERE c.id IN ({','.join('?' * len(hits))})""", [i for i, _ in hits])}
+        out = [rows[i] | {"similarity": score} for i, score in hits
+               if i in rows and (not federal or rows[i]["canton"] == "CH")]
+        return out[:self.candidates]
+
+    async def semantic_search_laws(self, queries: dict[str, str], k: int = 6,
+                                   federal: bool = True) -> list[Passage]:
+        """Statute articles by meaning, one query per language like `semantic_search_by_language`.
+        An article exists in three languages; only its best-ranked version is kept."""
+        if not self.has_laws:
+            raise RuntimeError("this index has no statute articles, or their vectors are not exported")
+        queries = {lang: localize(q.strip(), lang) for lang, q in queries.items() if q and q.strip()}
+        vectors = [await self._call(self.vdb.encode, q, self.embed_model) for q in queries.values()]
+        loop = asyncio.get_running_loop()
+        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn_laws, v, lang, federal)
+                                       for v, lang in zip(vectors, queries)))
+        ranked = await asyncio.gather(*(
+            self._rerank(q, [p for r in rows if (p := self._law_passage(r, r["similarity"]))])
+            for q, rows in zip(queries.values(), found)))
+        best: dict[str, Passage] = {}
+        for hit in sorted((h for hits in ranked for h in hits), key=lambda h: -h.score):
+            best.setdefault(_article_of(hit.decision_id), hit)
+        return list(best.values())[:k]
+
+    async def law_chunk(self, chunk_id: str) -> Passage | None:
+        rows = await self._call(self._rows, "chunk_id = ?", [chunk_id])
+        return self._law_passage(rows[0]) if rows else None
+
+    async def law_chunks_of(self, law_id: str) -> list[Passage]:
+        rows = await self._call(self._rows, "decision_id = ? ORDER BY chunk_index", [law_id])
+        return [p for r in rows if (p := self._law_passage(r))]
+
+    def _passages(self, rows: list[dict], scores: list[float] | None = None) -> list[Passage]:
+        found = (self._passage(r, r.get("similarity", 0.0) if scores is None else s)
+                 for r, s in zip(rows, scores or [0.0] * len(rows)))
+        return [p for p in found if p is not None]
+
     async def semantic_search(self, query: str, k: int = 8, language: str | None = None) -> list[Passage]:
-        rows = await self._call(self.vdb.search, query, self.embed_model, self.candidates, language=language)
-        hits = await self._rerank(query, [self._passage(r, r["similarity"]) for r in rows])
+        vector = await self._call(self.vdb.encode, query, self.embed_model)
+        rows = await asyncio.get_running_loop().run_in_executor(self._knn_pool, self._knn, vector, language)
+        hits = await self._rerank(query, self._passages(rows))
         return await self._authority(_diverse(hits, k))
 
     async def semantic_search_by_language(self, queries: dict[str, str], k: int = 8,
@@ -131,7 +215,7 @@ class Corpus:
         loop = asyncio.get_running_loop()
         found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn, v, lang)
                                        for v, lang in zip(vectors, queries)))
-        ranked = await asyncio.gather(*(self._rerank(q, [self._passage(r, r["similarity"]) for r in rows])
+        ranked = await asyncio.gather(*(self._rerank(q, self._passages(rows))
                                         for q, rows in zip(queries.values(), found)))
         picked = [h for hits in ranked for h in _diverse(hits, per_language)]
         rest = sorted((h for hits in ranked for h in hits), key=lambda h: -h.score)
@@ -142,12 +226,14 @@ class Corpus:
     async def keyword_search(self, keyword: str, k: int = 8) -> list[Passage]:
         if self.fts is None:
             raise RuntimeError("the keyword index is not built")
-        ranked = await self._call(self.fts.search, keyword, k * 4)
+        # more candidates than needed: in the full-corpus index statute articles match too, and are dropped
+        ranked = await self._call(self.fts.search, keyword, k * 8)
         if not ranked:
             return []
         ids = [rowid for rowid, _ in ranked]
         rows = {r["id"]: r for r in await self._call(self._rows, f"id IN ({','.join('?' * len(ids))})", ids)}
-        return await self._authority(_diverse([self._passage(rows[i], -s) for i, s in ranked if i in rows], k))
+        hits = self._passages([rows[i] for i, _ in ranked if i in rows], [-s for i, s in ranked if i in rows])
+        return await self._authority(_diverse(hits, k))
 
     async def chunk(self, chunk_id: str) -> Passage | None:
         rows = await self._call(self._rows, "chunk_id = ?", [chunk_id])
@@ -155,7 +241,7 @@ class Corpus:
 
     async def chunks_of(self, decision_id: str) -> list[Passage]:
         rows = await self._call(self._rows, "decision_id = ? ORDER BY chunk_index", [decision_id])
-        return [self._passage(r) for r in rows]
+        return self._passages(rows)
 
     async def _rerank(self, query: str, hits: list[Passage]) -> list[Passage]:
         if not self.rerank_url or len(hits) < 2:
@@ -171,6 +257,11 @@ class Corpus:
             return hits
         order = sorted(r.json()["rankings"], key=lambda x: -x["logit"])
         return [replace(hits[x["index"]], score=x["logit"]) for x in order]
+
+
+def _article_of(law_id: str) -> str:
+    """The article behind a law_id, whatever its language: law_CH_220_271a_de_0 -> law_CH_220_271a_0."""
+    return re.sub(r"_(de|fr|it|rm)_(\d+)$", r"_\2", law_id)
 
 
 def _diverse(hits: list[Passage], k: int, per_decision: int = 2) -> list[Passage]:

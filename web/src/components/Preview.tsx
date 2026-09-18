@@ -226,6 +226,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
 
   if (!active) return null;
   const d = doc ?? active.decision;
+  const isLaw = active.section === "law"; // a statute article, described in the decision's fields
   const regesteActive = active.section === "regeste";
   const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
   const tools = <RefTools key={activeN} source={active} language={language} />;
@@ -237,9 +238,9 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   };
 
   return (
-    <aside className="preview" aria-label="Source decision">
+    <aside className="preview" aria-label={isLaw ? "Statute" : "Source decision"}>
       <div className="preview-bar">
-        Source decision
+        {isLaw ? "Statute" : "Source decision"}
         <span className="spacer" />
         <button className="icon-btn" onClick={onClose} aria-label="Close preview" title="Close">
           ×
@@ -256,15 +257,19 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
           <h2>{d.docket}</h2>
           {(d.title || d.chamber) && <p className="court">{d.title ?? d.chamber}</p>}
           <dl className="meta-grid">
-            <dt>Decided</dt>
-            <dd>{formatDate(d.date)}</dd>
+            {!isLaw && (
+              <>
+                <dt>Decided</dt>
+                <dd>{formatDate(d.date)}</dd>
+              </>
+            )}
             {d.chamber && (
               <>
                 <dt>Chamber</dt>
                 <dd>{d.chamber}</dd>
               </>
             )}
-            <dt>Decision ID</dt>
+            <dt>{isLaw ? "Article ID" : "Decision ID"}</dt>
             <dd>{d.decisionId}</dd>
           </dl>
           <div className="preview-links">
@@ -279,17 +284,19 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
               </a>
             )}
           </div>
-          <CitedBy decisionId={d.decisionId} />
+          {!isLaw && <CitedBy decisionId={d.decisionId} />}
         </header>
 
+        {activeN !== 0 && ( // 0: an article the answer names, not one of its numbered citations
         <div className="cited-in">
           Cited in this answer:
           {cited.map((s) => (
             <button key={s.n} className={`jump${s.n === activeN ? " on" : ""}`} onClick={() => onSelect(s.n)}>
-              [{s.n}] {erwLabel(s.erwaegungen) || s.section}
+              [{s.n}] {erwLabel(s.erwaegungen) || (s.section === "law" ? s.decision.docket : s.section)}
             </button>
           ))}
         </div>
+        )}
 
         {/* no highlight to attach the buttons to (quote not located): show them here */}
         {doc && !regesteActive && lastActive < 0 && <div className="ref-tools-top">{tools}</div>}

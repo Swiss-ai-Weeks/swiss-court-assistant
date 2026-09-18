@@ -38,7 +38,7 @@ class Source(Model):
     chunk_id: str
     decision_id: str
     text: str
-    section: Literal["regeste", "erwaegung", "body"]
+    section: Literal["regeste", "erwaegung", "body", "law"]  # "law": a statute article, law_id in decision_id
     erwaegungen: list[str]
     char_start: int | None 
     char_end: int | None
@@ -48,6 +48,13 @@ class Source(Model):
     verified: bool = True
     # whether the cited passage really states the sentence it is attached to; null = not checked
     supported: bool | None = None
+
+
+class StatuteRef(Model):
+    """An article named in an answer's text ("Art. 259d CO") and its text — a link, not a citation."""
+
+    text: str  # the mention exactly as it appears in the answer
+    source: Source
 
 
 class ToolCall(Model):
@@ -67,6 +74,7 @@ class Message(Model):
     sources: list[Source] | None = None
     tool_calls: list[ToolCall] | None = None
     language: str | None = None  # of the question, on assistant messages
+    statutes: list[StatuteRef] | None = None  # articles the answer names, linked to their text
     created_at: str
 
 
@@ -143,6 +151,7 @@ class Issue(Model):
     area: str | None = None
     answer: str | None = None
     sources: list[Source] | None = None
+    statutes: list[StatuteRef] | None = None
 
 
 class Intake(Model):

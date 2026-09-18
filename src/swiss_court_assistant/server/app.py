@@ -20,10 +20,11 @@ from fastapi.staticfiles import StaticFiles
 
 from . import tracing
 from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict
-from .decisions import DecisionStore
+from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import UnreadableError, extract, transcribe
 from .matters import MatterStore, Pipeline, create_matter, docx_memo, memo
 from .language import detect_language
+from .mentions import statute_links
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Conversation, ConversationSummary, Decision, Health,
                       Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
@@ -33,11 +34,16 @@ from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
 from .voice import Listener, narrate
 
+# Which index the app serves: "corpus", the full-corpus index that `index.py` builds and updates
+# (254k decisions since 1980 plus statute articles), or "subset", the 50k-decision evaluation
+# subset the app started on (its decisions come from a parquet, and the stub agent needs it).
+INDEX = os.environ.get("SCA_INDEX", "corpus")
 DECISIONS = Path(os.environ.get("SCA_DECISIONS", "data/subset/decisions_50k_seed42.parquet"))
 CHUNKS = DECISIONS.with_name(DECISIONS.stem + ".chunks.parquet")
-VECTOR_DB = Path(os.environ.get("SCA_VECTOR_DB", f"data/vectordb/{DECISIONS.stem}.sqlite"))
+_NAME = "corpus" if INDEX == "corpus" else DECISIONS.stem
+VECTOR_DB = Path(os.environ.get("SCA_VECTOR_DB", f"data/vectordb/{_NAME}.sqlite"))
 KEYWORD_INDEX = VECTOR_DB.with_name(VECTOR_DB.stem + ".fts.sqlite")
-CITATION_INDEX = Path(os.environ.get("SCA_CITATIONS", f"data/graph/{DECISIONS.stem}.citations.sqlite"))
+CITATION_INDEX = Path(os.environ.get("SCA_CITATIONS", f"data/graph/{_NAME}.citations.sqlite"))
 DB = Path(os.environ.get("SCA_DB", "data/app/conversations.sqlite"))
 MATTERS_DB = Path(os.environ.get("SCA_MATTERS_DB", "data/app/matters.sqlite"))
 MAX_UPLOAD = 25 * 1024 * 1024  # a long recording or a scanned brief; anything larger is a mistake
@@ -49,7 +55,7 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class Services:
-    decisions: DecisionStore
+    decisions: DecisionStore | SqliteDecisionStore
     store: ConversationStore
     agent: Agent
     translator: Translator
@@ -63,17 +69,19 @@ class Services:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     tracing.setup()  # before the agent is built, so LangChain autologging patches it
-    decisions = DecisionStore(DECISIONS)
-    citations = open_index(CITATION_INDEX, set(decisions.df["decision_id"].to_list()))
+    decisions = (SqliteDecisionStore(VECTOR_DB) if INDEX == "corpus" and AGENT != "stub"
+                 else DecisionStore(DECISIONS))
+    citations = open_index(CITATION_INDEX, decisions.ids())
     agent = _make_agent(decisions, citations)
     matters = MatterStore(MATTERS_DB)
     app.state.services = Services(decisions, ConversationStore(DB), agent, Translator(),
-                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters))
-    log.info("loaded %d decisions; agent=%s", len(decisions), app.state.services.agent.name)
+                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters, decisions))
+    log.info("index=%s (%s): %d decisions; agent=%s", INDEX, VECTOR_DB, len(decisions),
+             app.state.services.agent.name)
     yield
 
 
-def _make_agent(decisions: DecisionStore, citations: CitationIndex | None = None) -> Agent:
+def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: CitationIndex | None = None) -> Agent:
     if AGENT == "stub":
         return StubAgent(CHUNKS, decisions)
     import torch
@@ -120,6 +128,9 @@ async def get_conversation(conversation_id: str, s: Svc) -> Conversation:
             question = m.content
         elif m.language is None and question:
             m.language = detect_language(question)
+    for m in conv.messages:  # answers saved before articles were linked get their links on the way out
+        if m.role == "assistant" and m.statutes is None:
+            m.statutes = await asyncio.to_thread(statute_links, s.decisions, m.content, m.language) or None
     return conv
 
 
@@ -132,7 +143,8 @@ async def delete_conversation(conversation_id: str, s: Svc) -> Response:
 
 @app.get("/api/decisions/{decision_id}", response_model=Decision)
 async def get_decision(decision_id: str, s: Svc) -> Decision:
-    d = s.decisions.get(decision_id)
+    """A decision, or a statute article (a law_id), which answers cite the same way."""
+    d = s.decisions.get(decision_id) or s.decisions.law(decision_id)
     if d is None:
         raise HTTPException(404, "Decision not found")
     return d
@@ -304,9 +316,10 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
     sources: list[Source] = []
     calls: dict[str, ToolCall] = {}
 
-    def save() -> Message:
+    def save(statutes: list | None = None) -> Message:
         msg = Message(id=new_id(), role="assistant", content="".join(parts), sources=sources,
-                      tool_calls=list(calls.values()) or None, language=language, created_at=now())
+                      tool_calls=list(calls.values()) or None, language=language, statutes=statutes or None,
+                      created_at=now())
         s.store.add_message(conv.id, msg)
         return msg
 
@@ -352,7 +365,8 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
             trace.finish("".join(parts), sources)
             yield {"type": "error", "message": "The assistant failed to answer. Please try again."}
             return
-        msg = save()
+        # the articles the answer names, linked to their text (see mentions.py)
+        msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
         trace.finish(msg.content, sources)
         yield {"type": "done", "message": msg.model_dump(by_alias=True)}
 

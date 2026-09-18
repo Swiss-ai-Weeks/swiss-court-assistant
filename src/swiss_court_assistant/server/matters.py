@@ -18,6 +18,7 @@ answers with their citations kept intact.
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
 import logging
@@ -35,6 +36,7 @@ from pydantic import BaseModel, ValidationError
 
 from .agent import Agent, Cite, Delta, ToolStart, Verdict
 from .language import detect_language
+from .mentions import statute_links
 from .llm import LLM_KEY, LLM_URL, served_model
 from .schemas import Intake, Issue, Matter, MatterSummary, Source
 from .store import new_id, now
@@ -363,8 +365,8 @@ def create_matter(store: MatterStore, facts: str, source_name: str | None, sourc
 class Pipeline:
     """Runs a matter through the four stages, saving after each one and streaming what it does."""
 
-    def __init__(self, agent: Agent, store: MatterStore, max_issues: int = MAX_ISSUES):
-        self.agent, self.store, self.max_issues = agent, store, max_issues
+    def __init__(self, agent: Agent, store: MatterStore, decisions: Any = None, max_issues: int = MAX_ISSUES):
+        self.agent, self.store, self.decisions, self.max_issues = agent, store, decisions, max_issues
         common: dict[str, Any] = dict(base_url=LLM_URL, api_key=LLM_KEY, model=served_model(),
                                       temperature=0.2, streaming=True)
         self.intake_llm = ChatOpenAI(**common, max_tokens=2048, extra_body={
@@ -400,8 +402,8 @@ class Pipeline:
         async for ev in self.agent.answer(question, []):
             match ev:
                 case ToolStart():
-                    yield {"type": "issue_tool", "n": issue.n, "name": ev.name,
-                           "arg": str(next(iter(ev.args.values()), ""))[:120]}
+                    arg = " ".join(str(v) for v in ev.args.values() if v not in (None, "", False))
+                    yield {"type": "issue_tool", "n": issue.n, "name": ev.name, "arg": arg[:120]}
                 case Delta():
                     parts.append(ev.text)
                     yield {"type": "issue_delta", "n": issue.n, "text": ev.text}
@@ -417,6 +419,8 @@ class Pipeline:
                             source.supported = ev.supported
                     yield {"type": "issue_verdict", "n": issue.n, "source": ev.n, "supported": ev.supported}
         issue.answer, issue.sources = "".join(parts), sources
+        if self.decisions is not None:
+            issue.statutes = await asyncio.to_thread(statute_links, self.decisions, issue.answer, matter.language) or None
         yield {"type": "issue_done", "n": issue.n, "issue": issue.model_dump(by_alias=True)}
 
     async def _assess(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:

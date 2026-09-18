@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { api, type Matter, type MatterEvent, type MatterInput, type MatterStage, type Source } from "../api";
 import Answer from "./Answer";
 import MatterIntake from "./MatterIntake";
-import { TOOL_LABEL } from "./Thread";
+import { toolTitle } from "./Thread";
 
 interface Props {
   matterId: string | null;
@@ -68,7 +68,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
       case "issue_tool":
         setLive((l) => ({
           ...l,
-          tools: { ...l.tools, [ev.n]: [...(l.tools[ev.n] ?? []), `${TOOL_LABEL[ev.name] ?? ev.name} · ${ev.arg}`] },
+          tools: { ...l.tools, [ev.n]: [...(l.tools[ev.n] ?? []), `${toolTitle(ev.name)} · ${ev.arg}`] },
         }));
         break;
       case "issue_delta":
@@ -285,6 +285,8 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
                       id={`issue-${issue.n}`}
                       text={text}
                       sources={sources}
+                      statutes={issue.statutes ?? []}
+                      onStatute={(src) => onOpenSource([src], src.n)}
                       language={matter.language}
                       streaming={!issue.answer}
                       activeN={null}

@@ -26,7 +26,8 @@ export interface Source {
   chunkId: string;
   decisionId: string;
   text: string;
-  section: "regeste" | "erwaegung" | "body";
+  /** "law": a statute article — its law_id is in decisionId, and `decision` describes the article. */
+  section: "regeste" | "erwaegung" | "body" | "law";
   erwaegungen: string[];
   /** Offsets into Decision.fullText; null for Regeste passages. */
   charStart: number | null;
@@ -39,6 +40,14 @@ export interface Source {
   verified?: boolean;
   /** Whether the passage really states the sentence citing it; null while unchecked. */
   supported?: boolean | null;
+}
+
+/** An article the answer names in its text ("Art. 259d CO"), linked to the statute — a reference, not a
+ *  citation: numbered citations are evidence for a sentence, these only open the article. */
+export interface StatuteRef {
+  /** The mention exactly as it appears in the answer. */
+  text: string;
+  source: Source;
 }
 
 /** A decision at the other end of a citation edge (the corpus citation graph). */
@@ -80,6 +89,8 @@ export interface Message {
   toolCalls?: ToolCall[] | null;
   /** Language of the question (on assistant messages); cited passages can be translated into it. */
   language?: string | null;
+  /** Articles the answer names, linked to their text; set once the answer is complete. */
+  statutes?: StatuteRef[] | null;
   createdAt: string;
 }
 
@@ -132,6 +143,7 @@ export interface Issue {
   /** Markdown with [n] citations into `sources`; null until the research has run. */
   answer: string | null;
   sources: Source[] | null;
+  statutes?: StatuteRef[] | null;
 }
 
 export interface Intake {

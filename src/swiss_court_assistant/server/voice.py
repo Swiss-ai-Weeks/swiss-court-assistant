@@ -113,15 +113,20 @@ class Listener:
 # ── what the assistant says while it works ──────────────────────────────
 NARRATION = {
     "en": {"search": "Searching for {q}.", "keyword": "Looking up {q}.", "read": "Reading the decision.",
-           "write": "Let me sum that up.", "generic": "Searching Swiss case law."},
+           "write": "Let me sum that up.", "generic": "Searching Swiss case law.",
+           "statute": "Looking at the statute."},
     "de": {"search": "Ich suche nach {q}.", "keyword": "Ich schlage {q} nach.", "read": "Ich lese den Entscheid.",
-           "write": "Ich fasse es zusammen.", "generic": "Ich durchsuche die Rechtsprechung."},
+           "write": "Ich fasse es zusammen.", "generic": "Ich durchsuche die Rechtsprechung.",
+           "statute": "Ich schaue im Gesetz nach."},
     "fr": {"search": "Je cherche {q}.", "keyword": "Je recherche {q}.", "read": "Je lis la décision.",
-           "write": "Je résume.", "generic": "Je consulte la jurisprudence."},
+           "write": "Je résume.", "generic": "Je consulte la jurisprudence.",
+           "statute": "Je consulte la loi."},
     "it": {"search": "Cerco {q}.", "keyword": "Cerco il termine {q}.", "read": "Leggo la decisione.",
-           "write": "Riassumo.", "generic": "Consulto la giurisprudenza."},
+           "write": "Riassumo.", "generic": "Consulto la giurisprudenza.",
+           "statute": "Consulto la legge."},
 }
-_TOOLS = {"semantic_search": "search", "keyword_search": "keyword", "read_decision": "read", "write_answer": "write"}
+_TOOLS = {"semantic_search": "search", "keyword_search": "keyword", "read_decision": "read", "write_answer": "write",
+          "read_law": "statute", "search_laws": "statute"}
 
 
 def narrate(tool: str, args: dict[str, Any], language: str) -> str | None:
@@ -131,7 +136,7 @@ def narrate(tool: str, args: dict[str, Any], language: str) -> str | None:
     kind = _TOOLS.get(tool)
     if kind is None:
         return None
-    if kind in ("write", "read"):  # decision ids ("zh_arbeitsgericht_AH250019") are unspeakable
+    if kind in ("write", "read", "statute"):  # decision ids ("zh_arbeitsgericht_AH250019") are unspeakable
         return phrases[kind]
     query = args.get(f"query_{language}") if kind == "search" else args.get("keyword")
     query = " ".join(str(query or "").split())

@@ -25,10 +25,14 @@ stratified sample of them (sampling.py: language x jurisdiction x branch x perio
 (federal and cantonal) from voilaj/swiss-legislation as passages next to the decisions'; the
 article's `law_id` stands in for the decision_id and the `laws` table holds its metadata.
 
+`build` and `update` finish by re-exporting the vectors as an in-memory matrix (vecmatrix.py), which
+the app searches instead of scanning sqlite-vec.
+
 Usage:
     uv run python -m swiss_court_assistant.index build --laws --since 1980 --fraction 0.25
     uv run python -m swiss_court_assistant.index build --courts bger,bge      # start small
     uv run python -m swiss_court_assistant.index update                       # apply new deltas
+    uv run python -m swiss_court_assistant.index citations                    # rebuild the citation graph
     uv run python -m swiss_court_assistant.index status
 """
 
@@ -523,6 +527,17 @@ def citations() -> None:
     C.build(IDS_PARQUET)
 
 
+def vectors(model: str) -> None:
+    """Re-export the in-memory search matrix (vecmatrix.py) after the vectors changed. The app does not
+    use a matrix older than the index: it falls back to sqlite-vec, whose scans take ~11 s."""
+    from swiss_court_assistant import vecmatrix
+
+    if vecmatrix.current(DB, model):
+        print("vector matrix is current")
+        return
+    vecmatrix.export(DB, model)
+
+
 def status() -> None:
     if not DB.exists():
         print(f"no index at {DB}")
@@ -575,8 +590,12 @@ def main() -> None:
         build(args.courts.split(",") if args.courts else None, args.model, args.device, args.batch,
               args.limit, args.skip_embed, args.since, args.fraction, args.seed,
               args.laws or args.only_laws, args.only_laws)
+        if not args.skip_embed:
+            vectors(args.model)
     elif args.cmd == "update":
         update(args.model, args.device, args.batch, args.skip_embed)
+        if not args.skip_embed:
+            vectors(args.model)  # restart the app afterwards: it opens the matrix at startup
     elif args.cmd == "citations":
         citations()
     else:
