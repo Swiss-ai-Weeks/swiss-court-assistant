@@ -52,6 +52,16 @@ AGENT = os.environ.get("SCA_AGENT", "react")  # react | stub
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
 
 log = logging.getLogger(__name__)
+# uvicorn configures only its own loggers, so this package's INFO lines — what the agent checked in a
+# draft and why it revised it — would otherwise be dropped (warnings reached stderr via the last-resort
+# handler). One handler for the package, at INFO.
+_package = logging.getLogger("swiss_court_assistant")
+if not _package.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+    _package.addHandler(_handler)
+    _package.setLevel(logging.INFO)
+    _package.propagate = False
 
 
 @dataclass

@@ -6,7 +6,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-Stage = Literal["thinking", "answer"]
+# What the agent is doing this moment: researching, checking the drafted answer against the passages
+# it found (drafting, checking citations, revising), or writing out what passed.
+Stage = Literal["thinking", "checking", "answer"]
 
 
 class Model(BaseModel):

@@ -5,10 +5,11 @@ import json
 import logging
 import re
 from collections import Counter
+from dataclasses import dataclass, field
 from datetime import date
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextvars import ContextVar
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, ModelRequest, ModelResponse
@@ -16,6 +17,7 @@ from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, Huma
 from langchain_core.tools import tool
 from langchain_core.utils.json import parse_partial_json
 from langchain_openai import ChatOpenAI
+from langgraph.config import get_stream_writer
 from pydantic import BaseModel, Field, ValidationError
 
 from swiss_court_assistant.facets import AREAS, CANTONS, COURTS, PROCEEDINGS
@@ -50,19 +52,71 @@ NO_ANSWER = {
     "it": "La ricerca è conclusa, ma non è stato possibile formulare una risposta. La preghiamo di riformulare la domanda.",
     "en": "The research finished, but no answer could be written. Please ask the question again.",
 }
+# Every statement rested on citations that did not hold up, so nothing is left to show. Said without
+# naming the machinery: what the user needs to know is that nothing here is sourced, and what to try.
+NO_SUPPORT = {
+    "de": "Keine der gefundenen Passagen belegt eine Antwort auf diese Frage — die Stellen, auf die sich die Antwort stützen sollte, sagen etwas anderes. Bitte formulieren Sie die Frage enger oder mit anderen Begriffen.",
+    "fr": "Aucun des passages trouvés n'étaye une réponse à cette question : les extraits sur lesquels la réponse devait s'appuyer disent autre chose. Veuillez préciser la question ou la reformuler avec d'autres termes.",
+    "it": "Nessuno dei passaggi trovati sostiene una risposta a questa domanda: i brani su cui la risposta avrebbe dovuto fondarsi dicono altro. La preghiamo di precisare la domanda o di riformularla con altri termini.",
+    "en": "None of the passages found supports an answer to this question: the ones the answer would have rested on say something else. Please narrow the question or put it in different terms.",
+}
 RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
+# The answer is drafted, checked against the tool results and, while the check finds problems, revised
+# this many times before what passed is shown. Two revisions fix most drafts; a third mostly repeats.
+MAX_REVISIONS = 2
+# A statement whose citation failed and which comes back without one is the same statement when its
+# words overlap this much (Jaccard on words of three letters or more).
+SAME_STATEMENT = 0.6
+# Constrained decoding lets the model pad the JSON with whitespace, and it sometimes never stops.
+STUCK_AFTER = 64
+# When the agent notes early on that something was not found, it is sent back once to look for it.
+PUSHBACK = ("Before writing, you noted that the passages do not answer this: {gap}\n"
+            "You have {left} tool calls left. Look for it once more — with clearly different wording, or with "
+            "another tool (search_laws for a provision, keyword_search for an exact term or docket number, "
+            "read_decision for the reasoning behind a passage) — then call write_answer again. If what is "
+            "missing is something the case law may simply not contain (a fixed threshold, a rule of foreign "
+            "law), call write_answer again right away. Either way the answer reports that point as not "
+            "found; it is not filled in.")
+_NOTHING = re.compile(r"(?i)^\W*(nothing|none|n/a|nichts|kein|rien|aucun|niente|nessun|all\b|everything|covered)")
 
 # Asking the agent not to repeat a search only works if it notices that it is, so each turn
 # remembers what it has searched for. Queries are compared as token sets, because the repeats are
 # rewordings, not copies ("DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO Wettbewerbsrecht").
-# The store is per turn, not per process: `make_tools` runs once and its tools are shared.
 SAME_SEARCH = 0.8  # Jaccard overlap at which two searches count as the same
-_searches: ContextVar[list[tuple[str, frozenset[str]]] | None] = ContextVar("searches", default=None)
-# whether this turn may end with a question to the user (not in matters, evals, or right after one)
-_may_ask: ContextVar[bool] = ContextVar("may_ask", default=False)
-# the user's language this turn: the research runs in German, French and Italian and pulls the model
-# away from it, and a reply to a question asked back mixes languages (see `original_question`)
-_language: ContextVar[str | None] = ContextVar("language", default=None)
+
+
+@dataclass
+class VerifiedAnswer:
+    """What is left of a draft after the checks: parts, one Source per citation part, in order, and the
+    grounding verdict for each (None when the check itself failed)."""
+
+    parts: list[TextPart | CitationPart]
+    sources: list[Source]
+    supported: list[bool | None]
+    dropped: int = 0  # statements removed because none of their citations held
+    rounds: int = 0   # revisions the draft went through
+
+
+@dataclass
+class Turn:
+    """What one turn's tools, middleware and answer() share.
+
+    `make_tools` runs once and its tools are shared between turns, so per-turn state lives here, behind a
+    ContextVar that answer() sets before the graph starts: the graph's tasks inherit the reference and
+    mutate the same object, which is how the middleware hands the checked answer back."""
+
+    searches: list[tuple[str, frozenset[str]]] = field(default_factory=list)
+    # whether this turn may end with a question to the user (not in matters, evals, or right after one)
+    may_ask: bool = False
+    # the user's language: the research runs in German, French and Italian and pulls the model away
+    # from it, and a reply to a question asked back mixes languages (see `original_question`)
+    language: str | None = None
+    pushback: str | None = None  # what write_answer returns when the agent is sent back to research
+    pushed_back: bool = False    # only once per turn
+    result: VerifiedAnswer | None = None
+
+
+_turn: ContextVar[Turn | None] = ContextVar("turn", default=None)
 
 
 def _tokens(text: str) -> frozenset[str]:
@@ -78,9 +132,10 @@ def _already_searched(text: str, kind: str = "decisions") -> str | None:
     (how much of this query it contained) — "DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO
     Wettbewerbsrecht" only reaches a Jaccard of 0.73, but is fully contained.
     """
-    searches = _searches.get()
-    if searches is None:  # outside a turn (a tool called directly, e.g. from a test)
+    turn = _turn.get()
+    if turn is None:  # outside a turn (a tool called directly, e.g. from a test)
         return None
+    searches = turn.searches
     tokens = _tokens(text)
     # the same words searched in the statutes are not a repeat of a search in the decisions
     for n, (was, seen) in enumerate(searches, 1):
@@ -116,14 +171,26 @@ class AgentAnswer(BaseModel):
 
 
 # vLLM structured outputs. A whitespace-free EBNF grammar would also rule out the rare padding loop that
-# AnswerStream.stuck() catches, but on this NIM it decodes about 6x slower (18 vs 104 tokens/s).
+# ResearchThenAnswer._generate() cuts off, but on this NIM it decodes about 6x slower (18 vs 104 tokens/s).
 ANSWER_FORMAT = {"type": "json_schema",
                  "json_schema": {"name": "agent_answer", "schema": AgentAnswer.model_json_schema()}}
 
-SUPPORT_PROMPT = """You check a legal answer against its sources. Given one passage from a Swiss court decision and one statement from an answer that cites it, reply {"supported": true} if the passage states or directly implies the statement, and {"supported": false} if it does not (it is about something else, says less than the statement claims, or contradicts it). Judge only against this passage, not your own legal knowledge."""
+# The checks are yes/no questions on purpose: asked to quote or describe what is wrong, this model always
+# finds something (see agent-eval/); asked to confirm one thing, it is a usable judge.
+SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision or a statute, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
-MAX_CHECKS = 8  # grounding checks per answer
+COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
+COVERED_FORMAT = {"type": "json_schema", "json_schema": {"name": "covered", "schema": {
+    "type": "object", "properties": {"covered": {"type": "boolean"}}, "required": ["covered"]}}}
+ANSWERS_PROMPT = """You review whether a legal answer responds to the question it was written for. Reply {"answers": true} if the answer addresses what the question asks — its subject and the point it turns on — including when it says that the sources do not cover the question, or corrects a premise of the question. Reply {"answers": false} if it answers a neighbouring question instead, states a general rule without reaching the point asked, or talks past the question."""
+ANSWERS_FORMAT = {"type": "json_schema", "json_schema": {"name": "answers", "schema": {
+    "type": "object", "properties": {"answers": {"type": "boolean"}}, "required": ["answers"]}}}
+MAX_CHECKS = 10  # grounding checks per draft
+REVISE_PROMPT = """Your draft was checked against the tool results, and these problems were found:
+{problems}
+
+Write the corrected answer as the same JSON object. Fix every problem: a quote that was not found is replaced by text copied character for character from the tool result, or the citation is dropped; a passage that does not state the statement is replaced by a passage that does, or the statement is removed; a statement that needs a source gets a citation from the tool results, or is removed; a decision the tools did not return is not cited. Keeping a statement and only dropping its citation does not fix it: statements without support are removed from the final answer. Leave the parts that had no problem as they are, and add nothing that is not in the tool results."""
 ASK_FORMAT = {"type": "json_schema", "json_schema": {"name": "question", "schema": {
     "type": "object", "properties": {"question": {"type": "string"}, "options": {"type": "array", "items": {
         "type": "string"}}}, "required": ["question", "options"]}}}
@@ -149,7 +216,7 @@ Research the user's question with the tools, then call write_answer.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
 - citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
-{law_tools}{filter_tools}{ask_tool}- write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls. Before you call it, read the answer you are about to write: if it only holds under a fact the user never stated, and you are about to cover that by hedging — "that depends on the circumstances", "if the termination was immediate", "provided the lease is residential", "generally" — then the hedge is the question, and ask_user is the call to make instead. Hedging is not a way to stay safe about a fact you could simply have asked for.
+{law_tools}{filter_tools}{ask_tool}- write_answer(established, not_found): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls. Its two arguments are your own stock-taking before the answer is written. established: what the passages actually say that answers the question, point by point, each with the decision_id or law_id it comes from — what they say, not what you know. not_found: what the question asks that no passage answers, or "nothing". Be exact there: the answer reports what was not found instead of filling it in, and early in the research you are sent back once to look for it. Before you call it, read the answer you are about to write: if it only holds under a fact the user never stated, and you are about to cover that by hedging — "that depends on the circumstances", "if the termination was immediate", "provided the lease is residential", "generally" — then the hedge is the question, and ask_user is the call to make instead. Hedging is not a way to stay safe about a fact you could simply have asked for.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
 Never repeat a search you have already made: near-identical wording returns the same passages. If two searches with clearly different wording bring back nothing on point, stop and call write_answer. This corpus is a subset of Swiss case law, so many questions — foreign law such as the EU GDPR, statutes no court here applied, recent events — have no answer in it at all. Reporting that is a correct answer; assembling one out of loosely related passages is not.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
@@ -161,6 +228,7 @@ ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using 
 - A statute article from search_laws or read_law is cited the same way: its law_id goes in decision_id, with its chunk_id and a quote copied from the article's text. Name it as it is cited ("Art. 271a OR"). Cite the article for what the statute says and a decision for how courts apply it.
 - What list_decisions reports about the corpus itself — how many decisions match, which ones, their dates and subjects — needs no citation: name each decision by court, docket number and date. What a decision holds still does.
 - If the tool results do not answer the question, say so plainly in one or two text parts with no citations at all: name what was searched for and what those passages are actually about. Do not stretch a loosely related passage into an answer.
+- The answer is checked before it is shown: every quote is looked up character for character in the cited text, and every cited passage is checked for whether it states the sentence in front of it. What fails is removed from the answer, sentence and citation together. So rest each sentence on a passage that says it, and quote the sentences that say it.
 
 Shape:
 {"answer": [
@@ -477,10 +545,18 @@ def make_tools(corpus: Corpus) -> list:
         return ""  # never runs: ResearchThenAnswer ends the turn with the question instead
 
     @tool
-    async def write_answer() -> str:
+    async def write_answer(established: str, not_found: str) -> str:
         """Finish the research and write the answer. Call it once the passages found answer the
-        question, or when more searching is unlikely to help."""
-        return ""  # never runs: ResearchThenAnswer answers instead
+        question, or when more searching is unlikely to help. First take stock: established lists what
+        the passages actually say that answers the question, point by point, each with the decision_id
+        or law_id it comes from — what they say, not what you know. not_found names what the question
+        asks that no passage answers ("nothing" when they cover it); the answer reports it as not found
+        rather than filling it in."""
+        turn = _turn.get()
+        if turn is not None and turn.pushback:  # sent back to research once: see ResearchThenAnswer
+            text, turn.pushback = turn.pushback, None
+            return text
+        return ""  # otherwise never runs: ResearchThenAnswer writes the answer instead
 
     laws = [read_law, search_laws] if corpus.has_laws else []
     listing = [list_decisions] if corpus.facets else []
@@ -491,21 +567,38 @@ def make_tools(corpus: Corpus) -> list:
 _OTHER = re.compile(r"(?i)^(andere[sr]?|sonstiges|other|autre|altro|else|etwas anderes)\b")
 
 
+def _gap(not_found: Any) -> str | None:
+    """What the agent said it did not find, or None when it said it found everything."""
+    text = " ".join(str(not_found or "").split())
+    return None if len(text) < 15 or _NOTHING.match(text) else text
+
+
+def _writer() -> Callable[[Any], None]:
+    """The graph's custom stream, for Status events from inside the middleware; a no-op outside a run."""
+    try:
+        return get_stream_writer()
+    except Exception:  # noqa: BLE001 — called directly, e.g. from a test
+        return lambda _: None
+
+
 class ResearchThenAnswer(AgentMiddleware):
     """Every research step must be a tool call (constrained decoding), so the model cannot answer
-    from memory or in free text. When it calls write_answer, the answer is generated instead,
-    constrained to the AgentAnswer schema and streamed token by token."""
+    from memory or in free text. When it calls write_answer, the answer is drafted instead,
+    constrained to the AgentAnswer schema, then checked against the tool results and revised until
+    the check passes or the revisions run out; only what passed is handed to answer()."""
 
-    def __init__(self, answer_llm: ChatOpenAI, translate_llm: ChatOpenAI | None = None,
-                 max_tool_calls: int = MAX_TOOL_CALLS):
+    def __init__(self, answer_llm: ChatOpenAI, verifier: Verifier, translate_llm: ChatOpenAI | None = None,
+                 max_tool_calls: int = MAX_TOOL_CALLS, max_revisions: int = MAX_REVISIONS):
         super().__init__()
-        self.answer_llm, self.translate_llm, self.max_tool_calls = answer_llm, translate_llm, max_tool_calls
+        self.answer_llm, self.verifier, self.translate_llm = answer_llm, verifier, translate_llm
+        self.max_tool_calls, self.max_revisions = max_tool_calls, max_revisions
 
     async def _in_language(self, question: str, options: list[str]) -> tuple[str, list[str]]:
         """The question asked back and its options in the user's language. The research model writes
         them in whatever language it last searched in (an English question was asked back in German),
         so a question in another language is translated, options with it."""
-        want = _language.get()
+        turn = _turn.get()
+        want = turn.language if turn else None
         if not want or want not in LANGUAGE_NAMES or self.translate_llm is None \
                 or detect_language(question, default=want) == want:
             return question, options
@@ -524,6 +617,8 @@ class ResearchThenAnswer(AgentMiddleware):
             return question, options
 
     async def awrap_model_call(self, request: ModelRequest, handler) -> ModelResponse | AIMessage:
+        turn = _turn.get()
+        may_ask = turn.may_ask if turn else False
         used = sum(isinstance(m, ToolMessage) for m in request.messages)
         choice = ({"type": "function", "function": {"name": "write_answer"}}
                   if used >= self.max_tool_calls else "required")
@@ -533,13 +628,13 @@ class ResearchThenAnswer(AgentMiddleware):
         tools = request.tools
         if used < MIN_TOOL_CALLS:  # not yet: see MIN_TOOL_CALLS
             tools = [t for t in tools if _tool_name(t) != "write_answer"]
-        if used < 1 or not _may_ask.get():  # asking back needs a search to say why it matters
+        if used < 1 or not may_ask:  # asking back needs a search to say why it matters
             tools = [t for t in tools if _tool_name(t) != "ask_user"]
         response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
         result = response.result if isinstance(response, ModelResponse) else [response]
         replies = [m for m in result if isinstance(m, AIMessage)]
         calls = [tc for m in replies for tc in m.tool_calls]
-        if (ask := next((tc for tc in calls if tc["name"] == "ask_user"), None)) and _may_ask.get():
+        if (ask := next((tc for tc in calls if tc["name"] == "ask_user"), None)) and may_ask:
             # the turn ends here: a message with no tool call, carrying the question for answer()
             args = ask["args"]
             options = [o for o in (str(x).strip() for x in (args.get("options") or []))
@@ -553,148 +648,177 @@ class ResearchThenAnswer(AgentMiddleware):
         # A research step that returns neither a tool call nor any text would end the turn with no
         # answer and nothing logged (seen once in 33 eval turns); answer from what was found instead.
         stalled = not calls and not any(str(m.content).strip() for m in replies)
+        write = next((tc for tc in calls if tc["name"] == "write_answer"), None)
         if stalled:
             log.warning("a research step returned neither a tool call nor text; writing the answer")
-        elif not any(tc["name"] == "write_answer" for tc in calls):
+        elif write is None:
             return response
+        args = dict(write["args"]) if write else {}
+        # The agent's own stock-taking says something was not found. Early in the research that is
+        # worth one more look, so write_answer runs as a tool this once and sends it back; what it
+        # returns is set here, where the count of calls is known.
+        if (write and turn is not None and not turn.pushed_back and used < NUDGE_AFTER
+                and (gap := _gap(args.get("not_found")))):
+            turn.pushed_back = True
+            turn.pushback = PUSHBACK.format(gap=gap, left=self.max_tool_calls - used - 1)
+            log.info("sent back to research once for: %s", gap)
+            return response
+        return await self._write(request, args)
+
+    async def _generate(self, prompt: list[BaseMessage]) -> str:
+        """One constrained answer call, streamed so that the whitespace padding loop can be cut off."""
+        pieces: list[str] = []
+        trailing = 0
+        stream = self.answer_llm.astream(prompt)
+        try:
+            async for chunk in stream:
+                piece = chunk.content if isinstance(chunk.content, str) else ""
+                if not piece:
+                    continue
+                pieces.append(piece)
+                trailing = trailing + len(piece) if piece.isspace() else len(piece) - len(piece.rstrip())
+                if trailing >= STUCK_AFTER:
+                    log.warning("the answer degenerated into whitespace; keeping the parts written so far")
+                    break
+        finally:
+            await stream.aclose()
+        return "".join(pieces)
+
+    async def _write(self, request: ModelRequest, args: dict[str, Any]) -> AIMessage:
+        """Draft the answer, check it against the tool results, revise while the check finds problems,
+        and hand answer() what survived."""
+        turn = _turn.get()
+        status = _writer()
         # Passages and searches in three languages pull the answer away from the question's language
         # (a French question got a German answer), so name it when the question makes it clear.
-        question = next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), "")
-        language = LANGUAGE_NAMES.get(_language.get() or detect_language(str(question), default=""))
+        question = str(next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), ""))
+        code = (turn.language if turn else None) or detect_language(question, default="")
+        language = LANGUAGE_NAMES.get(code)
+        notes = ""
+        if established := " ".join(str(args.get("established") or "").split()):
+            notes += f"\n- What the passages establish: {established}"
+        if gap := " ".join(str(args.get("not_found") or "").split()):
+            notes += f"\n- Not found in the passages: {gap}"
         # Name the question. This instruction is the last message the answer model sees, and when it
         # only said "write the final answer now", a follow-up got the previous turn's answer again.
-        final = (f"The user's last question is:\n{question}\n\nAnswer that question now, from the tool "
-                 f"results above. An earlier answer in this conversation is not a source for it and is "
-                 f"never repeated as the answer.")
+        final = (f"The user's last question is:\n{question}\n\n"
+                 + (f"Your research notes before writing:{notes}\n\n" if notes else "")
+                 + "Answer that question now, from the tool results above. What the notes say was not "
+                   "found is reported as not found, never filled in from your own knowledge. An earlier "
+                   "answer in this conversation is not a source for it and is never repeated as the answer.")
         if language:
             final += f" Write its text parts and explanations in {language}."
-        prompt = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
-        answer = await self.answer_llm.ainvoke(prompt)
-        if not _answer_parts(answer):
+        base = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
+        # "checking", not "thinking": the research is over and no more reasoning will stream, so the UI
+        # drops the thinking line and follows these instead through the drafting and the checks.
+        status(Status("checking", "Drafting the answer"))
+        text = await self._generate(base)
+        parts = _parse_answer(text)
+        if not parts:
             # {"answer": []} is valid against the schema, so nothing downstream would complain
             log.warning("the answer call returned no answer; asking once more")
-            answer = await self.answer_llm.ainvoke(prompt)
-        return answer
+            text = await self._generate(base)
+            parts = _parse_answer(text)
+        if not parts:
+            answer = VerifiedAnswer([TextPart(type="text", text=NO_ANSWER.get(code, NO_ANSWER["en"]))], [], [])
+            return self._finish(turn, answer, [])
+        seen = _seen(request.messages)
+        failed: list[str] = []  # statements whose citations did not hold, across the rounds
+        rounds = 0
+        while True:
+            n = sum(isinstance(p, CitationPart) for p in parts)
+            status(Status("checking", f"Checking {n} citation{'s' * (n != 1)} against the passages" if n
+                          else "Checking the draft against the results"))
+            report = await self.verifier.verify(parts, question, code, seen,
+                                                lenient=rounds >= self.max_revisions, check_answers=rounds == 0)
+            if not report.problems or rounds >= self.max_revisions:
+                break
+            rounds += 1
+            failed += report.failed_statements
+            log.info("answer draft %d, %d problem(s): %s", rounds, len(report.problems), " | ".join(report.problems))
+            status(Status("checking", f"Revising the draft: {len(report.problems)} problem"
+                                      f"{'s' * (len(report.problems) != 1)} found"))
+            listed = "\n".join(f"{i}. {p}" for i, p in enumerate(report.problems, 1))
+            revised = await self._generate([*base, AIMessage(text), HumanMessage(REVISE_PROMPT.format(problems=listed))])
+            if not (new_parts := _parse_answer(revised)):
+                log.warning("the revision returned no answer; keeping the previous draft")
+                break
+            text, parts = revised, new_parts
+        answer = report.prune(parts, failed)
+        answer.rounds = rounds
+        if not any(isinstance(p, TextPart) and p.text.strip() for p in answer.parts):
+            log.warning("nothing of the draft held up against the passages")
+            answer = VerifiedAnswer([TextPart(type="text", text=NO_SUPPORT.get(code, NO_SUPPORT["en"]))], [], [],
+                                    dropped=answer.dropped, rounds=rounds)
+        elif answer.dropped:
+            log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
+        return self._finish(turn, answer, report.problems)
+
+    @staticmethod
+    def _finish(turn: Turn | None, answer: VerifiedAnswer, problems: list[str]) -> AIMessage:
+        """The checked answer goes to answer() through the turn; the message carries its text for the
+        graph's history, and what was still wrong at the end for the trace."""
+        if turn is not None:
+            turn.result = answer
+        return AIMessage(content=AgentAnswer(answer=answer.parts).model_dump_json(),
+                         additional_kwargs={"checked": {"dropped": answer.dropped, "rounds": answer.rounds,
+                                                        "unresolved": problems}})
 
 
 def _tool_name(tool) -> str | None:
     return getattr(tool, "name", None) or (tool.get("name") if isinstance(tool, dict) else None)
 
 
-def _answer_parts(message: AIMessage) -> bool:
-    """Whether the answer call produced anything to show: at least one part, or prose."""
-    text = str(message.content).strip()
-    if not text.startswith(("{", "`")):
-        return bool(text)  # prose is passed through by AnswerStream
+_ID_IN_RESULT = re.compile(r"\b(?:decision_id|law_id)[=:]\s*'?([\w./-]+)")
+
+
+def _seen(messages: list[BaseMessage]) -> set[str]:
+    """The decisions and statute articles the tools returned this turn: all an answer may cite."""
+    seen: set[str] = set()
+    for m in messages:
+        if isinstance(m, ToolMessage):
+            art = m.artifact if isinstance(m.artifact, dict) else {}
+            seen.update(art.get("decisions", []))
+            seen.update(_ID_IN_RESULT.findall(str(m.content)))
+    return seen
+
+
+def _parse_answer(text: str) -> list[TextPart | CitationPart]:
+    """The parts of an answer call's JSON; what is complete of a cut-off one; prose as one text part."""
+    text = text.strip()
+    if not text:
+        return []
+    start = text.find("{")
+    if start < 0 or text[0] not in "{`":  # only possible if constrained decoding is off
+        log.warning("the model answered in prose instead of the JSON format")
+        return [TextPart(type="text", text=text)]
+    body = text[start:]
+    obj = None
     try:
-        parts = json.loads(text[text.find("{"):text.rfind("}") + 1]).get("answer")
-    except (ValueError, AttributeError):
-        return True  # malformed but not empty: AnswerStream salvages what it can
-    return bool(parts)
-
-
-# ── streaming the final JSON ────────────────────────────────────────────
-class AnswerStream:
-    """Parses the final JSON answer while it streams.
-
-    feed() returns what is ready: text parts as they grow (each TextPart holds only the
-    new text) and citation parts once they are complete.
-    """
-
-    def __init__(self) -> None:
-        self.buf = ""
-        self.done = 0        # parts fully emitted
-        self.shown = ""      # text of the open part already emitted
-        self.last = ""       # last character sent, to space consecutive parts
-        self._parsed_at = 0
-        self.prose = False   # not JSON: only possible if constrained decoding is off
-
-    def feed(self, text: str) -> list[TextPart | CitationPart]:
-        self.buf += text
-        head = self.buf.lstrip()
-        if self.prose or (head and head[0] not in "{`"):
-            self.prose = True  # passed through by finish()
-            return []
-        # parse_partial_json is linear in the buffer: parse every ~48 chars, not every token
-        if len(self.buf) - self._parsed_at < 48 and "}" not in text:
-            return []
-        self._parsed_at = len(self.buf)
-        return self._advance(final=False)
-
-    def stuck(self) -> bool:
-        """Constrained decoding lets the model pad the JSON with whitespace, and it sometimes never stops."""
-        return len(self.buf) - len(self.buf.rstrip()) >= 64
-
-    def finish(self) -> list[TextPart | CitationPart]:
-        if self.prose or "{" not in self.buf:
-            if self.buf.strip():
-                log.warning("the model answered in prose instead of the JSON format")
-            return [TextPart(type="text", text=self.buf.strip())] if self.buf.strip() else []
+        obj = json.loads(body[:body.rfind("}") + 1])
+    except ValueError:
         try:
-            AgentAnswer.model_validate_json(self.buf[self.buf.find("{"):self.buf.rfind("}") + 1])
-        except ValidationError as e:
-            log.warning("final answer does not match the schema: %s", str(e)[:300])
-        return self._advance(final=True)
-
-    def _parts(self, final: bool) -> list | None:
-        start = self.buf.find("{")
-        if start < 0:
-            return None
-        body = self.buf[start:]
-        obj = None
-        if final:
-            try:
-                obj = json.loads(body[:body.rfind("}") + 1])
-            except ValueError:
-                pass
-        if obj is None:
-            try:
-                obj = parse_partial_json(re.sub(r"\s*`*\s*$", "", body))
-            except ValueError:
-                return None
-        parts = obj.get("answer") if isinstance(obj, dict) else None
-        return parts if isinstance(parts, list) else None
-
-    def _text(self, piece: str) -> TextPart:
-        if not self.shown and self.last and not self.last.isspace() and piece[:1] not in " \n.,;:!?)":
-            piece = " " + piece  # parts are written as separate sentences
-        self.last = piece[-1]
-        return TextPart(type="text", text=piece)
-
-    def _advance(self, final: bool) -> list[TextPart | CitationPart]:
-        parts = self._parts(final) or []
-        out: list[TextPart | CitationPart] = []
-        for i in range(self.done, len(parts)):
-            p = parts[i]
-            is_open = not final and i == len(parts) - 1
-            if not isinstance(p, dict):
-                if is_open:
-                    break
-                self.done += 1
-                continue
-            kind = p.get("type") or ("citation" if "quote" in p else "text")
-            if kind == "text":
-                t = p.get("text") or ""
-                # the tail of a half-streamed string can still change (e.g. a cut \u escape): hold it back
-                ready = t[:max(len(self.shown), len(t) - 12)] if is_open else t
-                if ready.startswith(self.shown) and len(ready) > len(self.shown):
-                    out.append(self._text(ready[len(self.shown):]))
-                    self.shown = ready
-                elif not self.shown.startswith(ready):  # a shorter re-parse is harmless
-                    log.warning("streamed text diverged from what was already sent")
-                if is_open:
-                    break
-                self.done, self.shown = self.done + 1, ""
-            else:
-                if is_open:  # wait until the citation is complete
-                    break
-                try:
-                    out.append(CitationPart.model_validate(p | {"type": "citation"}))
-                    self.last = "]"
-                except ValidationError:
-                    log.warning("dropping malformed citation %r", p)
-                self.done += 1
-        return out
+            obj = parse_partial_json(re.sub(r"\s*`*\s*$", "", body))
+        except ValueError:
+            pass
+    raw = obj.get("answer") if isinstance(obj, dict) else None
+    if not isinstance(raw, list):
+        log.warning("the answer is not in the expected shape: %r", text[:200])
+        return []
+    parts: list[TextPart | CitationPart] = []
+    for p in raw:
+        if not isinstance(p, dict):
+            continue
+        kind = p.get("type") or ("citation" if "quote" in p else "text")
+        if kind == "text":
+            if (t := str(p.get("text") or "")).strip():
+                parts.append(TextPart(type="text", text=t))
+            continue
+        try:
+            parts.append(CitationPart.model_validate(p | {"type": "citation"}))
+        except ValidationError:
+            log.warning("dropping malformed citation %r", p)
+    return parts
 
 
 # ── quotes → highlights ─────────────────────────────────────────────────
@@ -704,17 +828,39 @@ _ELLIPSIS = re.compile(r"\[?(?:\.\.\.|…)\]?")
 
 
 def _fold(s: str) -> tuple[str, list[int]]:
-    """Lowercase, unify quotes/dashes and drop all whitespace, keeping each char's original index."""
+    """Lowercase, unify quotes/dashes and drop all whitespace, keeping each char's original index.
+
+    A word broken across lines in a decision's text ("wer-\\nden") is layout, not text: the hyphen goes
+    too, so that a quote written as "werden" is still found character for character."""
     chars, idx = [], []
+    n = len(s)
     for i, ch in enumerate(s):
-        if not ch.isspace():
-            chars.append(ch.translate(_FOLD).lower())
-            idx.append(i)
+        if ch.isspace() or ch == "­":
+            continue
+        if ch == "-":
+            j = i + 1
+            while j < n and s[j].isspace():
+                j += 1
+            if j > i + 1 and "\n" in s[i + 1:j] and j < n and s[j].islower():
+                continue
+        chars.append(ch.translate(_FOLD).lower())
+        idx.append(i)
     return "".join(chars), idx
 
 
+_BROKEN_WORD = re.compile(r"-\s+(?=[a-zäöüàâéèêîôûç])")
+
+
 def locate_quote(text: str, quote: str) -> tuple[int, int] | None:
-    """Char span of `quote` in `text`, tolerant to whitespace, quote styles and '...' elisions."""
+    """Char span of `quote` in `text`, tolerant to whitespace, quote styles, '...' elisions and words
+    broken across lines."""
+    span = _locate(text, quote)
+    if span is None and _BROKEN_WORD.search(quote):  # the model kept "wer- den" from the passage
+        span = _locate(text, _BROKEN_WORD.sub("", quote))
+    return span
+
+
+def _locate(text: str, quote: str) -> tuple[int, int] | None:
     hay, idx = _fold(text)
     segments = [s for s in (_fold(p)[0] for p in _ELLIPSIS.split(quote)) if len(s) >= 8]
     if not segments or not hay:
@@ -824,7 +970,8 @@ class _Citations:
         if not span and section != "regeste":
             # the model sometimes pins a quote on the wrong decision: look in the others it was shown
             for other in sorted(self.seen - {did}):
-                if sp := locate_quote(store.get(other).full_text, c.quote):
+                # `seen` may also hold statute ids and ids the corpus does not have: skip them
+                if (doc := store.get(other)) and (sp := locate_quote(doc.full_text, c.quote)):
                     log.warning("quote cited from %s found in %s instead", did, other)
                     did, span = other, sp
                     break
@@ -859,6 +1006,327 @@ class _Citations:
         )
         self.by_span[key] = source
         return source
+
+
+# ── checking a draft ────────────────────────────────────────────────────
+@dataclass
+class CheckedCitation:
+    index: int          # position in the parts list
+    n: int              # its number in the draft, for the problem list
+    part: CitationPart
+    statement: str      # the text it is attached to
+    source: Source | None
+    in_results: bool = False        # the cited decision or article was returned by a tool this turn
+    supported: bool | None = None   # None: not checked, or the check failed
+    # After the revisions, a quote the model would not copy verbatim (typically translated into the
+    # answer's language) is accepted when the passage it named still states the sentence: the Source
+    # then covers the whole passage and is marked as not verbatim, which the UI shows.
+    lenient: bool = False
+
+    @property
+    def ok(self) -> bool:
+        if self.source is None or not self.in_results or self.supported is False:
+            return False
+        return self.source.verified or (self.lenient and self.supported is True)
+
+
+@dataclass
+class Report:
+    citations: list[CheckedCitation]
+    problems: list[str]
+    # text parts with no source that add something new: index → what is left of them once the
+    # sentences that add something are removed ("" when nothing is)
+    rewritten: dict[int, str] = field(default_factory=dict)
+
+    @property
+    def failed_statements(self) -> list[str]:
+        """Statements left with no support at all: every citation attached to them failed.
+
+        Per statement, not per citation. A statement that also carries a citation that held is not
+        unsupported, and the next round must not drop it because one of its other citations was bad."""
+        held = {c.statement for c in self.citations if c.ok}
+        return [c.statement for c in self.citations if not c.ok and c.statement and c.statement not in held]
+
+    def prune(self, parts: list[TextPart | CitationPart], failed_before: list[str]) -> VerifiedAnswer:
+        """What is left once citations that did not hold are removed.
+
+        Citations that failed are dropped. Their text is not dropped with them out of hand: a sentence
+        stays if a citation attached to it held, or if the checks found that it only restates what the
+        surviving citations say or reports what the search did and did not find (`rewritten` holds what
+        is left of each part whose sentences did not all pass). This matters for the honest no-answer:
+        "the decisions found say nothing about a 180-day deadline" is right even when the model staples
+        an unrelated passage to it. A sentence is dropped anyway when it is one whose citation failed in
+        an earlier round and which came back without one: a revision may not keep a claim by dropping
+        its source. Sources are renumbered in order of appearance."""
+        checked = {c.index: c for c in self.citations}
+        kept: list[TextPart | CitationPart] = []
+        sources: list[Source] = []
+        supported: list[bool | None] = []
+        numbered: dict[tuple, Source] = {}
+        said: set[str] = set()  # text already kept, to catch a paragraph repeated word for word
+        dropped = i = 0
+        while i < len(parts):
+            texts: list[TextPart] = []
+            while i < len(parts) and isinstance(parts[i], TextPart):
+                if i in self.rewritten:
+                    dropped += 1
+                    if self.rewritten[i]:
+                        texts.append(TextPart(type="text", text=self.rewritten[i]))
+                else:
+                    texts.append(parts[i])  # type: ignore[arg-type]
+                i += 1
+            cites: list[CheckedCitation] = []
+            while i < len(parts) and isinstance(parts[i], CitationPart):
+                if (c := checked.get(i)) is not None:
+                    cites.append(c)
+                i += 1
+            good = [c for c in cites if c.ok]
+            # Sentence by sentence, because a revision may slip the claim in next to a supported one.
+            # `failed_before` holds only statements that had no citation left at all (see
+            # Report.failed_statements), so a statement that kept a citation that holds is not in it.
+            for t in texts:
+                if _same_statement(t.text, failed_before):
+                    dropped += 1
+                    continue
+                # A revision sometimes restates a whole passage of the draft under the next citation,
+                # and the answer then says the same thing twice, word for word. Keep the first.
+                mark = " ".join(t.text.lower().split())
+                if len(mark) >= 40 and mark in said:
+                    dropped += 1
+                    continue
+                said.add(mark)
+                kept.append(t)
+            for c in good:
+                src = c.source
+                key = (src.decision_id, src.section, src.char_start, src.char_end)
+                if key not in numbered:
+                    numbered[key] = src.model_copy(update={"n": len(numbered) + 1})
+                kept.append(c.part)
+                sources.append(numbered[key])
+                supported.append(c.supported)
+        return VerifiedAnswer(kept, sources, supported, dropped=dropped)
+
+
+def _same_statement(text: str, others: list[str]) -> bool:
+    """Whether a sentence is one of the statements in `others`, by word overlap or by being contained in
+    one: a statement is the text between two citations, which may be several sentences."""
+    tokens = _tokens(text)
+    if len(tokens) < 3:
+        return False
+    for other in others:
+        seen = _tokens(other)
+        both = len(tokens & seen)
+        if seen and max(both / len(tokens | seen), both / len(tokens)) >= SAME_STATEMENT:
+            return True
+    return False
+
+
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-ZÄÖÜÉÈÀ«\"(\[*])")
+_ABBREVIATION = re.compile(r"(?:\b(?:Art|Abs|lit|Ziff|vgl|bzw|al|let|consid|art|cpv|Nr|Rz|resp|etc|Bd|ca|Hrsg|"
+                           r"insb|ev|evtl|ggf|inkl|sog|usw|z\.B|u\.a|i\.S|i\.V|d\.h|c\.-à-d|p\.ex|n|p|E|S|N)|\b[A-Z])\.$")
+
+
+def _sentences(text: str) -> list[str]:
+    """The sentences of a text part, keeping "Art. 336c" and "E. 4.1" together."""
+    out: list[str] = []
+    for piece in _SENTENCE_END.split(" ".join(text.split())):
+        if out and _ABBREVIATION.search(out[-1]):
+            out[-1] += " " + piece
+        else:
+            out.append(piece)
+    return [s for s in out if s.strip()]
+
+
+def _any_language(law_id: str) -> str:
+    """A statute id without its language: law_CH_220_de_271a and law_CH_220_fr_271a are one article."""
+    return re.sub(r"_(de|fr|it)_(\w+)$", r"_\2", law_id)
+
+
+def _in_context(corpus: Corpus, source: Source, margin: int = 300) -> str:
+    """The quoted span marked inside its surroundings, so the check can resolve what it refers to."""
+    if source.char_start is None or source.char_end is None or not source.verified:
+        return f"⟦{source.text[:2000]}⟧"
+    store = corpus.decisions
+    doc = store.law(source.decision_id) if source.section == "law" else store.get(source.decision_id)
+    full = doc.full_text if doc else source.text
+    s, e = source.char_start, source.char_end
+    return full[max(0, s - margin):s] + "⟦" + full[s:e] + "⟧" + full[e:e + margin]
+
+
+class Verifier:
+    """Checks a drafted answer against the tool results: in code where it can (the cited decision was
+    returned by a tool, the quote is in it character for character, the answer's language) and with one
+    short yes/no model call where it cannot (the passage states the sentence, an unsourced sentence only
+    restates what is sourced, the answer responds to the question)."""
+
+    def __init__(self, corpus: Corpus, support_llm: ChatOpenAI, covered_llm: ChatOpenAI | None = None,
+                 answers_llm: ChatOpenAI | None = None):
+        self.corpus = corpus
+        self.support_llm, self.covered_llm, self.answers_llm = support_llm, covered_llm, answers_llm
+
+    async def _yes_no(self, llm: ChatOpenAI | None, system: str, user: str, key: str, what: str) -> bool | None:
+        if llm is None:
+            return None
+        try:
+            reply = await llm.ainvoke([SystemMessage(system), HumanMessage(user)])
+            return bool(json.loads(str(reply.content))[key])
+        except (ValidationError, ValueError, KeyError, TypeError):
+            log.warning("%s check returned no verdict", what, exc_info=True)
+        except Exception:  # noqa: BLE001 — a check that fails is not a verdict either way
+            log.warning("%s check failed", what, exc_info=True)
+        return None
+
+    async def supported(self, statement: str, source: Source) -> bool | None:
+        """Does the cited passage state the sentence it is attached to?"""
+        passage = _in_context(self.corpus, source)
+        return await self._yes_no(
+            self.support_llm, SUPPORT_PROMPT,
+            f"PASSAGE ({source.decision.docket}; the quoted sentences are between ⟦ and ⟧):\n{passage}\n\n"
+            f"STATEMENT:\n{statement}", "supported", "grounding")
+
+    async def covered(self, backed: str, statement: str) -> bool | None:
+        """Does an unsourced sentence only restate what the sourced sentences say?"""
+        return await self._yes_no(self.covered_llm, COVERED_PROMPT,
+                                  f"BACKED SENTENCES:\n{backed[:4000] or '(none)'}\n\nSENTENCE WITHOUT A SOURCE:\n{statement}",
+                                  "covered", "coverage")
+
+    async def answers(self, question: str, answer: str) -> bool | None:
+        return await self._yes_no(self.answers_llm, ANSWERS_PROMPT,
+                                  f"QUESTION:\n{question[:1500]}\n\nANSWER:\n{answer[:4000]}", "answers", "answers")
+
+    async def verify(self, parts: list[TextPart | CitationPart], question: str, language: str | None,
+                     seen: set[str], lenient: bool = False, check_answers: bool = True) -> Report:
+        """The problems with a draft. `lenient`: the last round, see CheckedCitation.lenient."""
+        cites = _Citations(self.corpus)
+        cites.seen = set(seen)
+        free = {_any_language(s) for s in seen}
+        checked: list[CheckedCitation] = []
+        # the draft as statements: the text parts up to a run of citations, and those citations
+        groups: list[tuple[list[int], str, list[CheckedCitation]]] = []
+        previous = ""  # citations right after citations support the same statement
+        i = 0
+        while i < len(parts):
+            indices: list[int] = []
+            texts: list[str] = []
+            while i < len(parts) and isinstance(parts[i], TextPart):
+                indices.append(i)
+                texts.append(parts[i].text)  # type: ignore[union-attr]
+                i += 1
+            whole = " ".join(" ".join(texts).split())
+            group: list[tuple[int, CitationPart]] = []
+            while i < len(parts) and isinstance(parts[i], CitationPart):
+                group.append((i, parts[i]))  # type: ignore[arg-type]
+                i += 1
+            if not group:
+                if whole:
+                    groups.append((indices, whole, []))
+                continue
+            statement = whole[-400:] or previous  # the sentences right before the citation
+            previous = statement
+            these: list[CheckedCitation] = []
+            for index, part in group:
+                src = await cites.resolve(part)
+                # a statute quoted from another language version than the one the tool showed still counts
+                in_results = src is not None and (src.decision_id in seen or _any_language(src.decision_id) in free)
+                these.append(CheckedCitation(index, len(checked) + len(these) + 1, part, statement, src,
+                                             in_results=in_results, lenient=lenient))
+            checked.extend(these)
+            groups.append((indices, whole, these))
+
+        async def support(c: CheckedCitation) -> None:
+            # an unverified quote is checked too: in the last round the passage may stand in for it
+            if c.source is not None and c.in_results and c.statement and (c.source.verified or c.lenient):
+                c.supported = await self.supported(c.statement, c.source)
+
+        text = " ".join(p.text for p in parts if isinstance(p, TextPart))
+        answers = None
+        for outcome in await asyncio.gather(
+                *(support(c) for c in checked[:MAX_CHECKS]),
+                self.answers(question, text) if check_answers and text.strip() else asyncio.sleep(0, None),
+                return_exceptions=True):
+            if isinstance(outcome, BaseException):
+                log.warning("a check failed: %r", outcome)
+            elif isinstance(outcome, bool):
+                answers = outcome
+        # Then, knowing which citations held, whether every sentence that none of them backs only restates
+        # what they say. Sentence by sentence, because an honest "no decision says this" and a rule from
+        # the model's own memory sit in the same text part; and for statements whose citations all failed
+        # too, because the model staples a passage to that honest sentence and the passage does not say it.
+        backed = " ".join(whole for _, whole, these in groups if any(c.ok for c in these))
+        loose = {index for indices, _, these in groups if not any(c.ok for c in these) for index in indices}
+        sentences = [(index, s) for index in sorted(loose)
+                     for s in _sentences(parts[index].text)]  # type: ignore[union-attr]
+
+        async def coverage(index: int, sentence: str) -> tuple[int, str, bool | None]:
+            if len(sentence) < 25:  # "Zusammenfassend:" — framing, not a claim
+                return index, sentence, True
+            return index, sentence, await self.covered(backed, sentence)
+
+        verdicts: dict[tuple[int, str], bool | None] = {}
+        for outcome in await asyncio.gather(*(coverage(i, s) for i, s in sentences[:2 * MAX_CHECKS]),
+                                            return_exceptions=True):
+            if isinstance(outcome, BaseException):
+                log.warning("a coverage check failed: %r", outcome)
+            else:
+                verdicts[(outcome[0], outcome[1])] = outcome[2]
+        # An unchecked sentence (past the cap, or a check that failed) is kept where nothing was wrong with
+        # its statement, and dropped where its citations did not hold: there it has no support either way.
+        failed = {index for indices, _, these in groups if these and not any(c.ok for c in these)
+                  for index in indices}
+        rewritten: dict[int, str] = {}
+        needed: list[str] = []  # uncovered sentences of statements that never had a citation
+        for index in sorted(loose):
+            was = _sentences(parts[index].text)  # type: ignore[union-attr]
+            keep = []
+            for sentence in was:
+                verdict = verdicts.get((index, sentence))
+                if verdict is None:  # not checked, or the check failed
+                    verdict = index not in failed
+                if verdict:
+                    keep.append(sentence)
+                elif verdicts.get((index, sentence)) is False and index not in failed:
+                    needed.append(sentence)  # where the citation failed, that problem already says it
+            if len(keep) < len(was):
+                rewritten[index] = " ".join(keep)
+        # Statements and quotes are given in full: shortened with "…", the model copied the shortened
+        # form back into its revision, ellipsis included.
+        problems: list[str] = []
+        for c in checked:
+            where = f"Citation [{c.n}], attached to the statement «{' '.join(c.statement.split())}»"
+            if c.source is None:
+                problems.append(f"{where}: there is no decision or article {c.part.decision_id!r} in the corpus. "
+                                f"Cite only passages the tools returned, by their decision_id or law_id.")
+            elif not c.in_results:
+                problems.append(f"{where}: {c.source.decision.docket} ({c.source.decision_id}) was not returned by "
+                                f"any tool in this turn. Cite only passages from the tool results.")
+            elif not c.source.verified and not c.ok:
+                # the usual reason: the quote was translated into the answer's language
+                spoken = c.source.decision.language
+                wrote = detect_language(c.part.quote, default="")
+                why = (f" The decision is written in {LANGUAGE_NAMES.get(spoken, spoken)} and the quote is in "
+                       f"{LANGUAGE_NAMES.get(wrote, wrote)}: a quote is never translated."
+                       if wrote and spoken in LANGUAGE_NAMES and wrote != spoken else "")
+                problems.append(f"{where}: its quote «{' '.join(c.part.quote.split())}» was not found in "
+                                f"{c.source.decision.docket}.{why} Copy the exact characters of the tool result, "
+                                f"in its language, wording and spelling.")
+            elif c.supported is False:
+                problems.append(f"{where}: the quoted passage from {c.source.decision.docket} does not state that. "
+                                f"Cite a passage that says it, or remove the statement.")
+        for statement in needed:
+            problems.append(f"The sentence «{statement}» has no citation and says more than the cited sentences "
+                            f"do. Cite a passage from the tool results that says it, or remove it.")
+        if language in LANGUAGE_NAMES and (got := detect_language(text, default="")) and got != language:
+            problems.append(f"The answer is written in {LANGUAGE_NAMES.get(got, got)}; the question is in "
+                            f"{LANGUAGE_NAMES[language]}. Write the text parts and explanations in "
+                            f"{LANGUAGE_NAMES[language]}.")
+        # Only when some citation held: this model marks an answer down for what it leaves out (see
+        # agent-eval/), so on a draft that reports having found nothing it always says "does not answer",
+        # and no revision can satisfy it. There the objection would only burn the revisions.
+        if answers is False and any(c.ok for c in checked):
+            problems.append(f"The answer does not respond to the question asked: \"{question[:300]}\". "
+                            f"Answer that question directly, from the tool results; if they do not cover it, "
+                            f"say so.")
+        return Report(checked, problems, rewritten)
 
 
 # ── agent ───────────────────────────────────────────────────────────────
@@ -906,125 +1374,117 @@ class ReactAgent:
         # JSON and starts right away
         research_llm = ReasoningChatOpenAI(**common, max_tokens=4096,
                                            extra_body={"chat_template_kwargs": {"enable_thinking": LLM_THINKING}})
-        # passed in the request body as is, bypassing LangChain's own response_format handling
-        answer_llm = ChatOpenAI(**common, max_tokens=4096, extra_body={
+        # Passed in the request body as is, bypassing LangChain's own response_format handling.
+        # "nostream": drafts are checked before anything is shown, so no call inside the graph streams to
+        # the client — the checked answer arrives as one message.
+        answer_llm = ChatOpenAI(**common, max_tokens=4096, tags=["nostream"], extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": ANSWER_FORMAT})
-        # a separate short call per citation: does the passage actually say what the sentence claims?
-        # "nostream": its JSON is not part of the answer the client sees
-        translate_llm = ChatOpenAI(**{**common, "temperature": 0, "streaming": False}, max_tokens=512,
-                                   tags=["nostream"], extra_body={
-                                       "chat_template_kwargs": {"enable_thinking": False},
-                                       "response_format": ASK_FORMAT})
-        self.check_llm = ChatOpenAI(**{**common, "temperature": 0}, max_tokens=32, extra_body={
-            "chat_template_kwargs": {"enable_thinking": False}, "response_format": SUPPORT_FORMAT})
+        translate_llm = self._judge(common, ASK_FORMAT, max_tokens=512)
+        # one short yes/no call per check: does the passage say what the sentence claims, does an unsourced
+        # sentence only restate the sourced ones, does the answer respond to the question
+        verifier = Verifier(corpus, self._judge(common, SUPPORT_FORMAT), self._judge(common, COVERED_FORMAT),
+                            self._judge(common, ANSWERS_FORMAT))
         law_tools = LAW_TOOLS.format(n_articles=corpus.n_articles) if corpus.has_laws else ""
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS,
                                         min_calls=MIN_TOOL_CALLS, law_tools=law_tools,
                                         filter_tools=FILTER_TOOLS.format(this_year=date.today().year)
                                         if corpus.facets else "", ask_tool=ASK_TOOL)
         self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
-                                  middleware=[ResearchThenAnswer(answer_llm, translate_llm)])
-        log.info("react agent: %s at %s (thinking=%s)", self.model, LLM_URL, LLM_THINKING)
+                                  middleware=[ResearchThenAnswer(answer_llm, verifier, translate_llm)])
+        log.info("react agent: %s at %s (thinking=%s, up to %d revisions)", self.model, LLM_URL, LLM_THINKING,
+                 MAX_REVISIONS)
 
-    async def _check(self, n: int, claim: str, source: Source) -> tuple[int, bool | None]:
-        """Does the cited passage state the sentence it is attached to?"""
-        try:
-            reply = await self.check_llm.ainvoke([
-                SystemMessage(SUPPORT_PROMPT),
-                HumanMessage(f"PASSAGE ({source.decision.docket}):\n{source.text[:2000]}\n\n"
-                             f"STATEMENT:\n{claim}")])
-            return n, bool(json.loads(str(reply.content))["supported"])
-        except (ValidationError, ValueError, KeyError, TypeError):
-            log.warning("grounding check returned no verdict for [%d]", n, exc_info=True)
-        except Exception:
-            log.warning("grounding check failed for [%d]", n, exc_info=True)
-        return n, None
+    @staticmethod
+    def _judge(common: dict, response_format: dict, max_tokens: int = 32) -> ChatOpenAI:
+        """A deterministic model for one constrained yes/no or short JSON reply."""
+        return ChatOpenAI(**{**common, "temperature": 0, "streaming": False}, max_tokens=max_tokens,
+                          tags=["nostream"], extra_body={"chat_template_kwargs": {"enable_thinking": False},
+                                                         "response_format": response_format})
 
     async def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus)
-        _searches.set([])  # this turn's searches; the tools are shared between turns, the store is not
         # one question back per question: after the user has answered one, the agent answers
         last = next((m for m in reversed(history) if m.role == "assistant"), None)
-        _may_ask.set(ask and not (last and last.clarification))
-        _language.set(detect_language(original_question(question, history), default="") or None)
+        turn = Turn(may_ask=ask and not (last and last.clarification),
+                    language=detect_language(original_question(question, history), default="") or None)
+        _turn.set(turn)  # before the graph starts, so its tasks share this turn's state
         question = with_clarification(question, history)
-        stream, writing = AnswerStream(), False
-        claim: list[str] = []  # the sentences since the last citation
-        previous = ""  # several citations in a row all support the same sentence
-        checks: list[asyncio.Task[tuple[int, bool | None]]] = []
         yield Status("thinking", "Planning the research")
-
-        async def emit(parts: list[TextPart | CitationPart]) -> AsyncIterator[AgentEvent]:
-            nonlocal previous, shown
-            for p in parts:
-                shown = True
-                if isinstance(p, TextPart):
-                    claim.append(p.text)
-                    yield Delta(p.text)
-                elif (src := await cites.resolve(p)) is not None:
-                    statement = " ".join("".join(claim).split())[-400:] or previous
-                    claim.clear()
-                    previous = statement
-                    if statement and len(checks) < MAX_CHECKS:
-                        checks.append(asyncio.create_task(self._check(src.n, statement, src)))
-                    yield Cite(src)
 
         events = self.graph.astream(
             {"messages": [*_history(history), HumanMessage(question)]},
-            {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates"])
+            {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates", "custom"])
         thought: list[str] = []  # reasoning since the last tool call
-        call = None  # the model call the chunks come from
         shown = False  # whether any part of an answer has been sent
-        async for mode, data in events:
-            if mode == "messages":
-                chunk = data[0]
-                if not isinstance(chunk, AIMessageChunk):
+        try:
+            async for mode, data in events:
+                if mode == "custom":  # progress of the drafting and checking, from the middleware
+                    if isinstance(data, Status):
+                        yield data
                     continue
-                if chunk.id and chunk.id != call:
-                    call = chunk.id
-                    if not shown:  # a retried answer call starts over, not after the empty first try
-                        stream = AnswerStream()
-                if (text := chunk.additional_kwargs.get("reasoning")) and not writing:
-                    thought.append(text)
-                    yield Thought(text)
-                if not isinstance(chunk.content, str) or not chunk.content:
-                    continue
-                if not writing:  # research calls are tool calls only, so text means the answer has begun
-                    writing = True
-                    yield Status("answer", "Writing the answer")
-                async for ev in emit(stream.feed(chunk.content)):
-                    yield ev
-                if stream.stuck():
-                    log.warning("the answer degenerated into whitespace; keeping the parts written so far")
-                    break
-                continue
-            for update in data.values():
-                for m in (update or {}).get("messages", []):
-                    if isinstance(m, AIMessage) and (asked := m.additional_kwargs.get("ask_user")):
-                        shown = True
-                        seen = ", ".join(sorted(cites.seen)[:12])
-                        notes = asked["notes"] + (f" Decisions found: {seen}." if seen else "")
-                        yield Delta(asked["question"])
-                        yield Clarify(asked["question"], asked["options"], notes)
-                    elif isinstance(m, AIMessage) and m.tool_calls:
-                        stream = AnswerStream()
-                        said = " ".join("".join(thought).split()) or None
-                        thought.clear()
-                        for tc in m.tool_calls:
-                            yield ToolStart(tc["id"], tc["name"], tc["args"], said)
-                    elif isinstance(m, ToolMessage):
-                        art = m.artifact if isinstance(m.artifact, dict) else {}
-                        cites.seen.update(art.get("decisions", []))
-                        yield ToolEnd(m.tool_call_id, m.name or "", art.get("summary", ""),
-                                      m.status == "error" or bool(art.get("error")))
-                        yield Status("thinking", "Reading the results")
-        await events.aclose()  # cancels the model call if we broke off
-        async for ev in emit(stream.finish()):
-            yield ev
+                if mode == "messages":
+                    chunk = data[0]
+                    if isinstance(chunk, AIMessageChunk) and (text := chunk.additional_kwargs.get("reasoning")):
+                        thought.append(text)
+                        yield Thought(text)
+                    continue  # research steps are tool calls; the answer arrives as an update, once checked
+                for update in data.values():
+                    for m in (update or {}).get("messages", []):
+                        if isinstance(m, AIMessage) and (asked := m.additional_kwargs.get("ask_user")):
+                            shown = True
+                            seen = ", ".join(sorted(cites.seen)[:12])
+                            notes = asked["notes"] + (f" Decisions found: {seen}." if seen else "")
+                            yield Delta(asked["question"])
+                            yield Clarify(asked["question"], asked["options"], notes)
+                        elif isinstance(m, AIMessage) and "checked" in m.additional_kwargs:
+                            shown = True
+                            yield Status("answer", "Writing the answer")
+                            async for ev in self._emit(turn, m, cites):
+                                yield ev
+                        elif isinstance(m, AIMessage) and m.tool_calls:
+                            said = " ".join("".join(thought).split()) or None
+                            thought.clear()
+                            for tc in m.tool_calls:
+                                yield ToolStart(tc["id"], tc["name"], tc["args"], said)
+                        elif isinstance(m, ToolMessage):
+                            art = m.artifact if isinstance(m.artifact, dict) else {}
+                            cites.seen.update(art.get("decisions", []))
+                            yield ToolEnd(m.tool_call_id, m.name or "", art.get("summary", ""),
+                                          m.status == "error" or bool(art.get("error")))
+                            yield Status("thinking", "Reading the results")
+        finally:
+            await events.aclose()  # cancels the model call if the client went away
         if not shown:  # never end a turn in silence: the client cannot tell it from an answer
             log.warning("the turn ended without an answer")
             yield Delta(NO_ANSWER.get(detect_language(question, default="en"), NO_ANSWER["en"]))
-        for finished in asyncio.as_completed(checks):  # the checks ran while the answer was streaming
-            n, supported = await finished
+
+    async def _emit(self, turn: Turn, message: AIMessage, cites: _Citations) -> AsyncIterator[AgentEvent]:
+        """The checked answer as events: its text, a Cite after each statement with the verified Source,
+        and the grounding verdict of every citation (all passed, or they would not be here)."""
+        result = turn.result
+        if result is None:  # cannot happen in a turn; the message text is the fallback
+            log.warning("the checked answer did not reach answer(); resolving its citations again")
+            parts = _parse_answer(str(message.content))
+            sources = [await cites.resolve(p) for p in parts if isinstance(p, CitationPart)]
+            result = VerifiedAnswer(parts, [s for s in sources if s], [None] * len(sources))
+        last = ""  # last character sent, to space consecutive parts
+        verdicts: dict[int, bool] = {}
+        k = 0
+        for p in result.parts:
+            if isinstance(p, TextPart):
+                text = p.text
+                if last and not last.isspace() and text[:1] not in " \n.,;:!?)":
+                    text = " " + text  # parts are written as separate sentences
+                last = text[-1]
+                yield Delta(text)
+                continue
+            if k >= len(result.sources):
+                break
+            src, supported = result.sources[k], result.supported[k] if k < len(result.supported) else None
+            k += 1
+            last = "]"
+            yield Cite(src)
             if supported is not None:
-                yield Verdict(n, supported)
+                verdicts[src.n] = supported
+        for n, supported in verdicts.items():
+            yield Verdict(n, supported)

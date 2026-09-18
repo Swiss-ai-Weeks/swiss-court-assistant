@@ -271,7 +271,9 @@ function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, s
         </p>
       )}
       {streaming && !content && !error && status && !thought && (
-        <p className="status-line" aria-live="polite">
+        // "checking" is the agent verifying its own draft against the passages; it can run for a few
+        // rounds, and the detail says which ("Checking 3 citations", "Revising the draft: 2 problems").
+        <p className={`status-line${status.stage === "checking" ? " status-checking" : ""}`} aria-live="polite">
           <span className="dot" />
           {status.detail}
         </p>

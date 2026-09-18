@@ -190,6 +190,8 @@ textarea { font: inherit; }
 .status-line { display: flex; align-items: center; gap: var(--space-sm); margin: 0 0 var(--space-lg); font-size: 14px; font-weight: 700; color: var(--ink); }
 .status-line .dot { width: 8px; height: 8px; flex: none; }
 .activity li.running .dot, .status-line .dot { background: var(--primary); border: 1px solid var(--primary); animation: pulse 1s ease-in-out infinite; }
+/* checking its own draft against the passages: the same line, hollow square — auditing, not searching */
+.status-checking .dot { background: transparent; }
 @keyframes pulse { 50% { opacity: 0.3; } }
 .msg-error { color: var(--error); }
 
