@@ -10,10 +10,12 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
-from .schemas import Conversation, ConversationSummary, Message, Source, ToolCall
+from .schemas import Clarification, Conversation, ConversationSummary, Message, Source, StatuteRef, ToolCall
 
 _SOURCES = TypeAdapter(list[Source])
 _TOOL_CALLS = TypeAdapter(list[ToolCall])
+_STATUTES = TypeAdapter(list[StatuteRef])
+_CLARIFICATION = TypeAdapter(Clarification)
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS conversations (
     id TEXT PRIMARY KEY,
@@ -51,8 +53,13 @@ class ConversationStore:
         self._db.row_factory = sqlite3.Row
         self._db.execute("PRAGMA foreign_keys = ON")
         self._db.executescript(_SCHEMA)
-        if "tool_calls" not in {r["name"] for r in self._db.execute("PRAGMA table_info(messages)")}:
+        columns = {r["name"] for r in self._db.execute("PRAGMA table_info(messages)")}
+        if "tool_calls" not in columns:
             self._db.execute("ALTER TABLE messages ADD COLUMN tool_calls TEXT")
+        if "statutes" not in columns:
+            self._db.execute("ALTER TABLE messages ADD COLUMN statutes TEXT")  # JSON list[StatuteRef]
+        if "clarification" not in columns:
+            self._db.execute("ALTER TABLE messages ADD COLUMN clarification TEXT")  # JSON Clarification
         self._lock = threading.Lock()
 
     def list(self) -> list[ConversationSummary]:
@@ -66,7 +73,8 @@ class ConversationStore:
             c = self._db.execute("SELECT id, title, updated_at FROM conversations WHERE id = ?",
                                  (conversation_id,)).fetchone()
             rows = self._db.execute(
-                "SELECT id, role, content, search_query, sources, tool_calls, created_at FROM messages "
+                "SELECT id, role, content, search_query, sources, tool_calls, statutes, clarification, created_at "
+                "FROM messages "
                 "WHERE conversation_id = ? ORDER BY seq", (conversation_id,)).fetchall()
         if c is None:
             return None
@@ -74,6 +82,8 @@ class ConversationStore:
             Message(**(dict(r) | {
                 "sources": _SOURCES.validate_json(r["sources"]) if r["sources"] else None,
                 "tool_calls": _TOOL_CALLS.validate_json(r["tool_calls"]) if r["tool_calls"] else None,
+                "statutes": _STATUTES.validate_json(r["statutes"]) if r["statutes"] else None,
+                "clarification": _CLARIFICATION.validate_json(r["clarification"]) if r["clarification"] else None,
             }))
             for r in rows
         ]
@@ -88,14 +98,16 @@ class ConversationStore:
     def add_message(self, conversation_id: str, msg: Message) -> None:
         sources = _SOURCES.dump_json(msg.sources).decode() if msg.sources is not None else None
         calls = _TOOL_CALLS.dump_json(msg.tool_calls).decode() if msg.tool_calls is not None else None
+        statutes = _STATUTES.dump_json(msg.statutes).decode() if msg.statutes else None
+        clarification = _CLARIFICATION.dump_json(msg.clarification).decode() if msg.clarification else None
         with self._lock, self._db:
             seq = self._db.execute("SELECT COALESCE(MAX(seq), 0) + 1 FROM messages WHERE conversation_id = ?",
                                    (conversation_id,)).fetchone()[0]
             self._db.execute(
                 "INSERT INTO messages (id, conversation_id, seq, role, content, search_query, sources, "
-                "tool_calls, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "tool_calls, statutes, clarification, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (msg.id, conversation_id, seq, msg.role, msg.content, msg.search_query, sources, calls,
-                 msg.created_at))
+                 statutes, clarification, msg.created_at))
             self._db.execute("UPDATE conversations SET updated_at = ? WHERE id = ?",
                              (msg.created_at, conversation_id))
 

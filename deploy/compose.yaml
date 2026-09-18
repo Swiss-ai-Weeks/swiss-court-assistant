@@ -1,0 +1,148 @@
+# The NVIDIA NIMs the Swiss Court Assistant runs on — and nothing else.
+#
+#   service     port (host)            GPU  used for
+#   llm         9100 (OpenAI API)       0   the agent, the answer, grounding checks, matters
+#   embed       8000                    0   query vectors for semantic search
+#   rerank      8001                    1   reranking search candidates
+#   translate   50051 gRPC / 9000 HTTP  1   Translate on passages and selections
+#   tts         50052 gRPC / 9001 HTTP  1   Read aloud, voice-mode speech
+#   asr         50053 gRPC / 9002 HTTP  1   voice mode, recorded client interviews
+#
+#   docker compose -f deploy/compose.yaml up -d        # everything
+#   docker compose -f deploy/compose.yaml ps           # health of each
+#   docker compose -f deploy/compose.yaml logs -f asr
+#
+# The NGC key is read from ~/.config/swiss-court-assistant/nim.env (NGC_API_KEY=..., mode 600), never
+# from this file. Only llm, embed and rerank get it; the speech and translation NIMs start offline.
+#
+# Speech and translation start from exported models. A Riva NIM compiles its TensorRT engines into the
+# container on every start whenever it finds its downloaded model package — 30 minutes for asr and for
+# tts on this box, even for a plain restart. With NIM_DISABLE_MODEL_DOWNLOAD it finds no package and
+# instead unpacks the compiled models from NIM_EXPORT_PATH: 20–50 seconds, no NGC call at all. The
+# exports in ~/.cache/nim/riva-export/<service>/ are tars of the running containers' /data/models.
+# To produce one on a fresh machine (once per service; the container exits when it is done):
+#   docker compose -f deploy/compose.yaml run --rm --no-deps \
+#     -e NIM_DISABLE_MODEL_DOWNLOAD=false -e NGC_API_KEY asr
+# A run with downloads on keeps rebuilding and exporting on every start, so do not `up` it that way.
+
+name: sca-models
+
+x-nim: &nim
+  restart: unless-stopped
+  runtime: nvidia
+  user: "1000"
+  pull_policy: missing
+  ulimits:
+    nofile: { soft: 1048576, hard: 1048576 }
+
+x-gpu0: &gpu0
+  deploy:
+    resources:
+      reservations:
+        devices: [{ driver: nvidia, device_ids: ["0"], capabilities: [gpu] }]
+
+x-gpu1: &gpu1
+  deploy:
+    resources:
+      reservations:
+        devices: [{ driver: nvidia, device_ids: ["1"], capabilities: [gpu] }]
+
+x-ngc: &ngc
+  env_file: [ "${NIM_ENV_FILE:-${HOME}/.config/swiss-court-assistant/nim.env}" ]
+
+# offline start from the exported compiled models (see above)
+x-riva: &riva
+  <<: [*nim, *gpu1]
+  shm_size: 8gb
+  healthcheck:
+    test: ["CMD", "curl", "-sf", "http://localhost:9000/v1/health/ready"]
+    interval: 15s
+    timeout: 5s
+    start_period: 10m
+
+services:
+  llm:
+    <<: [*nim, *gpu0, *ngc]
+    image: nvcr.io/nim/nvidia/nemotron-3.5-lightning-30b-a3b:latest
+    container_name: nim-llm
+    environment:
+      # tool calls and streamed reasoning (see memory: nemotron-nim-agent-pitfalls)
+      NIM_PASSTHROUGH_ARGS: --enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3
+    ports: ["9100:8000"]
+    volumes: ["${HOME}/.cache/nim/dragos:/opt/nim/.cache"]
+    shm_size: 16gb
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/v1/health/ready"]
+      interval: 15s
+      timeout: 5s
+      start_period: 15m
+
+  embed:
+    <<: [*nim, *gpu0, *ngc]
+    image: nvcr.io/nim/nvidia/nemotron-3-embed-1b:latest
+    container_name: nim-embed
+    ports: ["8000:8000"]
+    volumes:
+      - "${HOME}/.cache/nim:/opt/nim/.cache"
+      - embed-model:/model
+    shm_size: 16gb
+    # The image's own check needs /bin/sh, which the image does not have, and its health binary
+    # cannot create a CUDA context when run as a check — it reported "unhealthy" while serving.
+    healthcheck:
+      disable: true
+
+  rerank:
+    <<: [*nim, *gpu1, *ngc]
+    image: nvcr.io/nim/nvidia/llama-nemotron-rerank-vl-1b-v2:latest
+    container_name: nim-rerank
+    environment:
+      HF_HOME: /tmp/huggingface
+    ports: ["8001:8000"]
+    volumes:
+      - "${HOME}/.cache/nim:/opt/nim/.cache"
+      - rerank-model:/model
+    shm_size: 16gb   # health check: the image's own (it calls the server binary directly)
+
+  translate:
+    <<: *riva
+    image: nvcr.io/nim/nvidia/riva-translate-1_6b:latest
+    container_name: riva-translate
+    environment:
+      NIM_DISABLE_MODEL_DOWNLOAD: "true"
+      NIM_EXPORT_PATH: /opt/nim/export
+    ports: ["50051:50051", "9000:9000"]
+    volumes:
+      - "${HOME}/.cache/nim:/opt/nim/.cache"
+      - "${HOME}/.cache/nim/riva-export/riva-translate:/opt/nim/export"
+
+  tts:
+    <<: *riva
+    image: nvcr.io/nim/nvidia/magpie-tts-multilingual:latest
+    container_name: magpie-tts
+    environment:
+      NIM_DISABLE_MODEL_DOWNLOAD: "true"
+      NIM_EXPORT_PATH: /opt/nim/export
+    ports: ["50052:50051", "9001:9000"]
+    volumes:
+      - "${HOME}/.cache/nim:/opt/nim/.cache"
+      - "${HOME}/.cache/nim/riva-export/magpie-tts:/opt/nim/export"
+
+  asr:
+    <<: *riva
+    image: nvcr.io/nim/nvidia/nemotron-asr-streaming:latest
+    container_name: nemotron-asr-multi
+    environment:
+      NIM_TAGS_SELECTOR: type=multi,batch_size=128   # every language plus "auto"; the default is English only
+      NIM_DISABLE_MODEL_DOWNLOAD: "true"
+      NIM_EXPORT_PATH: /opt/nim/export
+    ports: ["50053:50051", "9002:9000"]
+    volumes:
+      - "${HOME}/.cache/nim:/opt/nim/.cache"
+      - "${HOME}/.cache/nim/riva-export/asr-multi:/opt/nim/export"
+
+volumes:
+  # model weights the embed and rerank NIMs downloaded, copied from their old anonymous volumes
+  embed-model:
+    name: sca-nim-embed-model
+  rerank-model:
+    name: sca-nim-rerank-model

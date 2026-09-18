@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type Decision, type Source } from "../api";
+import { api, type Citations as CitationsInfo, type Decision, type Source } from "../api";
 import { erwLabel, formatDate, langName } from "../format";
 import ReadAloud from "./ReadAloud";
 
@@ -55,6 +55,51 @@ function segments(text: string, ranges: { n: number; start: number; end: number 
 
 // Translations outlive the component, so switching between citations does not refetch them.
 const translations = new Map<string, string>();
+
+/** How often later decisions cite this one: whether the courts still rely on it. */
+function CitedBy({ decisionId }: { decisionId: string }) {
+  const [data, setData] = useState<CitationsInfo | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    setData(null);
+    api.getCitations(decisionId, 8).then(
+      (c) => live && setData(c),
+      () => {}, // no citation index: the panel just stays hidden
+    );
+    return () => {
+      live = false;
+    };
+  }, [decisionId]);
+
+  if (!data || (!data.citedByCount && !data.citesCount)) return null;
+  const n = (x: number) => x.toLocaleString("en");
+  // a first-instance decision is often cited by nobody yet, but what it relies on is still worth seeing
+  const showCiting = data.citedByCount > 0;
+  const list = showCiting ? data.citedBy : data.cites;
+  return (
+    <details className="cited-by-graph">
+      <summary>
+        {data.citedByCount > 0
+          ? `Cited by ${n(data.citedByCount)} later decision${data.citedByCount === 1 ? "" : "s"}`
+          : "Not cited by later decisions yet"}
+        {data.citesCount > 0 && ` · cites ${n(data.citesCount)}`}
+      </summary>
+      <p className="cited-by-note">{showCiting ? "Most recent decisions citing it" : "Decisions it relies on"}</p>
+      <ul>
+        {list.map((c) => (
+          <li key={c.decisionId}>
+            <span className="when">{c.date ? formatDate(c.date) : "undated"}</span>
+            <span className="what">
+              {c.docket ?? c.decisionId}
+              {c.court ? ` · ${c.court}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 type Panel = "explain" | "translate" | null;
 
@@ -181,6 +226,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
 
   if (!active) return null;
   const d = doc ?? active.decision;
+  const isLaw = active.section === "law"; // a statute article, described in the decision's fields
   const regesteActive = active.section === "regeste";
   const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
   const tools = <RefTools key={activeN} source={active} language={language} />;
@@ -192,9 +238,9 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   };
 
   return (
-    <aside className="preview" aria-label="Source decision">
+    <aside className="preview" aria-label={isLaw ? "Statute" : "Source decision"}>
       <div className="preview-bar">
-        Source decision
+        {isLaw ? "Statute" : "Source decision"}
         <span className="spacer" />
         <button className="icon-btn" onClick={onClose} aria-label="Close preview" title="Close">
           ×
@@ -211,15 +257,19 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
           <h2>{d.docket}</h2>
           {(d.title || d.chamber) && <p className="court">{d.title ?? d.chamber}</p>}
           <dl className="meta-grid">
-            <dt>Decided</dt>
-            <dd>{formatDate(d.date)}</dd>
+            {!isLaw && (
+              <>
+                <dt>Decided</dt>
+                <dd>{formatDate(d.date)}</dd>
+              </>
+            )}
             {d.chamber && (
               <>
                 <dt>Chamber</dt>
                 <dd>{d.chamber}</dd>
               </>
             )}
-            <dt>Decision ID</dt>
+            <dt>{isLaw ? "Article ID" : "Decision ID"}</dt>
             <dd>{d.decisionId}</dd>
           </dl>
           <div className="preview-links">
@@ -234,16 +284,19 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
               </a>
             )}
           </div>
+          {!isLaw && <CitedBy decisionId={d.decisionId} />}
         </header>
 
+        {activeN !== 0 && ( // 0: an article the answer names, not one of its numbered citations
         <div className="cited-in">
           Cited in this answer:
           {cited.map((s) => (
             <button key={s.n} className={`jump${s.n === activeN ? " on" : ""}`} onClick={() => onSelect(s.n)}>
-              [{s.n}] {erwLabel(s.erwaegungen) || s.section}
+              [{s.n}] {erwLabel(s.erwaegungen) || (s.section === "law" ? s.decision.docket : s.section)}
             </button>
           ))}
         </div>
+        )}
 
         {/* no highlight to attach the buttons to (quote not located): show them here */}
         {doc && !regesteActive && lastActive < 0 && <div className="ref-tools-top">{tools}</div>}

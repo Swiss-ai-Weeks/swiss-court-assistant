@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Message, Source, Stage, ToolCall } from "../api";
+import type { Clarification, Message, Source, Stage, StatuteRef, ToolCall } from "../api";
 import Answer from "./Answer";
 import { QuoteCard } from "./Composer";
 
@@ -12,6 +12,7 @@ export interface PendingTurn {
   thinking?: string;
   language?: string;
   error?: string;
+  clarification?: Clarification;
 }
 
 export interface Selection {
@@ -24,11 +25,15 @@ interface Props {
   pending: PendingTurn | null;
   selection: Selection | null;
   onOpenSource: (messageId: string, n: number) => void;
+  /** An article named in an answer's text (not a numbered citation). */
+  onOpenStatute: (source: Source) => void;
+  /** Answer a question the assistant asked back (one of its suggested answers). */
+  onReply?: (text: string) => void;
 }
 
 const PENDING_ID = "pending";
 
-export default function Thread({ messages, pending, selection, onOpenSource }: Props) {
+export default function Thread({ messages, pending, selection, onOpenSource, onOpenStatute, onReply }: Props) {
   const end = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -46,7 +51,7 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
   return (
     <div className="thread" ref={scroller} onScroll={onScroll}>
       <div className="thread-inner">
-        {messages.map((m) =>
+        {messages.map((m, i) =>
           m.role === "user" ? (
             <UserTurn key={m.id} text={m.content} />
           ) : (
@@ -55,7 +60,11 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
               id={m.id}
               content={m.content}
               sources={m.sources ?? []}
+              statutes={m.statutes ?? []}
+              onOpenStatute={onOpenStatute}
               tools={m.toolCalls ?? []}
+              clarification={m.clarification ?? undefined}
+              onReply={i === messages.length - 1 && !pending ? onReply : undefined}
               language={m.language ?? null}
               streaming={false}
               activeN={selection?.messageId === m.id ? selection.n : null}
@@ -72,6 +81,7 @@ export default function Thread({ messages, pending, selection, onOpenSource }: P
             status={pending.status}
             thinking={pending.thinking}
             error={pending.error}
+            clarification={pending.clarification}
             language={pending.language ?? null}
             streaming
             activeN={selection?.messageId === PENDING_ID ? selection.n : null}
@@ -100,28 +110,103 @@ function UserTurn({ text }: { text: string }) {
   );
 }
 
-const TOOL_LABEL: Record<string, string> = {
-  semantic_search: "Semantic search",
-  keyword_search: "Keyword search",
-  read_decision: "Read decision",
+/** What each tool looks at — the court decisions or the statutes — and what it does there. The two
+ *  searches work the same way, so the label says how and the tag says where. */
+type Domain = "case" | "statute";
+const TOOLS: Record<string, { domain: Domain; label: string }> = {
+  semantic_search: { domain: "case", label: "Search by meaning" },
+  keyword_search: { domain: "case", label: "Search exact words" },
+  read_decision: { domain: "case", label: "Read decision" },
+  citing_decisions: { domain: "case", label: "Who cites it" },
+  list_decisions: { domain: "case", label: "List decisions" },
+  search_laws: { domain: "statute", label: "Search by meaning" },
+  read_law: { domain: "statute", label: "Read article" },
+  search_decisions: { domain: "case", label: "Search exact words" },
+  count_decisions: { domain: "case", label: "Count" },
 };
+const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes" };
+
+export const TOOL_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(TOOLS).map(([name, t]) => [name, t.label]),
+);
+
+/** "Statutes · Read article", for places that show a tool call as one line of text. */
+export function toolTitle(name: string): string {
+  const t = TOOLS[name];
+  return t ? `${DOMAIN_NAME[t.domain]} · ${t.label}` : name;
+}
+
+function DomainTag({ name }: { name: string }) {
+  const t = TOOLS[name];
+  return t ? <span className={`src-tag ${t.domain}`}>{DOMAIN_NAME[t.domain]}</span> : null;
+}
+
+/** "3 steps in case law · 1 in statutes" — where the research went, at a glance. */
+function researchSummary(calls: ToolCall[]): string {
+  const count = (d: Domain) => calls.filter((c) => TOOLS[c.name]?.domain === d).length;
+  const cases = count("case");
+  const statutes = count("statute");
+  const other = calls.length - cases - statutes;
+  const steps = (n: number) => `${n} step${n === 1 ? "" : "s"}`;
+  const parts = [];
+  if (cases) parts.push(`${steps(cases)} in case law`);
+  if (statutes) parts.push(`${parts.length ? statutes : steps(statutes)} in statutes`);
+  if (other) parts.push(`${steps(other)} elsewhere`);
+  return parts.join(" · ");
+}
 
 function toolArg(c: ToolCall): string {
   const a = c.args;
+  if (c.name === "read_law" && a.article)
+    return `Art. ${a.article} ${a.code ?? ""}${a.canton && a.canton !== "CH" ? ` (${a.canton})` : ""}`;
   const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
   const main = perLanguage.length
     ? perLanguage.join(" · ")
-    : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
+    : c.name === "list_decisions"
+      ? ""
+      : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
   const offset = typeof a.offset === "number" && a.offset > 0 ? ` · from character ${a.offset.toLocaleString("en")}` : "";
   return `${String(main)}${offset}`;
+}
+
+const COURT_NAME: Record<string, string> = {
+  federal_supreme: "Federal Supreme Court",
+  leading_cases: "Leading cases (BGE)",
+  federal_administrative: "Federal Administrative Court",
+  federal_criminal: "Federal Criminal Court",
+  federal_patent: "Federal Patent Court",
+  federal_other: "Other federal bodies",
+  cantonal: "Cantonal courts",
+};
+
+/** The part of the corpus a step was restricted to: "GE", "Federal Supreme Court", "2020–", "OR". */
+function toolFilters(c: ToolCall): string[] {
+  // the model sometimes writes "None" for a filter it does not use
+  const a = Object.fromEntries(
+    Object.entries(c.args).filter(([, v]) => v != null && !["none", "null", ""].includes(String(v).toLowerCase())),
+  ) as ToolCall["args"];
+  const words = (v: unknown) => String(v).replace(/_/g, " ");
+  if (c.name === "search_laws") {
+    return [a.canton && a.canton !== "CH" ? `${a.canton} law` : "", a.code ?? "", a.cantonal ? "incl. cantonal law" : ""]
+      .filter(Boolean)
+      .map(String);
+  }
+  if (c.name === "read_law") return [];
+  const years = a.year_from || a.year_to ? `${a.year_from ?? ""}–${a.year_to ?? ""}` : "";
+  return [
+    a.canton ? String(a.canton) : "",
+    a.court ? (COURT_NAME[String(a.court)] ?? words(a.court)) : "",
+    a.area ? `${words(a.area)} law` : "",
+    a.proceeding ? words(a.proceeding) : "",
+    years,
+    c.name === "list_decisions" && a.oldest ? "oldest first" : "",
+  ].filter(Boolean);
 }
 
 function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
   return (
     <details className="activity" open={live || undefined}>
-      <summary>
-        Research · {calls.length} tool call{calls.length === 1 ? "" : "s"}
-      </summary>
+      <summary>Research · {researchSummary(calls)}</summary>
       <ol>
         {calls.map((c) => {
           const state = c.error ? "error" : c.summary == null ? "running" : "done";
@@ -133,8 +218,14 @@ function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
                 </span>
               )}
               <span className="dot" />
+              <DomainTag name={c.name} />
               <span className="tool">{TOOL_LABEL[c.name] ?? c.name}</span>
               <span className="arg">{toolArg(c)}</span>
+              {toolFilters(c).map((f) => (
+                <span key={f} className="filter" title="Searched only this part of the corpus">
+                  {f}
+                </span>
+              ))}
               {c.summary != null && <span className="result">{c.summary}</span>}
             </li>
           );
@@ -148,6 +239,8 @@ interface TurnProps {
   id: string;
   content: string;
   sources: Source[];
+  statutes?: StatuteRef[];
+  onOpenStatute?: (source: Source) => void;
   tools: ToolCall[];
   status?: PendingTurn["status"];
   thinking?: string;
@@ -156,10 +249,13 @@ interface TurnProps {
   streaming: boolean;
   activeN: number | null;
   onOpenSource: (messageId: string, n: number) => void;
+  clarification?: Clarification;
+  /** Only on the last turn: its suggested answers can still be sent. */
+  onReply?: (text: string) => void;
 }
 
-function AssistantTurn({ id, content, sources, tools, status, thinking, error, language, streaming, activeN,
-  onOpenSource }: TurnProps) {
+function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, status, thinking, error, language,
+  streaming, activeN, onOpenSource, clarification, onReply }: TurnProps) {
   const open = (n: number) => onOpenSource(id, n);
   const thought = streaming && !content && !error && thinking ? thinking.replace(/\s+/g, " ").trim() : "";
   return (
@@ -180,9 +276,20 @@ function AssistantTurn({ id, content, sources, tools, status, thinking, error, l
           {status.detail}
         </p>
       )}
+      {clarification && <p className="clarify-label">Question for you</p>}
       {content && (
-        <Answer id={id} text={content} sources={sources} language={language} streaming={streaming} activeN={activeN}
-          onCite={open} />
+        <Answer id={id} text={content} sources={sources} statutes={statutes} onStatute={onOpenStatute}
+          language={language} streaming={streaming} activeN={activeN} onCite={open} />
+      )}
+      {clarification && onReply && (
+        <div className="clarify">
+          {clarification.options.map((o) => (
+            <button key={o} className="clarify-option" onClick={() => onReply(o)}>
+              {o}
+            </button>
+          ))}
+          <span className="clarify-hint">or type your answer below</span>
+        </div>
       )}
       {error && <p className="msg-error">{error}</p>}
     </div>

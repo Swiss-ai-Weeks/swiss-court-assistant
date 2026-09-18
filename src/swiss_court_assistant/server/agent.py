@@ -52,14 +52,52 @@ class Cite:
     source: Source
 
 
-AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite
+@dataclass
+class Verdict:
+    """Whether the cited passage really states the sentence it was attached to."""
+
+    n: int
+    supported: bool
+
+
+@dataclass
+class Clarify:
+    """The agent needs a fact from the user before it can answer: the turn ends with this question
+    (also sent as Delta text), a few likely answers to pick from, and a note of what the research found
+    so far, which the next turn reads back."""
+
+    question: str
+    options: list[str]
+    notes: str
+
+
+AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite | Verdict | Clarify
+
+
+def with_clarification(question: str, history: list[Message]) -> str:
+    """A reply to a question the assistant asked back ("Wohnmietvertrag") is not a question on its own:
+    research and answer the original question with the reply added, in the original's language."""
+    if len(history) < 2 or history[-1].role != "assistant" or not history[-1].clarification:
+        return question
+    asked = history[-1].clarification
+    original = next((m.content for m in reversed(history[:-1]) if m.role == "user"), "")
+    return f"{original}\n\n{asked.question}\n→ {question}" if original else question
+
+
+def original_question(question: str, history: list[Message]) -> str:
+    """The question whose language the turn is in: for a reply to a question asked back ("Arbeitsvertrag"),
+    the user's original question — the reply is often one of the suggested answers, and those can be
+    in another language than the user writes."""
+    if len(history) < 2 or history[-1].role != "assistant" or not history[-1].clarification:
+        return question
+    return next((m.content for m in reversed(history[:-1]) if m.role == "user"), question)
 
 
 class Agent(Protocol):
     name: str
 
-    def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
-        """Stream one turn: Status, Thought and ToolStart/ToolEnd while researching, then the answer as
+    def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
+        """Stream one turn (with `ask`, the agent may end it with a Clarify question instead): Status, Thought and ToolStart/ToolEnd while researching, then the answer as
         Delta text with a Cite right after each statement a source supports."""
         ...
 
@@ -126,7 +164,7 @@ class StubAgent:
             ))
         return out
 
-    async def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
+    async def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
         matched = next((s for s in SCENARIOS if s.match.search(question)), None)
         s = matched or TENANCY
         yield Status("thinking", "Planning the research (stub)")

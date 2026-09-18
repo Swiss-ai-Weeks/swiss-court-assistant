@@ -38,11 +38,13 @@ def period_expr() -> pl.Expr:
     )
 
 
-def load_candidates(raw_glob: str = RAW_GLOB) -> pl.LazyFrame:
-    """All usable decisions, one row per distinct text, with stratum keys."""
+def load_candidates(raw_glob: str = RAW_GLOB, where: pl.Expr | None = None) -> pl.LazyFrame:
+    """All usable decisions, one row per distinct text, with stratum keys.
+    `where` narrows the pool before stratification (e.g. decisions since a year)."""
     return (
         pl.scan_parquet(raw_glob)
         .filter(pl.col("has_full_text") & (pl.col("text_length") >= MIN_TEXT_CHARS))
+        .filter(where if where is not None else pl.lit(True))
         # GE/VD publish one ruling under two identifiers: keep one copy per text.
         .sort("text_length", descending=True)
         .unique(subset="content_hash", keep="first", maintain_order=False)
@@ -73,9 +75,13 @@ def allocate(counts: pl.DataFrame, n: int, floor: int) -> pl.DataFrame:
     )
 
 
-def sample(n: int, floor: int, seed: int, raw_glob: str = RAW_GLOB) -> tuple[pl.DataFrame, pl.DataFrame]:
-    cand = load_candidates(raw_glob)
+def sample(n: int, floor: int, seed: int, raw_glob: str = RAW_GLOB, where: pl.Expr | None = None,
+           fraction: float | None = None) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """`fraction` sizes the sample as a share of the pool instead of a fixed n."""
+    cand = load_candidates(raw_glob, where)
     keys = cand.select(["decision_id", *STRATA]).collect()
+    if fraction is not None:
+        n = round(keys.height * fraction)
     counts = keys.group_by(STRATA).len("count")
     plan = allocate(counts, n, floor)
 
