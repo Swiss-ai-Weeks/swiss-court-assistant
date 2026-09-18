@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Message, Source, Stage, StatuteRef, ToolCall } from "../api";
+import type { Clarification, Message, Source, Stage, StatuteRef, ToolCall } from "../api";
 import Answer from "./Answer";
 import { QuoteCard } from "./Composer";
 
@@ -12,6 +12,7 @@ export interface PendingTurn {
   thinking?: string;
   language?: string;
   error?: string;
+  clarification?: Clarification;
 }
 
 export interface Selection {
@@ -26,11 +27,13 @@ interface Props {
   onOpenSource: (messageId: string, n: number) => void;
   /** An article named in an answer's text (not a numbered citation). */
   onOpenStatute: (source: Source) => void;
+  /** Answer a question the assistant asked back (one of its suggested answers). */
+  onReply?: (text: string) => void;
 }
 
 const PENDING_ID = "pending";
 
-export default function Thread({ messages, pending, selection, onOpenSource, onOpenStatute }: Props) {
+export default function Thread({ messages, pending, selection, onOpenSource, onOpenStatute, onReply }: Props) {
   const end = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -48,7 +51,7 @@ export default function Thread({ messages, pending, selection, onOpenSource, onO
   return (
     <div className="thread" ref={scroller} onScroll={onScroll}>
       <div className="thread-inner">
-        {messages.map((m) =>
+        {messages.map((m, i) =>
           m.role === "user" ? (
             <UserTurn key={m.id} text={m.content} />
           ) : (
@@ -60,6 +63,8 @@ export default function Thread({ messages, pending, selection, onOpenSource, onO
               statutes={m.statutes ?? []}
               onOpenStatute={onOpenStatute}
               tools={m.toolCalls ?? []}
+              clarification={m.clarification ?? undefined}
+              onReply={i === messages.length - 1 && !pending ? onReply : undefined}
               language={m.language ?? null}
               streaming={false}
               activeN={selection?.messageId === m.id ? selection.n : null}
@@ -76,6 +81,7 @@ export default function Thread({ messages, pending, selection, onOpenSource, onO
             status={pending.status}
             thinking={pending.thinking}
             error={pending.error}
+            clarification={pending.clarification}
             language={pending.language ?? null}
             streaming
             activeN={selection?.messageId === PENDING_ID ? selection.n : null}
@@ -112,6 +118,7 @@ const TOOLS: Record<string, { domain: Domain; label: string }> = {
   keyword_search: { domain: "case", label: "Search exact words" },
   read_decision: { domain: "case", label: "Read decision" },
   citing_decisions: { domain: "case", label: "Who cites it" },
+  list_decisions: { domain: "case", label: "List decisions" },
   search_laws: { domain: "statute", label: "Search by meaning" },
   read_law: { domain: "statute", label: "Read article" },
   search_decisions: { domain: "case", label: "Search exact words" },
@@ -155,10 +162,45 @@ function toolArg(c: ToolCall): string {
   const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
   const main = perLanguage.length
     ? perLanguage.join(" · ")
-    : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
+    : c.name === "list_decisions"
+      ? ""
+      : (a.query ?? a.keyword ?? a.decision_id ?? Object.values(a)[0] ?? "");
   const offset = typeof a.offset === "number" && a.offset > 0 ? ` · from character ${a.offset.toLocaleString("en")}` : "";
-  const cantonal = c.name === "search_laws" && a.cantonal ? " · incl. cantonal law" : "";
-  return `${String(main)}${offset}${cantonal}`;
+  return `${String(main)}${offset}`;
+}
+
+const COURT_NAME: Record<string, string> = {
+  federal_supreme: "Federal Supreme Court",
+  leading_cases: "Leading cases (BGE)",
+  federal_administrative: "Federal Administrative Court",
+  federal_criminal: "Federal Criminal Court",
+  federal_patent: "Federal Patent Court",
+  federal_other: "Other federal bodies",
+  cantonal: "Cantonal courts",
+};
+
+/** The part of the corpus a step was restricted to: "GE", "Federal Supreme Court", "2020–", "OR". */
+function toolFilters(c: ToolCall): string[] {
+  // the model sometimes writes "None" for a filter it does not use
+  const a = Object.fromEntries(
+    Object.entries(c.args).filter(([, v]) => v != null && !["none", "null", ""].includes(String(v).toLowerCase())),
+  ) as ToolCall["args"];
+  const words = (v: unknown) => String(v).replace(/_/g, " ");
+  if (c.name === "search_laws") {
+    return [a.canton && a.canton !== "CH" ? `${a.canton} law` : "", a.code ?? "", a.cantonal ? "incl. cantonal law" : ""]
+      .filter(Boolean)
+      .map(String);
+  }
+  if (c.name === "read_law") return [];
+  const years = a.year_from || a.year_to ? `${a.year_from ?? ""}–${a.year_to ?? ""}` : "";
+  return [
+    a.canton ? String(a.canton) : "",
+    a.court ? (COURT_NAME[String(a.court)] ?? words(a.court)) : "",
+    a.area ? `${words(a.area)} law` : "",
+    a.proceeding ? words(a.proceeding) : "",
+    years,
+    c.name === "list_decisions" && a.oldest ? "oldest first" : "",
+  ].filter(Boolean);
 }
 
 function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
@@ -179,6 +221,11 @@ function Activity({ calls, live }: { calls: ToolCall[]; live: boolean }) {
               <DomainTag name={c.name} />
               <span className="tool">{TOOL_LABEL[c.name] ?? c.name}</span>
               <span className="arg">{toolArg(c)}</span>
+              {toolFilters(c).map((f) => (
+                <span key={f} className="filter" title="Searched only this part of the corpus">
+                  {f}
+                </span>
+              ))}
               {c.summary != null && <span className="result">{c.summary}</span>}
             </li>
           );
@@ -202,10 +249,13 @@ interface TurnProps {
   streaming: boolean;
   activeN: number | null;
   onOpenSource: (messageId: string, n: number) => void;
+  clarification?: Clarification;
+  /** Only on the last turn: its suggested answers can still be sent. */
+  onReply?: (text: string) => void;
 }
 
 function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, status, thinking, error, language,
-  streaming, activeN, onOpenSource }: TurnProps) {
+  streaming, activeN, onOpenSource, clarification, onReply }: TurnProps) {
   const open = (n: number) => onOpenSource(id, n);
   const thought = streaming && !content && !error && thinking ? thinking.replace(/\s+/g, " ").trim() : "";
   return (
@@ -226,9 +276,20 @@ function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, s
           {status.detail}
         </p>
       )}
+      {clarification && <p className="clarify-label">Question for you</p>}
       {content && (
         <Answer id={id} text={content} sources={sources} statutes={statutes} onStatute={onOpenStatute}
           language={language} streaming={streaming} activeN={activeN} onCite={open} />
+      )}
+      {clarification && onReply && (
+        <div className="clarify">
+          {clarification.options.map((o) => (
+            <button key={o} className="clarify-option" onClick={() => onReply(o)}>
+              {o}
+            </button>
+          ))}
+          <span className="clarify-hint">or type your answer below</span>
+        </div>
       )}
       {error && <p className="msg-error">{error}</p>}
     </div>

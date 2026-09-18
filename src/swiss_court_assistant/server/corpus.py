@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+import numpy as np
 
 from swiss_court_assistant import retrieval as R
+from swiss_court_assistant.facets import Facets
 from swiss_court_assistant.fts import KeywordIndex
 from swiss_court_assistant.statutes import localize
 from swiss_court_assistant.vecmatrix import VectorMatrix
@@ -44,6 +46,11 @@ class Passage:
     score: float = 0.0
     cited_by: int = 0  # later decisions citing this one, from the citation graph
     kind: str = "decision"  # or "law": a statute article, whose law_id is in decision_id
+    about: dict[str, str] | None = None  # the decision's area, kind of proceeding and outcome, where known
+
+
+class FiltersUnavailable(RuntimeError):
+    """The search was restricted, but this index has no facets (no vector matrix) to restrict it with."""
 
 
 class Corpus:
@@ -90,6 +97,8 @@ class Corpus:
             threading.Thread(target=self.matrix.warm, name="warm-vectors", daemon=True).start()
         else:
             log.info("no current vector matrix for %s; searching with sqlite-vec", db)
+        # canton, court, area, year, proceeding of every row: the search filters (built once, ~40 s)
+        self.facets = Facets.open(db, embed_model, self.matrix)
         # statute articles: indexed with `index.py build --laws`, searchable by meaning through the matrix
         self.has_laws = (self.matrix is not None and any(k.startswith("law/") for k in self.matrix.segments)
                          and hasattr(self.decisions, "find_articles"))
@@ -104,11 +113,20 @@ class Corpus:
     def _open_knn(self, db: Path) -> None:
         self._local.vdb = VectorDB(db)  # no encoder: it gets query vectors
 
-    def _knn(self, vector, language: str | None) -> list[dict]:
-        """The nearest decision passages, optionally in one language, with a `similarity` each."""
+    def where(self, **filters: Any) -> np.ndarray | None:
+        """The decisions the filters let through (see `Facets.decision_mask`), None for no filter."""
+        if not any(filters.values()):
+            return None
+        if self.facets is None:
+            raise FiltersUnavailable("this index cannot filter by canton, court, area, year or proceeding")
+        return self.facets.decision_mask(**filters)
+
+    def _knn(self, vector, language: str | None, rows: np.ndarray | None = None) -> list[dict]:
+        """The nearest decision passages, optionally in one language and among some rows only, with a
+        `similarity` each."""
         if self.matrix is None:
             return self._local.vdb.search(vector, self.embed_model, self.candidates, language=language)
-        hits = self.matrix.search(vector, self.candidates, "decision", language)
+        hits = self.matrix.search(vector, self.candidates, "decision", language, rows)
         if not hits:
             return []
         rows = {r["id"]: dict(r) for r in self._local.vdb.con.execute(
@@ -130,6 +148,7 @@ class Corpus:
             erwaegungen=json.loads(erw or "[]") if isinstance(erw, str) else erw,
             char_start=row["char_start"], char_end=row["char_end"], text=row["text"],
             docket=d.docket, court_label=d.court_label, date=d.date, language=d.language, score=score,
+            about=self.facets.describe(row["decision_id"]) if self.facets else None,
         )
 
     def _rows(self, where: str, params: list) -> list[dict]:
@@ -152,30 +171,36 @@ class Corpus:
             char_start=row["char_start"], char_end=row["char_end"], text=row["text"], docket=law.docket,
             court_label=law.court_label, date=None, language=law.language, score=score, kind="law")
 
-    def _knn_laws(self, vector, language: str | None, federal: bool) -> list[dict]:
-        """The nearest statute passages. Federal law only by default: cantonal acts are nearly half the
-        articles, and their procedural and tax rules crowd out the federal provision a question is about."""
-        hits = self.matrix.search(vector, self.candidates * (6 if federal else 1), "law", language)
+    def _knn_laws(self, vector, language: str | None, rows: np.ndarray | None, federal: bool) -> list[dict]:
+        """The nearest statute passages among `rows`. Without facets: federal law only (by default) is
+        kept from an over-fetch, since cantonal acts are nearly half the articles and their procedural
+        and tax rules crowd out the federal provision a question is about."""
+        hits = self.matrix.search(vector, self.candidates * (6 if rows is None and federal else 1), "law",
+                                  language, rows)
         if not hits:
             return []
-        rows = {r["id"]: dict(r) for r in self._local.vdb.con.execute(
+        found = {r["id"]: dict(r) for r in self._local.vdb.con.execute(
             f"""SELECT c.id, c.chunk_id, c.decision_id, c.section, c.erwaegungen, c.char_start, c.char_end,
                        c.text, l.canton FROM chunks c JOIN laws l ON l.law_id = c.decision_id
                 WHERE c.id IN ({','.join('?' * len(hits))})""", [i for i, _ in hits])}
-        out = [rows[i] | {"similarity": score} for i, score in hits
-               if i in rows and (not federal or rows[i]["canton"] == "CH")]
+        out = [found[i] | {"similarity": score} for i, score in hits
+               if i in found and (rows is not None or not federal or found[i]["canton"] == "CH")]
         return out[:self.candidates]
 
-    async def semantic_search_laws(self, queries: dict[str, str], k: int = 6,
-                                   federal: bool = True) -> list[Passage]:
+    async def semantic_search_laws(self, queries: dict[str, str], k: int = 6, canton: str | None = "CH",
+                                   acts: list[str] | None = None) -> list[Passage]:
         """Statute articles by meaning, one query per language like `semantic_search_by_language`.
-        An article exists in three languages; only its best-ranked version is kept."""
+        `canton`: "CH" for federal law, a canton's code for its law, None for all. `acts` restricts the
+        search to some acts ("CH/220" is the OR). An article exists in three languages; only its
+        best-ranked version is kept."""
         if not self.has_laws:
             raise RuntimeError("this index has no statute articles, or their vectors are not exported")
+        rows = self.facets.law_rows(canton, acts) if self.facets else None
+        federal = canton == "CH"
         queries = {lang: localize(q.strip(), lang) for lang, q in queries.items() if q and q.strip()}
         vectors = [await self._call(self.vdb.encode, q, self.embed_model) for q in queries.values()]
         loop = asyncio.get_running_loop()
-        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn_laws, v, lang, federal)
+        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn_laws, v, lang, rows, federal)
                                        for v, lang in zip(vectors, queries)))
         ranked = await asyncio.gather(*(
             self._rerank(q, [p for r in rows if (p := self._law_passage(r, r["similarity"]))])
@@ -205,35 +230,46 @@ class Corpus:
         return await self._authority(_diverse(hits, k))
 
     async def semantic_search_by_language(self, queries: dict[str, str], k: int = 8,
-                                          per_language: int = 2) -> list[Passage]:
+                                          per_language: int = 2, where: np.ndarray | None = None) -> list[Passage]:
         """Search each language's decisions with the query written in that language ({"de": ..., "fr": ...})
         and rerank them against it. The merged result keeps the best ``per_language`` passages of each
-        language, then fills up by reranker score."""
+        language, then fills up by reranker score. `where` (from `where()`) restricts it to some decisions."""
+        rows = None if where is None else self.facets.rows(where)
         # the agent sometimes writes "art. 336 OR" in the French query; courts write "art. 336 CO"
         queries = {lang: localize(q.strip(), lang) for lang, q in queries.items() if q and q.strip()}
         vectors = [await self._call(self.vdb.encode, q, self.embed_model) for q in queries.values()]
         loop = asyncio.get_running_loop()
-        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn, v, lang)
+        found = await asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn, v, lang, rows)
                                        for v, lang in zip(vectors, queries)))
-        ranked = await asyncio.gather(*(self._rerank(q, self._passages(rows))
-                                        for q, rows in zip(queries.values(), found)))
+        ranked = await asyncio.gather(*(self._rerank(q, self._passages(hit_rows))
+                                        for q, hit_rows in zip(queries.values(), found)))
         picked = [h for hits in ranked for h in _diverse(hits, per_language)]
         rest = sorted((h for hits in ranked for h in hits), key=lambda h: -h.score)
         seen: set[str] = set()
         merged = [h for h in picked + rest if not (h.chunk_id in seen or seen.add(h.chunk_id))]
         return await self._authority(sorted(_diverse(merged, k), key=lambda h: -h.score))
 
-    async def keyword_search(self, keyword: str, k: int = 8) -> list[Passage]:
+    async def keyword_search(self, keyword: str, k: int = 8, where: np.ndarray | None = None) -> list[Passage]:
         if self.fts is None:
             raise RuntimeError("the keyword index is not built")
-        # more candidates than needed: in the full-corpus index statute articles match too, and are dropped
-        ranked = await self._call(self.fts.search, keyword, k * 8)
+        # more candidates than needed: in the full-corpus index statute articles match too, and are dropped;
+        # with a filter, most matches are outside it (ranking all matches costs the same as ranking a few)
+        ranked = await self._call(self.fts.search, keyword, k * 8 if where is None else 20000)
+        if where is not None and ranked:
+            keep = self.facets.keep([rowid for rowid, _ in ranked], where)
+            ranked = [r for r, ok in zip(ranked, keep) if ok][:k * 8]
         if not ranked:
             return []
         ids = [rowid for rowid, _ in ranked]
         rows = {r["id"]: r for r in await self._call(self._rows, f"id IN ({','.join('?' * len(ids))})", ids)}
         hits = self._passages([rows[i] for i, _ in ranked if i in rows], [-s for i, s in ranked if i in rows])
         return await self._authority(_diverse(hits, k))
+
+    def list_decisions(self, where: np.ndarray, n: int = 10, oldest: bool = False) -> tuple[int, dict, list]:
+        """How many decisions pass the filters, how they break down, and the n newest (or oldest)."""
+        ids = self.facets.newest(where, n, oldest)
+        return (int(where.sum()), self.facets.breakdown(where),
+                [(s, self.facets.describe(d)) for d in ids if (s := self.decisions.summary(d))])
 
     async def chunk(self, chunk_id: str) -> Passage | None:
         rows = await self._call(self._rows, "chunk_id = ?", [chunk_id])

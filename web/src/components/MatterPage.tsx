@@ -23,17 +23,6 @@ const STAGES: { key: MatterStage | "filing"; label: string; hint: string }[] = [
   { key: "filing", label: "Filing & deadlines", hint: "Practice management — outside this assistant" },
 ];
 
-const NEXT = [
-  { title: "Cite-check a draft", state: "Next",
-    body: "Upload your brief, or the other side's, and have every citation checked: does the decision say it, is it still followed, is the article number right." },
-  { title: "Matter memo", state: "This page",
-    body: "Facts in, structured memo out, with a table of authorities and a Markdown export." },
-  { title: "Treatment labels", state: "Planned",
-    body: "Turn “cited by 312 decisions” into “followed 12×, distinguished 3×, criticised once” by reading each citing sentence." },
-  { title: "Annotated statute article", state: "Planned",
-    body: "An article's text with the leading decisions construing each paragraph, in all three languages." },
-];
-
 type Live = {
   text: Record<number, string>;
   sources: Record<number, Source[]>;
@@ -323,22 +312,6 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
             </div>
             <div className="memo md">
               <Markdown remarkPlugins={[remarkGfm]}>{matter.memo}</Markdown>
-            </div>
-          </section>
-        )}
-
-        {done && (
-          <section className="matter-block">
-            <h2>What this matter can do next</h2>
-            <div className="next-grid">
-              {NEXT.map((n) => (
-                <article key={n.title} className={`next-card${n.state === "Planned" ? " planned" : ""}`}>
-                  <span className="corner-square" />
-                  <span className="next-state">{n.state}</span>
-                  <h3>{n.title}</h3>
-                  <p>{n.body}</p>
-                </article>
-              ))}
             </div>
           </section>
         )}

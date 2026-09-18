@@ -66,6 +66,14 @@ class ToolCall(Model):
     thought: str | None = None  # the agent's reasoning before the call
 
 
+class Clarification(Model):
+    """A question the assistant asked back instead of answering."""
+
+    question: str
+    options: list[str] = []  # likely answers, offered as buttons
+    notes: str = ""  # what the research found before asking; read back by the next turn
+
+
 class Message(Model):
     id: str
     role: Literal["user", "assistant"]
@@ -75,6 +83,7 @@ class Message(Model):
     tool_calls: list[ToolCall] | None = None
     language: str | None = None  # of the question, on assistant messages
     statutes: list[StatuteRef] | None = None  # articles the answer names, linked to their text
+    clarification: Clarification | None = None  # set when the assistant asked back instead of answering
     created_at: str
 
 
@@ -91,6 +100,7 @@ class Conversation(ConversationSummary):
 class ChatRequest(Model):
     conversation_id: str | None = None
     message: str = Field(min_length=1, max_length=4000)
+    allow_questions: bool = True  # whether the assistant may ask back instead of answering (off for evals)
 
 
 Language = Literal["de", "fr", "it", "rm", "en"]

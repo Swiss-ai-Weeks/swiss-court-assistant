@@ -37,7 +37,8 @@ async def ask(client: httpx.AsyncClient, question: str, conversation_id: str | N
     """One turn. Never raises: a failed turn comes back with `error` set, so one broken case does
     not take the run down with it."""
     turn = Turn(question=question, conversation_id=conversation_id)
-    body: dict[str, Any] = {"message": question}
+    # the assistant may ask back instead of answering; a graded case needs the answer
+    body: dict[str, Any] = {"message": question, "allowQuestions": False}
     if conversation_id:
         body["conversationId"] = conversation_id
     started = time.monotonic()
@@ -71,6 +72,9 @@ async def ask(client: httpx.AsyncClient, question: str, conversation_id: str | N
                         message = event.get("message") or {}
                         turn.answer = message.get("content") or "".join(deltas)
                         turn.sources = message.get("sources") or []
+                    case "clarify":  # should not happen with allowQuestions off
+                        asked = (event.get("clarification") or {}).get("question", "")
+                        turn.error = f"asked back instead of answering: {asked[:120]}"
                     case "error":
                         turn.error = str(event.get("detail") or event.get("message") or "stream error")
     except httpx.HTTPStatusError as e:

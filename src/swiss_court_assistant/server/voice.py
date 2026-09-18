@@ -126,7 +126,7 @@ NARRATION = {
            "statute": "Consulto la legge."},
 }
 _TOOLS = {"semantic_search": "search", "keyword_search": "keyword", "read_decision": "read", "write_answer": "write",
-          "read_law": "statute", "search_laws": "statute"}
+          "read_law": "statute", "search_laws": "statute", "list_decisions": "generic"}
 
 
 def narrate(tool: str, args: dict[str, Any], language: str) -> str | None:
@@ -136,7 +136,7 @@ def narrate(tool: str, args: dict[str, Any], language: str) -> str | None:
     kind = _TOOLS.get(tool)
     if kind is None:
         return None
-    if kind in ("write", "read", "statute"):  # decision ids ("zh_arbeitsgericht_AH250019") are unspeakable
+    if kind in ("write", "read", "statute", "generic"):  # decision ids ("zh_arbeitsgericht_AH250019") are unspeakable
         return phrases[kind]
     query = args.get(f"query_{language}") if kind == "search" else args.get("keyword")
     query = " ".join(str(query or "").split())

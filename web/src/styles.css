@@ -179,6 +179,11 @@ textarea { font: inherit; }
 .src-tag.case { border: 1px solid var(--hairline-strong); color: var(--body); }
 .src-tag.statute { border: 1px solid var(--ink); background: var(--highlight); color: var(--ink); }
 .activity .arg { color: var(--body); overflow-wrap: anywhere; }
+/* a filter the step searched within: canton, court, area, years */
+.activity .filter {
+  font-size: 12px; line-height: 18px; padding: 0 6px; border-radius: var(--rounded-sm); align-self: center;
+  background: var(--surface-soft); border: 1px solid var(--hairline-strong); color: var(--ink); white-space: nowrap;
+}
 .activity .result { color: var(--mute); }
 .activity .result::before { content: "→ "; }
 .activity li.error .result { color: var(--error); }
@@ -518,3 +523,16 @@ mark.hl.active { background: #fbdc6a; }
   border-bottom: 1px dashed var(--ink); border-radius: 0; cursor: pointer;
 }
 .statute-link:hover, .statute-link:focus-visible { background: var(--highlight); outline: none; }
+
+/* the assistant asked back instead of answering: its question, then likely answers as buttons */
+.clarify-label {
+  margin: 0 0 var(--space-xs, 4px); font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink); border-left: 3px solid var(--primary); padding-left: 6px;
+}
+.clarify { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-sm); }
+.clarify-option {
+  font: inherit; font-size: 14px; padding: 6px 12px; border-radius: var(--rounded-sm); cursor: pointer;
+  border: 1px solid var(--ink); background: var(--canvas, transparent); color: var(--ink);
+}
+.clarify-option:hover { background: var(--highlight); }
+.clarify-hint { font-size: 13px; color: var(--mute); }

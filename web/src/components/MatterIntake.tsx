@@ -144,10 +144,6 @@ export default function MatterIntake({ busy, error, onStart }: Props) {
       </div>
 
       {(failed || error) && <p className="msg-error">{failed ?? error}</p>}
-      <p className="intake-note">
-        Everything stays on this machine: the file is read here, the models run here, nothing is sent to an
-        outside service.
-      </p>
     </div>
   );
 }

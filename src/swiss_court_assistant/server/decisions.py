@@ -18,7 +18,26 @@ COURT_LABELS = {
     "bstger": "Federal Criminal Court",
     "bpatger": "Federal Patent Court",
     "mkg": "Military Court of Cassation",
+    "ch_vb": "Federal administrative practice (VPB)",
+    "ch_bundesrat": "Federal Council",
+    "emark": "Swiss Asylum Appeals Commission",
+    "edoeb": "Federal Data Protection Commissioner (EDÖB)",
+    "finma": "FINMA", "finma_versicherungsrecht": "FINMA (insurance supervision)",
+    "weko": "Competition Commission (WEKO)", "elcom": "Electricity Commission (ElCom)",
+    "comcom": "Communications Commission (ComCom)", "postcom": "Postal Services Commission (PostCom)",
+    "ubi": "Independent Complaints Authority for Radio and Television (UBI)",
+    "eschk": "Federal Arbitration Commission (ESchK)", "esbk": "Federal Gaming Board (ESBK)",
+    "bazg": "Federal Office for Customs (BAZG)", "estv": "Federal Tax Administration (ESTV)",
+    "rab": "Federal Audit Oversight Authority (RAB)", "preisueberwacher": "Price Supervisor",
 }
+# cantonal court codes are "<canton>_<court>"; these name a collection, not a court
+_GENERIC_COURTS = {"gerichte", "findinfo", "omni", "publikationen", "weitere", "zivilstraf", "kantone"}
+_CANTONAL_NAMES = {
+    "bvd": "Bau- und Verkehrsdirektion", "jurisprudence_adm": "Tribunal administratif",
+    "departement_bvu": "Departement Bau, Verkehr und Umwelt", "departement_vi": "Departement Volkswirtschaft und Inneres",
+    "departement_bks": "Departement Bildung, Kultur und Sport", "departement_gs": "Departement Gesundheit und Soziales",
+}
+
 _COLUMNS = ["decision_id", "court", "canton", "chamber", "docket_number", "decision_date", "language",
             "title", "regeste", "legal_area", "source_url", "pdf_url", "full_text"]
 _BGER_DOCKET = re.compile(r"^(\d+[A-Z]) (\d+/\d{4})$")  # "4A 705/2016" -> "4A_705/2016"
@@ -27,7 +46,14 @@ _BGER_DOCKET = re.compile(r"^(\d+[A-Z]) (\d+/\d{4})$")  # "4A 705/2016" -> "4A_7
 def court_label(court: str, canton: str | None) -> str:
     if court in COURT_LABELS:
         return COURT_LABELS[court]
-    return f"Cantonal court {canton}" if canton and canton != "CH" else court
+    if not canton or canton == "CH":
+        return court
+    name = court.split("_", 1)[1] if "_" in court else ""
+    if not name or name in _GENERIC_COURTS:
+        return f"Cantonal court {canton}"
+    # "zh_bezirksgericht_zuerich" -> "Bezirksgericht Zuerich (ZH)"
+    name = _CANTONAL_NAMES.get(name) or " ".join(w.capitalize() for w in name.split("_"))
+    return f"{name} ({canton})"
 
 
 def _summary_fields(r: dict[str, Any]) -> dict[str, Any]:
@@ -155,23 +181,27 @@ class SqliteDecisionStore:
         r = self._law(law_id)
         return None if r is None else DecisionSummary(**_law_fields(r))
 
+    def find_acts(self, code: str, canton: str = "CH") -> list[str]:
+        """The SR numbers of the act an abbreviation (any language: OR, CO) or SR number names."""
+        code = re.sub(r"(?i)^SR\s*", "", code.strip())
+        try:
+            return [r[0] for r in self._con().execute(
+                "SELECT DISTINCT sr_number FROM laws WHERE canton = ? AND (abbreviation = ? COLLATE NOCASE "
+                "OR sr_number = ?) AND sr_number IS NOT NULL", [(canton or "CH").strip().upper(), code, code])]
+        except sqlite3.OperationalError:  # an index built without --laws
+            return []
+
     def find_articles(self, code: str, article: str, canton: str = "CH") -> list[dict[str, Any]]:
         """An article of an act in every language it is published in, with its label.
 
         `code` is an abbreviation or an SR number. Abbreviations differ by language (OR in German, CO
         in French and Italian), so the code is resolved to the act's SR number first and the article
         comes back in all languages — asking for "OR" finds the French text too."""
-        code = re.sub(r"(?i)^SR\s*", "", code.strip())
         canton = (canton or "CH").strip().upper()
-        con = self._con()
-        try:
-            srs = [r[0] for r in con.execute(
-                "SELECT DISTINCT sr_number FROM laws WHERE canton = ? AND (abbreviation = ? COLLATE NOCASE "
-                "OR sr_number = ?) AND sr_number IS NOT NULL", [canton, code, code])]
-        except sqlite3.OperationalError:
-            return []
+        srs = self.find_acts(code, canton)
         if not srs:
             return []
+        con = self._con()
         want = _article_key(article)
         holes = ",".join("?" * len(srs))
         rows = con.execute(f"SELECT * FROM laws WHERE canton = ? AND sr_number IN ({holes}) ORDER BY language, seq",

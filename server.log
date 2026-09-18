@@ -1515,3 +1515,333 @@ INFO:     31.10.154.208:0 - "GET /api/conversations/427803911d87 HTTP/1.1" 200 O
 INFO:     31.10.154.208:0 - "GET /api/conversations/427803911d87 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_259d_fr_0 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/matters/9e1995e026c2 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/facets.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1354583]
+INFO:     Started server process [1376610]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/vecmatrix.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1376610]
+INFO:     Started server process [1378032]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/index.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1378032]
+INFO:     Started server process [1378614]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/decisions.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1378614]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/decisions.py'. Reloading...
+INFO:     Started server process [1379303]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1379303]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/decisions.py', 'src/swiss_court_assistant/server/corpus.py'. Reloading...
+INFO:     Started server process [1380104]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1380104]
+INFO:     Started server process [1380678]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1380678]
+INFO:     Started server process [1381515]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 75, in lifespan
+    agent = _make_agent(decisions, citations)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 95, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 821, in __init__
+    temperature=0.2, streaming=True)
+KeyError: 'filter_tools'
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [1382139]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/facets.py'. Reloading...
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [1410955] using WatchFiles
+INFO:     Started server process [1410957]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58202 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58218 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58234 - "GET / HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-B6G3S1hU.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-DffRNFUU.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/store.py', 'src/swiss_court_assistant/server/agent.py', 'src/swiss_court_assistant/server/schemas.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1410957]
+INFO:     Started server process [1430638]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1430638]
+INFO:     Started server process [1431424]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/server/matters.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1431424]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [1432413]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1432413]
+INFO:     Started server process [1433321]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50194 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40020 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33438 - "DELETE /api/conversations/d93c90b92ad8 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33442 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38228 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in vd_gerichte_JL17.005451: "S'agissant des congés ordinaires, la réponse est nuancée : la doctrine majoritaire et la jurisprudence fédérale l'admettent lorsqu'il y a une erreur de date, mais non lorsqu'il s'agit de convertir en "
+INFO:     127.0.0.1:47350 - "GET /api/conversations/af4871fbf807 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47470 - "DELETE /api/conversations/af4871fbf807 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:47474 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51434 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51434 - "GET /assets/index-DjEQ3sCB.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51440 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51434 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51440 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51452 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51452 - "GET /api/conversations/45b6ae38def6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53398 - "DELETE /api/conversations/45b6ae38def6 HTTP/1.1" 204 No Content
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1433321]
+INFO:     Started server process [1439428]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:34432 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34440 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59940 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43936 - "DELETE /api/conversations/e6f2e937f671 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:43942 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41852 - "DELETE /api/conversations/728ea59580a1 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:41866 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57812 - "DELETE /api/conversations/ed49bc523b91 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:52726 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52734 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52726 - "GET /assets/index-DjEQ3sCB.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52726 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52734 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52740 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52740 - "GET /api/conversations/f56e3dacdc7d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52740 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52726 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1439428]
+INFO:     Started server process [1443431]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/server/agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1443431]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Started server process [1444540]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1444540]
+INFO:     Started server process [1445312]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:44440 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36224 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36224 - "GET /assets/index-CAYqauIF.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36240 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36224 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36240 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36244 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36224 - "GET /api/conversations/f56e3dacdc7d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52906 - "DELETE /api/conversations/f56e3dacdc7d HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:52912 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42460 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42472 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42460 - "GET /assets/index-CAYqauIF.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42460 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42472 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42476 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42476 - "GET /api/conversations/c73cb100f1f4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42476 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42460 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1445312]
+INFO:     Started server process [1448585]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:37624 - "DELETE /api/conversations/c73cb100f1f4 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:34628 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34630 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57704 - "DELETE /api/conversations/4a32eb3870c7 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:57710 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35918 - "DELETE /api/conversations/572e97b88f70 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:58316 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1448585]
+INFO:     Stopping reloader process [1410955]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 10 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [1453058] using WatchFiles
+INFO:     Started server process [1453061]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:43890 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43898 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43914 - "GET / HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CAYqauIF.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote cited from bger_4A_726_2011 found in bger_4A_531_2012 instead
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_531_2012 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_531_2012/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58184 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58198 - "GET /api/conversations/e88c17c78d82 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58214 - "GET /api/conversations/bc51747e46e0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58222 - "GET /api/conversations/9196e20af643 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/server/agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1453061]
+INFO:     Started server process [1462133]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1462133]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [1463119]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1463119]
+INFO:     Started server process [1463761]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42706 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:43158 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in bger_4A_138_2015: "Selon l'art. 335 al. 1 CO, le contrat de travail conclu pour une durée indéterminée peut être résilié par chacune des parties. En droit suisse du travail, la liberté de la résiliation prevaut, de sort"
+INFO:     127.0.0.1:52322 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in zh_obergericht_LA220028: 'Zu beachten ist, dass auch eine ungerechtfertigte fristlose Kündigung das Arbeitsverhältnis mit sofortiger Wirkung faktisch und rechtlich beendet. Es gibt mithin keinen Bestandesschutz. Die Sanktionen'
+INFO:     127.0.0.1:55874 - "GET /api/conversations/860571ef11a1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55890 - "DELETE /api/conversations/860571ef11a1 HTTP/1.1" 204 No Content
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CAYqauIF.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/e88c17c78d82 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44714 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters/5195f4f1932a/run HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_2C_96_2023 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_2C_96_2023/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/5195f4f1932a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/9e1995e026c2 HTTP/1.1" 200 OK

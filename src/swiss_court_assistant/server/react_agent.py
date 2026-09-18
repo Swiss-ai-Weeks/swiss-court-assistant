@@ -5,6 +5,7 @@ import json
 import logging
 import re
 from collections import Counter
+from datetime import date
 from collections.abc import AsyncIterator
 from contextvars import ContextVar
 from typing import Annotated, Literal
@@ -17,8 +18,12 @@ from langchain_core.utils.json import parse_partial_json
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, ValidationError
 
-from .agent import AgentEvent, Cite, Delta, Status, Thought, ToolEnd, ToolStart, Verdict
-from .corpus import Corpus, Passage
+from swiss_court_assistant.facets import AREAS, CANTONS, COURTS, PROCEEDINGS
+
+from .agent import (AgentEvent, Cite, Clarify, Delta, Status, Thought, ToolEnd, ToolStart, Verdict,
+                    original_question, with_clarification)
+from .corpus import Corpus, FiltersUnavailable, Passage
+from .decisions import court_label
 from .language import detect_language
 from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
 from .schemas import Message, Source
@@ -53,6 +58,11 @@ RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
 # The store is per turn, not per process: `make_tools` runs once and its tools are shared.
 SAME_SEARCH = 0.8  # Jaccard overlap at which two searches count as the same
 _searches: ContextVar[list[tuple[str, frozenset[str]]] | None] = ContextVar("searches", default=None)
+# whether this turn may end with a question to the user (not in matters, evals, or right after one)
+_may_ask: ContextVar[bool] = ContextVar("may_ask", default=False)
+# the user's language this turn: the research runs in German, French and Italian and pulls the model
+# away from it, and a reply to a question asked back mixes languages (see `original_question`)
+_language: ContextVar[str | None] = ContextVar("language", default=None)
 
 
 def _tokens(text: str) -> frozenset[str]:
@@ -114,9 +124,19 @@ SUPPORT_PROMPT = """You check a legal answer against its sources. Given one pass
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
 MAX_CHECKS = 8  # grounding checks per answer
+ASK_FORMAT = {"type": "json_schema", "json_schema": {"name": "question", "schema": {
+    "type": "object", "properties": {"question": {"type": "string"}, "options": {"type": "array", "items": {
+        "type": "string"}}}, "required": ["question", "options"]}}}
 
-LAW_TOOLS = """- read_law(code, article): the text of a statute article in German, French and Italian, e.g. code="OR", article="271a". Read the provision a question or a decision turns on, so the answer can quote what it says.
-- search_laws(query_de, query_fr, query_it): finds statute articles by meaning, when you do not know which provision applies. Federal law unless cantonal=true. It searches the {n_articles:,} statute articles, not the decisions. When the question asks which provision, article or rule governs something, search the statutes before concluding that there is none: court passages rarely say that no provision exists.
+LAW_TOOLS = """- read_law(code, article, canton="CH"): the text of a statute article in German, French and Italian, e.g. code="OR", article="271a". Read the provision a question or a decision turns on, so the answer can quote what it says.
+- search_laws(query_de, query_fr, query_it, canton="CH", code=""): finds statute articles by meaning, when you do not know which provision applies. canton="CH" is federal law; a canton's code ("ZH", "GE") searches that canton's law instead. code limits the search to one act ("OR", "StGB", "ZPO"), when you know the act but not the article. It searches the {n_articles:,} statute articles, not the decisions. When the question asks which provision, article or rule governs something, search the statutes before concluding that there is none: court passages rarely say that no provision exists.
+"""
+
+FILTER_TOOLS = """- Filters, for semantic_search, keyword_search and list_decisions: canton ("ZH", or several: "GE,VD"; "CH" is the federal courts), court (federal_supreme, leading_cases = the published BGE, federal_administrative, federal_criminal, federal_patent, federal_other, cantonal), area (civil, criminal, public, social_insurance), proceeding (appeal, objection, debt_enforcement, constitutional_complaint, revision, first_instance), year_from, year_to. Use a filter when the question names a canton, a court, a period or an area of law ("in Geneva", "the Federal Supreme Court", "since 2020"), and otherwise leave them out: every filter hides decisions. "Since 2020" is year_from=2020 with no year_to; the corpus runs to {this_year}. The proceeding is only recorded for about half of the decisions. A search that finds nothing with a filter may find something without it.
+- list_decisions(filters, oldest=false): how many decisions match the filters, how they split by court, area and decade, and the newest ten (oldest=true: the oldest). For questions about the corpus itself or the latest decisions of a court — not to find what the law is.
+"""
+
+ASK_TOOL = """- ask_user(question, options, found_so_far): ask the user one short question instead of answering, when the answer turns on a fact the question leaves open and the passages found go different ways on it — a residential or a commercial lease, which canton, whether a deadline has passed, employee or self-employed. Ask about one fact only, the one the answer turns on most, in one sentence, in the language of the user's question (not the language you searched in). options are two to four short answers to that question, in the user's language; no \"other\" option, the user can always type their own. found_so_far says in two or three sentences what the research found and which decisions (decision_id) matter for each case; the next turn reads it back. Never settle the open fact yourself: if answering means assuming one case — that the contract is an employment contract, that the user is the tenant — ask instead. Ask only after searching, when you can say why the answer differs; never for something the tools can look up, and not when a short answer can cover every case.
 """
 
 RESEARCH_PROMPT = """You are a legal research assistant for Swiss case law, working on a corpus of {n_decisions:,} Swiss court decisions (Federal Supreme Court, other federal courts and cantonal courts), written in German, French or Italian.
@@ -126,7 +146,7 @@ Research the user's question with the tools, then call write_answer.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
 - citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
-{law_tools}- write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls.
+{law_tools}{filter_tools}{ask_tool}- write_answer(): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
 Never repeat a search you have already made: near-identical wording returns the same passages. If two searches with clearly different wording bring back nothing on point, stop and call write_answer. This corpus is a subset of Swiss case law, so many questions — foreign law such as the EU GDPR, statutes no court here applied, recent events — have no answer in it at all. Reporting that is a correct answer; assembling one out of loosely related passages is not.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
@@ -136,6 +156,7 @@ ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using 
 - A "citation" part follows the text it supports. It gives the decision_id of a passage from the tool results, its chunk_id (only for search results; null for text read with read_decision), a "quote" copied character for character from that passage in the decision's own language (never translated or shortened; one to three consecutive sentences, at most about 300 characters), and an "explanation": one sentence in the user's language on why the passage supports the text.
 - Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results — neither from your own legal knowledge nor from an earlier answer in this conversation. Earlier turns tell you what is being asked; they are never a source, and an earlier answer is never repeated as the new one.
 - A statute article from search_laws or read_law is cited the same way: its law_id goes in decision_id, with its chunk_id and a quote copied from the article's text. Name it as it is cited ("Art. 271a OR"). Cite the article for what the statute says and a decision for how courts apply it.
+- What list_decisions reports about the corpus itself — how many decisions match, which ones, their dates and subjects — needs no citation: name each decision by court, docket number and date. What a decision holds still does.
 - If the tool results do not answer the question, say so plainly in one or two text parts with no citations at all: name what was searched for and what those passages are actually about. Do not stretch a loosely related passage into an answer.
 
 Shape:
@@ -157,8 +178,9 @@ def _hit_block(i: int, p: Passage) -> str:
     erw = f" · E. {', '.join(p.erwaegungen)}" if p.erwaegungen else ""
     regeste = " · Regeste" if p.section == "regeste" else ""
     cited = f" · cited by {p.cited_by} later decisions" if p.cited_by else ""
+    about = "".join(f" · {v}" for v in (p.about or {}).values())
     return (f"Result {i}: decision_id={p.decision_id} chunk_id={p.chunk_id}\n"
-            f"{p.court_label} {p.docket} · {p.date or 'undated'} · {p.language}{erw}{regeste}{cited}\n{p.text}")
+            f"{p.court_label} {p.docket} · {p.date or 'undated'} · {p.language}{about}{erw}{regeste}{cited}\n{p.text}")
 
 
 def _law_block(i: int, p: Passage) -> str:
@@ -167,13 +189,20 @@ def _law_block(i: int, p: Passage) -> str:
             f"{p.docket} · {p.court_label} · {p.language}\nText:\n{p.text}")
 
 
-def _hits_result(hits: list[Passage]) -> tuple[str, dict]:
+def _hits_result(hits: list[Passage], filters: str = "") -> tuple[str, dict]:
+    within = f" in decisions matching {filters}" if filters else ""
     if not hits:
-        return "No passages found.", {"summary": "no passages"}
+        return (f"No passages found{within}." + (" Try fewer filters." if filters else ""),
+                {"summary": "no passages"})
     decisions = sorted({h.decision_id for h in hits})
-    return ("\n\n".join(_hit_block(i, h) for i, h in enumerate(hits, 1)),
+    return ((f"Only decisions matching {filters}.\n\n" if filters else "")
+            + "\n\n".join(_hit_block(i, h) for i, h in enumerate(hits, 1)),
             {"summary": f"{len(hits)} passages from {len(decisions)} decision{'s' * (len(decisions) > 1)}",
              "decisions": decisions})
+
+
+def _court_name(corpus: Corpus, court: str) -> str:
+    return court_label(court, corpus.facets.court_canton(court))
 
 
 def _docket_matches(corpus: Corpus, query: str) -> str:
@@ -191,33 +220,99 @@ def _failed(e: Exception) -> tuple[str, dict]:
     return f"The tool failed: {e}", {"summary": "failed", "error": True}
 
 
+Court = Literal[tuple(COURTS) + ("federal_other", "cantonal")]  # type: ignore[valid-type]
+Area = Literal[tuple(a for a in AREAS if a != "unknown")]  # type: ignore[valid-type]
+Proceeding = Literal[tuple(PROCEEDINGS)]  # type: ignore[valid-type]
+
+# what the model writes for a canton, besides its code
+_CANTON_NAMES = {
+    "zurich": "ZH", "zürich": "ZH", "bern": "BE", "berne": "BE", "luzern": "LU", "lucerne": "LU", "uri": "UR",
+    "schwyz": "SZ", "obwalden": "OW", "nidwalden": "NW", "glarus": "GL", "zug": "ZG", "fribourg": "FR",
+    "freiburg": "FR", "solothurn": "SO", "basel-stadt": "BS", "basel-landschaft": "BL", "schaffhausen": "SH",
+    "appenzell ausserrhoden": "AR", "appenzell innerrhoden": "AI", "st. gallen": "SG", "st gallen": "SG",
+    "graubünden": "GR", "grisons": "GR", "aargau": "AG", "thurgau": "TG", "ticino": "TI", "tessin": "TI",
+    "vaud": "VD", "waadt": "VD", "valais": "VS", "wallis": "VS", "neuchâtel": "NE", "neuenburg": "NE",
+    "genève": "GE", "geneva": "GE", "genf": "GE", "ginevra": "GE", "jura": "JU", "federal": "CH", "bund": "CH",
+}
+
+
+def _cantons(canton: str | None) -> tuple[list[str], list[str]]:
+    """Canton codes from "GE", "GE,VD", "Geneva"; and what was not understood."""
+    codes, unknown = [], []
+    for part in re.split(r"[,;/]| and | und | et ", canton or ""):
+        part = part.strip()
+        if not part or part.lower() in ("none", "null", "all", "any"):  # the model writes "None" for no filter
+            continue
+        code = part.upper() if part.upper() in (*CANTONS, "CH") else _CANTON_NAMES.get(part.lower())
+        (codes if code else unknown).append(code or part)
+    return codes, unknown
+
+
+def _decision_filter(corpus: Corpus, canton: str | None, court: str | None, area: str | None,
+                     proceeding: str | None, year_from: int | None, year_to: int | None):
+    """(mask over decisions or None, "GE · civil · 2020–" for the result, or an error message)."""
+    codes, unknown = _cantons(canton)
+    if unknown:
+        return None, "", f"Unknown canton {', '.join(unknown)!s}: use two-letter codes (ZH, GE, TI ...) or CH."
+    filters = {"canton": codes, "court": [court] if court else [], "area": [area] if area else [],
+               "proceeding": [proceeding] if proceeding else [], "year_from": year_from, "year_to": year_to}
+    years = f"{year_from or ''}–{year_to or ''}" if (year_from or year_to) else ""
+    label = " · ".join(x for x in (",".join(codes), court, area, proceeding, years) if x)
+    try:
+        where = corpus.where(**filters)
+    except FiltersUnavailable as e:
+        return None, label, f"{e}; search again without filters."
+    if where is not None and not where.any():
+        # say which filter is too narrow: each alone matches decisions, but not together
+        alone = [f"{name}={value if isinstance(value, int) else ','.join(value)}: "
+                 f"{int(m.sum()):,}" for name, value in filters.items() if value
+                 and (m := corpus.where(**{name: value})) is not None]
+        return None, label, (f"No decision in the corpus matches {label} (each filter alone: {'; '.join(alone)}). "
+                             f"The kind of proceeding is missing for many cantonal decisions. Drop a filter.")
+    return where, label, None
+
+
 def make_tools(corpus: Corpus) -> list:
     @tool(response_format="content_and_artifact")
-    async def semantic_search(query_de: str, query_fr: str, query_it: str) -> tuple[str, dict]:
+    async def semantic_search(query_de: str, query_fr: str, query_it: str, canton: str | None = None,
+                              court: Court | None = None, area: Area | None = None,
+                              proceeding: Proceeding | None = None, year_from: int | None = None,
+                              year_to: int | None = None) -> tuple[str, dict]:
         """Find passages by meaning. Give the same search in German, French and Italian, each phrased the
         way a Swiss court writes in that language, with its legal terms and statute abbreviations
         (OR / CO / CO). Each query searches only the decisions in its language. Returns the best
-        passages with decision_id and chunk_id."""
-        if repeat := _already_searched(f"{query_de} {query_fr} {query_it}"):
+        passages with decision_id and chunk_id. Optional filters, only when the question asks for them:
+        canton ("ZH", "GE,VD", "CH" = federal courts), court, area of law, proceeding, year_from, year_to."""
+        where, label, error = _decision_filter(corpus, canton, court, area, proceeding, year_from, year_to)
+        if error:
+            return error, {"summary": error, "error": True}
+        if repeat := _already_searched(f"{query_de} {query_fr} {query_it} {label}"):
             return repeat, {"summary": "repeats an earlier search"}
         try:
-            hits = await corpus.semantic_search_by_language({"de": query_de, "fr": query_fr, "it": query_it})
+            hits = await corpus.semantic_search_by_language({"de": query_de, "fr": query_fr, "it": query_it},
+                                                            where=where)
         except Exception as e:
             return _failed(e)
-        text, artifact = _hits_result(hits)
+        text, artifact = _hits_result(hits, label)
         if hits:
             per = Counter(h.language for h in hits)
             artifact["summary"] += " · " + ", ".join(f"{n} {lang}" for lang, n in sorted(per.items()))
         return text, artifact
 
     @tool(response_format="content_and_artifact")
-    async def keyword_search(keyword: str) -> tuple[str, dict]:
+    async def keyword_search(keyword: str, canton: str | None = None, court: Court | None = None,
+                             area: Area | None = None, proceeding: Proceeding | None = None,
+                             year_from: int | None = None, year_to: int | None = None) -> tuple[str, dict]:
         """Full-text search for exact words in the decisions. Text in double quotes is an exact
-        phrase ("Art. 271a OR", "4A_705/2016"); other words must all appear. Returns passages."""
-        if repeat := _already_searched(keyword):
+        phrase ("Art. 271a OR", "4A_705/2016"); other words must all appear. Returns passages.
+        Takes the same optional filters as semantic_search."""
+        where, label, error = _decision_filter(corpus, canton, court, area, proceeding, year_from, year_to)
+        if error:
+            return error, {"summary": error, "error": True}
+        if repeat := _already_searched(f"{keyword} {label}"):
             return repeat, {"summary": "repeats an earlier search"}
         try:
-            text, artifact = _hits_result(await corpus.keyword_search(keyword))
+            text, artifact = _hits_result(await corpus.keyword_search(keyword, where=where), label)
         except Exception as e:
             return _failed(e)
         if dockets := _docket_matches(corpus, keyword):  # docket numbers are rarely in the passage text
@@ -239,6 +334,9 @@ def make_tools(corpus: Corpus) -> list:
         start = max(0, min(offset, len(d.full_text)))
         end = min(len(d.full_text), start + READ_WINDOW)
         head = [f"decision_id: {d.decision_id}", f"{d.court_label} {d.docket} · {d.date or 'undated'} · {d.language}"]
+        about = corpus.facets.describe(d.decision_id) if corpus.facets else {}
+        if details := " · ".join(x for x in (d.chamber, *about.values()) if x):
+            head.append(details)
         if d.title:
             head.append(f"Title: {d.title}")
         if d.regeste and start == 0:
@@ -275,23 +373,74 @@ def make_tools(corpus: Corpus) -> list:
                 {"summary": f"cited by {cited_by}", "decisions": [did]})
 
     @tool(response_format="content_and_artifact")
-    async def search_laws(query_de: str, query_fr: str, query_it: str, cantonal: bool = False) -> tuple[str, dict]:
+    async def search_laws(query_de: str, query_fr: str, query_it: str, canton: str = "CH",
+                          code: str = "") -> tuple[str, dict]:
         """Find statute articles by meaning: the provisions themselves, not the decisions applying them.
         Give the same search in German, French and Italian, worded the way the statute would put it.
-        Federal law only unless cantonal is true. Returns articles with law_id and chunk_id, which are
-        cited like decision passages."""
-        if repeat := _already_searched(f"{query_de} {query_fr} {query_it} {cantonal}", "laws"):
+        canton: "CH" for federal law (the default), a canton's code ("ZH", "GE") for its law.
+        code: only this act, by abbreviation or SR number ("OR", "CO", "StGB", "220"), when the act is
+        known but not the article. Returns articles with law_id and chunk_id, cited like decision passages."""
+        codes, unknown = _cantons(canton or "CH")
+        if unknown or len(codes) != 1:
+            return ("canton takes one code: CH for federal law, or ZH, GE, TI ...",
+                    {"summary": "bad canton", "error": True})
+        where = codes[0]
+        acts = None
+        if code.strip():
+            srs = await asyncio.to_thread(corpus.decisions.find_acts, code, where)
+            if not srs:
+                return (f"No act {code!r} in the {'federal' if where == 'CH' else where} law of this index. Check "
+                        f"the abbreviation, or search without code.", {"summary": "act not found", "error": True})
+            acts = [f"{where}/{sr}" for sr in srs]
+        label = " · ".join(x for x in (where if where != "CH" else "", code.strip()) if x)
+        if repeat := _already_searched(f"{query_de} {query_fr} {query_it} {label}", "laws"):
             return repeat, {"summary": "repeats an earlier search"}
         try:
             hits = await corpus.semantic_search_laws({"de": query_de, "fr": query_fr, "it": query_it},
-                                                     federal=not cantonal)
+                                                     canton=where, acts=acts)
         except Exception as e:
             return _failed(e)
         if not hits:
             return "No statute articles found.", {"summary": "no articles"}
         return ("\n\n".join(_law_block(i, h) for i, h in enumerate(hits, 1)),
-                {"summary": f"{len(hits)} articles: " + ", ".join(h.docket for h in hits[:4])
-                 + (" …" if len(hits) > 4 else "")})
+                {"summary": f"{len(hits)} articles: "
+                 + ", ".join(h.docket for h in hits[:4]) + (" …" if len(hits) > 4 else "")})
+
+    @tool(response_format="content_and_artifact")
+    async def list_decisions(canton: str | None = None, court: Court | None = None, area: Area | None = None,
+                             proceeding: Proceeding | None = None, year_from: int | None = None,
+                             year_to: int | None = None, oldest: bool = False) -> tuple[str, dict]:
+        """Which decisions the corpus holds for some filters: how many, how they split by court, area
+        and decade, and the ten newest (oldest=true: the ten oldest) with their Regeste or title. For
+        questions about the corpus or a court's latest decisions; semantic_search finds what the law is.
+        At least one filter: canton, court, area, proceeding, year_from, year_to."""
+        where, label, error = _decision_filter(corpus, canton, court, area, proceeding, year_from, year_to)
+        if error:
+            return error, {"summary": error, "error": True}
+        if where is None:
+            return ("Give at least one filter.", {"summary": "no filter", "error": True})
+        # one token: a listing repeats another only when every filter is the same ("GE" and "ZH" are
+        # too short to count as words on their own)
+        key = re.sub(r"\W+", "_", f"{label} {'oldest' if oldest else 'newest'}")
+        if repeat := _already_searched(key, "list"):
+            return repeat, {"summary": "repeats an earlier listing"}
+        total, split, found = await asyncio.to_thread(corpus.list_decisions, where, 10, oldest)
+
+        def top(c: Counter, n: int = 6, name=lambda x: x) -> str:
+            return ", ".join(f"{name(k)} {v:,}" for k, v in c.most_common(n))
+
+        lines = [f"{total:,} decisions match {label}.",
+                 f"By court: {top(split['court'], name=lambda c: _court_name(corpus, c))}",
+                 f"By area: {top(split['area'])} (area inferred from cited statutes where not recorded)",
+                 f"By decade: {', '.join(f'{k} {v:,}' for k, v in sorted(split['period'].items()))}",
+                 f"The {'oldest' if oldest else 'newest'} {len(found)}:"]
+        for d, about in found:
+            gist = (d.regeste or d.title or "").replace("\n", " ").strip()
+            lines.append(f"- {d.date or 'undated'} · {d.court_label} {d.docket} · decision_id={d.decision_id}"
+                         + "".join(f" · {v}" for v in about.values())
+                         + (f"\n  {gist[:240]}{'…' if len(gist) > 240 else ''}" if gist else ""))
+        return "\n".join(lines), {"summary": f"{total:,} decisions",
+                                  "decisions": [d.decision_id for d, _ in found]}
 
     @tool(response_format="content_and_artifact")
     async def read_law(code: str, article: str, canton: str = "CH") -> tuple[str, dict]:
@@ -313,13 +462,25 @@ def make_tools(corpus: Corpus) -> list:
                                                   f"{'s' * (len(found) > 1)}"}
 
     @tool
+    async def ask_user(question: str, options: list[str], found_so_far: str) -> str:
+        """Ask the user one short question instead of answering, when the answer depends on a fact the
+        question leaves open. options: two to four short likely answers. found_so_far: what the research
+        found so far and which decision_ids matter, for the next turn."""
+        return ""  # never runs: ResearchThenAnswer ends the turn with the question instead
+
+    @tool
     async def write_answer() -> str:
         """Finish the research and write the answer. Call it once the passages found answer the
         question, or when more searching is unlikely to help."""
         return ""  # never runs: ResearchThenAnswer answers instead
 
     laws = [read_law, search_laws] if corpus.has_laws else []
-    return [semantic_search, keyword_search, read_decision, citing_decisions, *laws, write_answer]
+    listing = [list_decisions] if corpus.facets else []
+    return [semantic_search, keyword_search, read_decision, citing_decisions, *listing, *laws, ask_user,
+            write_answer]
+
+
+_OTHER = re.compile(r"(?i)^(andere[sr]?|sonstiges|other|autre|altro|else|etwas anderes)\b")
 
 
 class ResearchThenAnswer(AgentMiddleware):
@@ -327,9 +488,32 @@ class ResearchThenAnswer(AgentMiddleware):
     from memory or in free text. When it calls write_answer, the answer is generated instead,
     constrained to the AgentAnswer schema and streamed token by token."""
 
-    def __init__(self, answer_llm: ChatOpenAI, max_tool_calls: int = MAX_TOOL_CALLS):
+    def __init__(self, answer_llm: ChatOpenAI, translate_llm: ChatOpenAI | None = None,
+                 max_tool_calls: int = MAX_TOOL_CALLS):
         super().__init__()
-        self.answer_llm, self.max_tool_calls = answer_llm, max_tool_calls
+        self.answer_llm, self.translate_llm, self.max_tool_calls = answer_llm, translate_llm, max_tool_calls
+
+    async def _in_language(self, question: str, options: list[str]) -> tuple[str, list[str]]:
+        """The question asked back and its options in the user's language. The research model writes
+        them in whatever language it last searched in (an English question was asked back in German),
+        so a question in another language is translated, options with it."""
+        want = _language.get()
+        if not want or want not in LANGUAGE_NAMES or self.translate_llm is None \
+                or detect_language(question, default=want) == want:
+            return question, options
+        prompt = (f"Translate this question and its answer options into {LANGUAGE_NAMES[want]}. Keep legal "
+                  f"terms and statute abbreviations as they are cited in Switzerland. Reply with JSON "
+                  f'{{"question": ..., "options": [...]}}, the options in the same order.\n\n'
+                  + json.dumps({"question": question, "options": options}, ensure_ascii=False))
+        try:
+            reply = await self.translate_llm.ainvoke([HumanMessage(prompt)])
+            out = json.loads(str(reply.content))
+            translated = [str(o).strip() for o in out.get("options") or []]
+            return (str(out["question"]).strip() or question,
+                    translated if len(translated) == len(options) else options)
+        except Exception:  # noqa: BLE001 — a question in the wrong language beats no question
+            log.warning("could not translate the question asked back", exc_info=True)
+            return question, options
 
     async def awrap_model_call(self, request: ModelRequest, handler) -> ModelResponse | AIMessage:
         used = sum(isinstance(m, ToolMessage) for m in request.messages)
@@ -341,10 +525,23 @@ class ResearchThenAnswer(AgentMiddleware):
         tools = request.tools
         if used < MIN_TOOL_CALLS:  # not yet: see MIN_TOOL_CALLS
             tools = [t for t in tools if _tool_name(t) != "write_answer"]
+        if used < 1 or not _may_ask.get():  # asking back needs a search to say why it matters
+            tools = [t for t in tools if _tool_name(t) != "ask_user"]
         response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
         result = response.result if isinstance(response, ModelResponse) else [response]
         replies = [m for m in result if isinstance(m, AIMessage)]
         calls = [tc for m in replies for tc in m.tool_calls]
+        if (ask := next((tc for tc in calls if tc["name"] == "ask_user"), None)) and _may_ask.get():
+            # the turn ends here: a message with no tool call, carrying the question for answer()
+            args = ask["args"]
+            options = [o for o in (str(x).strip() for x in (args.get("options") or []))
+                       if o and not _OTHER.match(o)][:4]  # "Other": the user can always type
+            if str(args.get("question") or "").strip():
+                asked, options = await self._in_language(str(args["question"]).strip(), options)
+                return AIMessage(content="", additional_kwargs={"ask_user": {
+                    "question": asked, "options": options,
+                    "notes": str(args.get("found_so_far") or "").strip()}})
+            calls = [tc for tc in calls if tc["name"] != "ask_user"]
         # A research step that returns neither a tool call nor any text would end the turn with no
         # answer and nothing logged (seen once in 33 eval turns); answer from what was found instead.
         stalled = not calls and not any(str(m.content).strip() for m in replies)
@@ -355,7 +552,7 @@ class ResearchThenAnswer(AgentMiddleware):
         # Passages and searches in three languages pull the answer away from the question's language
         # (a French question got a German answer), so name it when the question makes it clear.
         question = next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), "")
-        language = LANGUAGE_NAMES.get(detect_language(str(question), default=""))
+        language = LANGUAGE_NAMES.get(_language.get() or detect_language(str(question), default=""))
         # Name the question. This instruction is the last message the answer model sees, and when it
         # only said "write the final answer now", a follow-up got the previous turn's answer again.
         final = (f"The user's last question is:\n{question}\n\nAnswer that question now, from the tool "
@@ -665,8 +862,14 @@ def _history(messages: list[Message], limit: int = 8) -> list[BaseMessage]:
     """
     out: list[BaseMessage] = []
     for m in messages[-limit:]:
-        out.append(HumanMessage(m.content) if m.role == "user"
-                   else AIMessage(re.sub(r"\s*\[\d+\]", "", m.content)))
+        if m.role == "user":
+            out.append(HumanMessage(m.content))
+        elif m.clarification:
+            # the question asked back, with what the research had found: the user's reply comes next
+            notes = f"\n\n(Research before asking: {m.clarification.notes})" if m.clarification.notes else ""
+            out.append(AIMessage(m.content + notes, additional_kwargs={"asked_user": True}))
+        else:
+            out.append(AIMessage(re.sub(r"\s*\[\d+\]", "", m.content)))
     return out
 
 
@@ -699,13 +902,20 @@ class ReactAgent:
         answer_llm = ChatOpenAI(**common, max_tokens=4096, extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": ANSWER_FORMAT})
         # a separate short call per citation: does the passage actually say what the sentence claims?
+        # "nostream": its JSON is not part of the answer the client sees
+        translate_llm = ChatOpenAI(**{**common, "temperature": 0, "streaming": False}, max_tokens=512,
+                                   tags=["nostream"], extra_body={
+                                       "chat_template_kwargs": {"enable_thinking": False},
+                                       "response_format": ASK_FORMAT})
         self.check_llm = ChatOpenAI(**{**common, "temperature": 0}, max_tokens=32, extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": SUPPORT_FORMAT})
         law_tools = LAW_TOOLS.format(n_articles=corpus.n_articles) if corpus.has_laws else ""
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS,
-                                        min_calls=MIN_TOOL_CALLS, law_tools=law_tools)
+                                        min_calls=MIN_TOOL_CALLS, law_tools=law_tools,
+                                        filter_tools=FILTER_TOOLS.format(this_year=date.today().year)
+                                        if corpus.facets else "", ask_tool=ASK_TOOL)
         self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
-                                  middleware=[ResearchThenAnswer(answer_llm)])
+                                  middleware=[ResearchThenAnswer(answer_llm, translate_llm)])
         log.info("react agent: %s at %s (thinking=%s)", self.model, LLM_URL, LLM_THINKING)
 
     async def _check(self, n: int, claim: str, source: Source) -> tuple[int, bool | None]:
@@ -722,9 +932,14 @@ class ReactAgent:
             log.warning("grounding check failed for [%d]", n, exc_info=True)
         return n, None
 
-    async def answer(self, question: str, history: list[Message]) -> AsyncIterator[AgentEvent]:
+    async def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus)
         _searches.set([])  # this turn's searches; the tools are shared between turns, the store is not
+        # one question back per question: after the user has answered one, the agent answers
+        last = next((m for m in reversed(history) if m.role == "assistant"), None)
+        _may_ask.set(ask and not (last and last.clarification))
+        _language.set(detect_language(original_question(question, history), default="") or None)
+        question = with_clarification(question, history)
         stream, writing = AnswerStream(), False
         claim: list[str] = []  # the sentences since the last citation
         previous = ""  # several citations in a row all support the same sentence
@@ -777,7 +992,13 @@ class ReactAgent:
                 continue
             for update in data.values():
                 for m in (update or {}).get("messages", []):
-                    if isinstance(m, AIMessage) and m.tool_calls:
+                    if isinstance(m, AIMessage) and (asked := m.additional_kwargs.get("ask_user")):
+                        shown = True
+                        seen = ", ".join(sorted(cites.seen)[:12])
+                        notes = asked["notes"] + (f" Decisions found: {seen}." if seen else "")
+                        yield Delta(asked["question"])
+                        yield Clarify(asked["question"], asked["options"], notes)
+                    elif isinstance(m, AIMessage) and m.tool_calls:
                         stream = AnswerStream()
                         said = " ".join("".join(thought).split()) or None
                         thought.clear()

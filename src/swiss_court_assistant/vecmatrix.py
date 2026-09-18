@@ -153,18 +153,29 @@ class VectorMatrix:
             self.vectors[a:a + step].sum()
 
     def search(self, query: np.ndarray, k: int, kind: str = "decision",
-               language: str | None = None) -> list[tuple[int, float]]:
-        """(chunk id, cosine similarity) of the k nearest rows, best first."""
+               language: str | None = None, mask: np.ndarray | None = None) -> list[tuple[int, float]]:
+        """(chunk id, cosine similarity) of the k nearest rows, best first. `mask` (a bool per row, from
+        `facets`) restricts the search to some rows: still exact, and a small selection is scored alone."""
         q = np.asarray(query, dtype=np.float32)
         spans = [span for key, span in self.segments.items()
                  if key.startswith(f"{kind}/") and (language is None or key == f"{kind}/{language}")]
         best: list[tuple[int, float]] = []
         for a, b in spans:
-            scores = self.vectors[a:b] @ q
+            if mask is None:
+                rows, scores = None, self.vectors[a:b] @ q
+            else:
+                rows = np.flatnonzero(mask[a:b]) + a
+                if len(rows) == 0:
+                    continue
+                if len(rows) * 4 < b - a:  # few rows: read only those, in blocks to bound the copy
+                    scores = np.concatenate([self.vectors[rows[i:i + 32768]] @ q
+                                             for i in range(0, len(rows), 32768)])
+                else:
+                    scores = (self.vectors[a:b] @ q)[rows - a]
             top = np.argpartition(-scores, min(k, len(scores) - 1))[:k] if len(scores) > k else np.arange(len(scores))
-            best += [(int(self.ids[a + i]), float(scores[i])) for i in top]
+            at = (a + top) if rows is None else rows[top]
+            best += [(int(self.ids[r]), float(scores[i])) for r, i in zip(at, top)]
         return sorted(best, key=lambda x: -x[1])[:k]
-
 
 def current(db: Path, model: str) -> bool:
     """Whether the exported matrix matches the index as it is now."""

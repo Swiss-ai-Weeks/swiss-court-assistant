@@ -133,6 +133,9 @@ export default function App() {
             p && { ...p, sources: p.sources.map((s) => (s.n === ev.n ? { ...s, supported: ev.supported } : s)) },
         );
         break;
+      case "clarify":
+        setPending((p) => p && { ...p, clarification: ev.clarification });
+        break;
       case "done":
         setMessages((m) => [...m, ev.message]);
         setPending(null);
@@ -306,6 +309,7 @@ export default function App() {
                   setSelection(null);
                   setStatutePreview(source);
                 }}
+                onReply={busy ? undefined : send}
               />
             )}
             {(voice || voiceError) && (

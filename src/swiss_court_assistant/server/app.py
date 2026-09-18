@@ -19,15 +19,16 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import tracing
-from .agent import Agent, Cite, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict
+from .agent import (Agent, Cite, Clarify, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict,
+                    original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import UnreadableError, extract, transcribe
 from .matters import MatterStore, Pipeline, create_matter, docx_memo, memo
 from .language import detect_language
 from .mentions import statute_links
 from .citations import CitationIndex, open_index
-from .schemas import (ChatRequest, Citations, CitingDecision, Conversation, ConversationSummary, Decision, Health,
-                      Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
+from .schemas import (ChatRequest, Citations, CitingDecision, Clarification, Conversation, ConversationSummary,
+                      Decision, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
                       TranslateRequest, TranslateResponse)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
@@ -299,7 +300,9 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
     s.store.add_message(cid, user)
     summary = ConversationSummary(id=cid, title=title, updated_at=user.created_at)
     return StreamingResponse(
-        _stream(s, summary, req.message, history, detect_language(req.message)),
+        # a reply to a question asked back is short ("Wohnmietvertrag"); its language is the question's
+        _stream(s, summary, req.message, history, detect_language(original_question(req.message, history)),
+                req.allow_questions),
         media_type="text/event-stream",
         # no-transform: compressing proxies (code-server's port proxy, CDNs) would otherwise buffer the stream
         headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
@@ -307,7 +310,7 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
 
 
 async def _events(s: Services, conv: ConversationSummary, question: str, history: list[Message],
-                  language: str) -> AsyncIterator[dict[str, Any]]:
+                  language: str, ask: bool = True) -> AsyncIterator[dict[str, Any]]:
     """One assistant turn as events (the SSE route and the voice socket both send these), saved when done.
     If the caller stops early (voice barge-in), what was written so far is still saved."""
     yield {"type": "conversation", "conversation": conv.model_dump(by_alias=True)}
@@ -315,17 +318,18 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
     parts: list[str] = []
     sources: list[Source] = []
     calls: dict[str, ToolCall] = {}
+    clarification: Clarification | None = None
 
     def save(statutes: list | None = None) -> Message:
         msg = Message(id=new_id(), role="assistant", content="".join(parts), sources=sources,
                       tool_calls=list(calls.values()) or None, language=language, statutes=statutes or None,
-                      created_at=now())
+                      clarification=clarification, created_at=now())
         s.store.add_message(conv.id, msg)
         return msg
 
     with tracing.turn(question, conv.id, language) as trace:
         try:
-            async for ev in s.agent.answer(question, history):
+            async for ev in s.agent.answer(question, history, ask=ask):
                 trace.event(ev)
                 match ev:
                     case Status():
@@ -347,6 +351,9 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
                             sources.append(ev.source)
                         parts.append(f"[{ev.source.n}]")
                         yield {"type": "citation", "source": ev.source.model_dump(by_alias=True)}
+                    case Clarify():
+                        clarification = Clarification(question=ev.question, options=ev.options, notes=ev.notes)
+                        yield {"type": "clarify", "clarification": clarification.model_dump(by_alias=True)}
                     case Verdict():
                         for source in sources:  # saved with the message, so the check survives a reload
                             if source.n == ev.n:
@@ -372,8 +379,8 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
 
 
 async def _stream(s: Services, conv: ConversationSummary, question: str,
-                  history: list[Message], language: str) -> AsyncIterator[str]:
-    async for event in _events(s, conv, question, history, language):
+                  history: list[Message], language: str, ask: bool = True) -> AsyncIterator[str]:
+    async for event in _events(s, conv, question, history, language, ask):
         yield _sse(event)
 
 
@@ -467,7 +474,7 @@ async def _voice_turn(ws: WebSocket, s: Services, state: dict[str, Any], questio
     s.store.add_message(state["cid"], user)
     await ws.send_json({"type": "user", "message": user.model_dump(by_alias=True)})
     summary = ConversationSummary(id=state["cid"], title=title, updated_at=user.created_at)
-    language = detect_language(question, default=state["language"])
+    language = detect_language(original_question(question, history), default=state["language"])
     voice = _Voice(ws, s.speaker, language)
     try:
         async for event in _events(s, summary, question, history, language):

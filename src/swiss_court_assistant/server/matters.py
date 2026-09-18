@@ -399,7 +399,7 @@ class Pipeline:
         parts: list[str] = []
         sources: list[Source] = []
         yield {"type": "issue_start", "n": issue.n}
-        async for ev in self.agent.answer(question, []):
+        async for ev in self.agent.answer(question, [], ask=False):  # no one to ask mid-memo
             match ev:
                 case ToolStart():
                     arg = " ".join(str(v) for v in ev.args.values() if v not in (None, "", False))

@@ -114,12 +114,49 @@ that disconnects loses the stream, not the work.
 
 | Tool | What it does |
 |---|---|
-| `semantic_search(query_de, query_fr, query_it)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the decisions in its language (the in-memory vector matrix, else sqlite-vec; the three run in parallel), and its top 40 are reranked against it by the Nemotron reranker NIM; returns 8 passages, at least 2 per language and at most 2 per decision |
-| `keyword_search(keyword)` | SQLite FTS5 over all passages; `"quoted text"` is an exact phrase, other words must all appear; docket numbers in the query are matched to decisions |
+| `semantic_search(query_de, query_fr, query_it, …filters)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the decisions in its language (the in-memory vector matrix, else sqlite-vec; the three run in parallel), and its top 40 are reranked against it by the Nemotron reranker NIM; returns 8 passages, at least 2 per language and at most 2 per decision |
+| `keyword_search(keyword, …filters)` | SQLite FTS5 over all passages; `"quoted text"` is an exact phrase, other words must all appear; docket numbers in the query are matched to decisions |
+| `list_decisions(…filters, oldest=False)` | how many decisions match the filters, split by court, area and decade, and the ten newest (or oldest) with Regeste or title — for questions about the corpus or a court's latest decisions |
 | `read_decision(decision_id, offset=0)` | metadata, Regeste and 8,000 characters of the full text per call |
 | `citing_decisions(decision_id)` | how often later decisions cite it, and the most recent ones (citation graph) |
 | `read_law(code, article, canton="CH")` | one statute article verbatim, in German, French and Italian. The code may be the abbreviation in any language (OR or CO, ZGB or CC) or the SR number: it is resolved to the act's SR number first, so "OR" also finds the French text |
-| `search_laws(query_de, query_fr, query_it, cantonal=False)` | statute articles by meaning, over the statute rows of the vector matrix, federal law unless `cantonal`; reranked per language, one entry per article (its best language version), 6 articles |
+| `search_laws(query_de, query_fr, query_it, canton="CH", code="")` | statute articles by meaning, over the statute rows of the vector matrix: federal law, or one canton's law; `code` keeps to one act ("OR", "StGB", an SR number); reranked per language, one entry per article (its best language version), 6 articles |
+
+**Filters** (the full-corpus index only; `facets.py`): `canton` ("GE", "GE,VD", names like "Genf"
+are understood; "CH" = the federal courts), `court` (`federal_supreme`, `leading_cases` = BGE,
+`federal_administrative`, `federal_criminal`, `federal_patent`, `federal_other`, `cantonal`), `area`
+(`civil`, `criminal`, `public`, `social_insurance`), `proceeding` (`appeal`, `objection`,
+`debt_enforcement`, `constitutional_complaint`, `revision`, `first_instance`), `year_from`,
+`year_to`. They are masks over the vector-matrix rows applied *inside* the exact search, so "canton
+Uri" ranks Uri's 285 decisions rather than filtering a top 40 that holds none of them; a keyword
+search ranks up to 20,000 matches and keeps those inside. What the data allows: court, canton and
+date are always recorded. The area is recorded for 64 % of decisions, and for the rest is inferred
+from the acts they cite (OR/ZGB/ZPO → civil, StGB/StPO → criminal, IVG/UVG/ATSG → social insurance,
+VwVG/AIG/RPG → public): the inference agrees with the recorded area on 89 % of a sample and leaves
+10 % of all decisions without an area. The proceeding is recorded for 56 %, so that filter drops the
+rest, and a filter combination that matches nothing says how many each filter matches alone. Every
+result line shows the decision's area, proceeding and outcome where known, `read_decision` its
+chamber too, and cantonal courts are named from their code ("Obergericht (ZH)", "Mietgericht
+(ZH)") instead of "Cantonal court ZH". The research list shows each step's filters as chips.
+
+**Asking back.** A fifth research tool, `ask_user(question, options, found_so_far)`, lets the agent end
+the turn with one question instead of an answer, when the answer turns on a fact the question leaves
+open and the passages go different ways on it ("Kündigungsfrist für meinen Vertrag" — employment or
+lease?). The middleware turns that call into the end of the turn; the question streams as the
+turn's text, a `clarify` event carries two to four suggested answers (buttons under the question, on
+the last turn only; "other" options are dropped, the user can type) and `found_so_far` plus the
+decision ids found, saved as `Message.clarification`. The reply turn researches the *original*
+question with the reply added (`with_clarification`, also used for its language: "Wohnmietvertrag"
+alone would be detected as English), and reads the saved notes back from the history. Rules: only
+after a first search, at most one question per question (not right after one), never in matters
+(`ask=False`), and `POST /api/chat` takes `allowQuestions: false` for callers that need an answer
+every time, such as an eval. Clear questions are still answered directly; the prompt says not to
+settle the open fact by assuming one case, which the model did before it said so. The question is asked in the
+user's language: the research searches in German, French and Italian and pulled an English turn's
+question into German, so the prompt names the language and a question that still comes out in
+another one is translated (question and options, one short JSON call). The reply turn takes its
+language from the original question (`original_question`), not from the reply, whose suggested
+answers may be in another language.
 
 It works in two phases:
 
@@ -411,6 +448,10 @@ passages and a 57.8 GB index. What changed to serve it:
   evidence: kept out of `sources`, not grounding-checked, numbered 0 so the preview does not list them
   as citations, and the linked language version follows the abbreviation used (OR → German, CO →
   French). Answers saved earlier get their links when the conversation is loaded.
+- **Filters** (`facets.py`): canton, court, area, year, proceeding and outcome of every decision,
+  and canton and act of every statute article, as arrays aligned with the matrix rows
+  (`corpus.nemotron-embed.facets.npz`, 40 s to build, tied to the matrix export it was built for;
+  `build`/`update` rebuild it, and the app builds it at startup when missing or stale).
 - **Citation graph**: `index citations` → `data/graph/corpus.citations.sqlite` (5.0M edges, 719 MB).
 
 Everything cited in conversations and matters saved before the switch is in the new index with
@@ -419,6 +460,7 @@ identical full text, so their previews and highlights still line up.
 ```bash
 uv run python -m swiss_court_assistant.vecmatrix status   # is the matrix current?
 uv run python -m swiss_court_assistant.vecmatrix export   # re-export by hand
+uv run python -m swiss_court_assistant.facets build       # rebuild the search filters by hand
 ```
 
 Scale, measured on this box: 16.3 passages per decision and ~107 passages/s through the Nemotron

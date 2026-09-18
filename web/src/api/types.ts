@@ -79,6 +79,15 @@ export interface ToolCall {
   thought?: string | null;
 }
 
+/** A question the assistant asked back instead of answering. */
+export interface Clarification {
+  question: string;
+  /** Likely answers, offered as buttons. */
+  options: string[];
+  /** What the research found before asking; the next turn reads it back. */
+  notes: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -91,6 +100,8 @@ export interface Message {
   language?: string | null;
   /** Articles the answer names, linked to their text; set once the answer is complete. */
   statutes?: StatuteRef[] | null;
+  /** Set when the assistant asked back instead of answering. */
+  clarification?: Clarification | null;
   createdAt: string;
 }
 
@@ -128,6 +139,8 @@ export type ChatEvent =
   | { type: "citation"; source: Source }
   /** The grounding check on citation `n`, once the passage has been compared with the sentence. */
   | { type: "verdict"; n: number; supported: boolean }
+  /** The assistant asks the user something instead of answering; the turn ends after it. */
+  | { type: "clarify"; clarification: Clarification }
   | { type: "done"; message: Message }
   | { type: "error"; message: string };
 
