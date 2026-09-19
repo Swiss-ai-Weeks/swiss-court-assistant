@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type Citations as CitationsInfo, type CitingDecision, type Decision, type Source } from "../api";
 import { erwLabel, formatDate, langName } from "../format";
+import DocumentMarkdown from "./DocumentMarkdown";
 import ReadAloud from "./ReadAloud";
 
 interface Props {
@@ -241,7 +242,8 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
     const ranges = cited
       .filter((s) => s.charStart !== null && s.charEnd !== null)
       .map((s) => ({ n: s.n, start: s.charStart!, end: s.charEnd! }));
-    return segments(joinCitationBreaks(doc.fullText), ranges);
+    // an attached document is shown as the Markdown its parser wrote; the line joining is for scraped decisions
+    return segments(doc.decisionId.startsWith("doc_") ? doc.fullText : joinCitationBreaks(doc.fullText), ranges);
   }, [doc, cited]);
 
   // Bring the active passage into view: jump when a new text renders, glide within the same text.
@@ -279,6 +281,8 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   const isLaw = !browsing && active.section === "law"; // a statute article, described in the decision's fields
   const isDocument = !browsing && active.section === "document"; // a document the user attached
   const regesteActive = !browsing && active.section === "regeste";
+  // rendered as Markdown (tables, headings), so the Explain/Translate buttons go above it, not inline
+  const asMarkdown = !!doc && doc.decisionId.startsWith("doc_");
   const lastActive = parts.reduce((last, p, i) => (p.ns.includes(activeN) ? i : last), -1);
   // an asset of a matter opened whole (n 0, see MatterPage) cites no passage: nothing to explain or read out
   const tools = browsing || (isDocument && activeN === 0) ? null : <RefTools key={activeN} source={active} language={language} />;
@@ -352,7 +356,7 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
         )}
 
         {/* no highlight to attach the buttons to (quote not located): show them here */}
-        {doc && !regesteActive && lastActive < 0 && <div className="ref-tools-top">{tools}</div>}
+        {doc && !regesteActive && (lastActive < 0 || asMarkdown) && <div className="ref-tools-top">{tools}</div>}
 
         {d.regeste && (
           <div className="regeste" data-active={regesteActive || undefined} {...selectable}>
@@ -372,7 +376,12 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
 
         {error && <p className="preview-empty">Could not load the decision: {error}</p>}
         {!doc && !error && <p className="preview-empty">Loading decision…</p>}
-        {doc && (
+        {doc && asMarkdown && (
+          <div {...selectable}>
+            <DocumentMarkdown parts={parts} activeN={activeN} onSelect={onSelect} />
+          </div>
+        )}
+        {doc && !asMarkdown && (
           <div className="doc-text" {...selectable}>
             {parts.map((p, i) => {
               const tail = i === lastActive && !regesteActive ? tools : null;
