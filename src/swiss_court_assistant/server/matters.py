@@ -35,13 +35,13 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, ValidationError
 
-from .agent import Agent, Cite, Delta, ToolStart, Verdict
+from .agent import Agent, Cite, Delta, Mention, ToolStart, Verdict
 from .case_index import CaseIndex, IndexUnavailable, collection_of
 from .language import detect_language
 from .mentions import statute_links
 from .parsing import DocumentStore
-from .llm import LLM_KEY, LLM_URL, served_model
-from .schemas import DocumentInfo, Intake, Issue, Matter, MatterSummary, Source
+from .llm import LLM_KEY, LLM_URL, served_model, today_note
+from .schemas import DocumentInfo, Intake, Issue, Matter, MatterSummary, Source, StatuteRef
 from .store import new_id, now
 
 log = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ INTAKE_PROMPT = """You are a Swiss lawyer taking in a new matter. You are given 
 
 - "title": a short name for the matter, e.g. "Termination of a lease in Zurich" (in {language}).
 - "summary": three to five sentences stating the facts as they are given, in {language}. Facts only, no legal conclusions, no advice.
-- "parties": who is involved, one entry each, with their role ("Client - tenant", "Landlord (AG)").
+- "parties": who is involved, one entry each, with their role, in {language} (e.g. in English "Client - tenant", "Landlord (AG)").
 - "timeline": the dated facts in order, one per entry ("2024-03-14: termination served"). Leave empty if the text gives no dates.
 - "issues": between one and {max_issues} legal questions that decide this matter, most important first. Each has "question": the question as a lawyer would research it in Swiss case law, in {language}; "why": one sentence on why it decides this case; "area": one of "Zivilrecht", "Strafrecht", "öffentliches Recht", "Sozialversicherungsrecht".
 
@@ -399,7 +399,7 @@ class Pipeline:
     async def _intake(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
         language = LANGUAGE_NAMES.get(matter.language, "English")
         prompt = INTAKE_PROMPT.format(language=language, max_issues=self.max_issues)
-        reply = await self.intake_llm.ainvoke([SystemMessage(prompt), HumanMessage(matter.facts)])
+        reply = await self.intake_llm.ainvoke([SystemMessage(f"{prompt}\n\n{today_note()}"), HumanMessage(matter.facts)])
         try:
             drafted = _Intake.model_validate_json(str(reply.content))
         except (ValidationError, ValueError) as e:
@@ -420,6 +420,7 @@ class Pipeline:
         question = f"{issue.question}\n\n(Context - the matter this is asked for: {context})"
         parts: list[str] = []
         sources: list[Source] = []
+        mentions: list[StatuteRef] = []  # documents and decisions named in the text, linked like statutes
         yield {"type": "issue_start", "n": issue.n}
         # The client's own document, so the research can quote it for the facts. Without it the answer
         # stated the facts in a sentence cited to a court decision, the check found the decision did not
@@ -445,18 +446,22 @@ class Pipeline:
                     parts.append(f"[{ev.source.n}]")
                     yield {"type": "issue_citation", "n": issue.n,
                            "source": ev.source.model_dump(by_alias=True)}
+                case Mention():
+                    if all(m.text != ev.text for m in mentions):
+                        mentions.append(StatuteRef(text=ev.text, source=ev.source))
                 case Verdict():
                     for source in sources:
                         if source.n == ev.n:
                             source.supported = ev.supported
                     yield {"type": "issue_verdict", "n": issue.n, "source": ev.n, "supported": ev.supported}
         issue.answer, issue.sources = "".join(parts), sources
-        if self.decisions is not None:
-            issue.statutes = await asyncio.to_thread(statute_links, self.decisions, issue.answer, matter.language) or None
+        articles = [] if self.decisions is None else \
+            await asyncio.to_thread(statute_links, self.decisions, issue.answer, matter.language)
+        issue.statutes = [*mentions, *articles] or None
         yield {"type": "issue_done", "n": issue.n, "issue": issue.model_dump(by_alias=True)}
 
     async def _assess(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
-        prompt = ASSESS_PROMPT.format(language=LANGUAGE_NAMES.get(matter.language, "English"))
+        prompt = ASSESS_PROMPT.format(language=LANGUAGE_NAMES.get(matter.language, "English")) + "\n\n" + today_note()
         parts: list[str] = []
         async for chunk in self.assess_llm.astream([SystemMessage(prompt), HumanMessage(_digest(matter))]):
             text = str(chunk.content)

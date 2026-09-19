@@ -114,12 +114,6 @@ the recording can differ slightly.
 
 ## App issues found while preparing this
 
-- **Neither the agent nor the Matters pipeline is told today's date** (only the year, for search
-  filters). A deadline question makes it guess whether the deadline has passed: one memo run
-  concluded the client had already lost her right to contest. As a workaround, the notes say
-  "À ce jour (15.09.2026), la cliente n'a entrepris aucune démarche".
-- The memo shows internal document ids in its text, e.g. "(doc_91d98fc1b5a5)", and a party label in
-  English ("Landlord (AG)") in a French memo.
 - An OCR slip on the scan ("art. 2661" for 266l) carried through into an intake question.
 - The parser drops page headers and pictures by design (`parsing.py`), so a letterhead or a
   boxed stamp on a scan is not read. That's why the receipt date is handwritten in the body.

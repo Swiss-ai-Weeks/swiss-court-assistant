@@ -71,7 +71,15 @@ class Clarify:
     notes: str
 
 
-AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite | Verdict | Clarify
+@dataclass
+class Mention:
+    """A name in the answer's text, put where the model had written an id: a link to what it names
+    (a document, a decision, a statute article), saved with the message like the statute links."""
+    text: str
+    source: Source
+
+
+AgentEvent = Status | Thought | ToolStart | ToolEnd | Delta | Cite | Verdict | Clarify | Mention
 
 
 def with_clarification(question: str, history: list[Message]) -> str:

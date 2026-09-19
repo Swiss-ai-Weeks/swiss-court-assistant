@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import tracing
-from .agent import (Agent, Cite, Clarify, Delta, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict,
+from .agent import (Agent, Cite, Clarify, Delta, Mention, Status, StubAgent, Thought, ToolEnd, ToolStart, Verdict,
                     original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import MAX_CHARS, UnreadableError, transcribe
@@ -31,7 +31,7 @@ from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
 from .case_index import CaseIndex, collection_of
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Clarification, Conversation, ConversationSummary,
-                      Decision, DocumentInfo, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
+                      Decision, DocumentInfo, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, StatuteRef, ToolCall,
                       TranslateRequest, TranslateResponse)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
@@ -456,6 +456,7 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
     sources: list[Source] = []
     calls: dict[str, ToolCall] = {}
     clarification: Clarification | None = None
+    mentions: list[StatuteRef] = []  # documents and decisions named in the text, linked like statutes
 
     def save(statutes: list | None = None) -> Message:
         msg = Message(id=new_id(), role="assistant", content="".join(parts), sources=sources,
@@ -501,6 +502,9 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
                     case Clarify():
                         clarification = Clarification(question=ev.question, options=ev.options, notes=ev.notes)
                         yield {"type": "clarify", "clarification": clarification.model_dump(by_alias=True)}
+                    case Mention():
+                        if all(m.text != ev.text for m in mentions):
+                            mentions.append(StatuteRef(text=ev.text, source=ev.source))
                     case Verdict():
                         for source in sources:  # saved with the message, so the check survives a reload
                             if source.n == ev.n:
@@ -519,8 +523,9 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
             trace.finish("".join(parts), sources)
             yield {"type": "error", "message": "The assistant failed to answer. Please try again."}
             return
-        # the articles the answer names, linked to their text (see mentions.py)
-        msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
+        # the articles the answer names, linked to their text (see mentions.py), and the documents and
+        # decisions it names
+        msg = save([*mentions, *await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language)])
         trace.finish(msg.content, sources)
         yield {"type": "done", "message": msg.model_dump(by_alias=True)}
 

@@ -20,7 +20,8 @@ export function linkCitations(md: string, max: number): string {
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Turn each article the answer names ("Art. 259d CO") into a link to its text, outside existing links. */
+/** Turn each article the answer names ("Art. 259d CO"), and each document or decision it names, into a link
+ * to its text, outside existing links. */
 function linkStatutes(md: string, statutes: StatuteRef[]): string {
   if (!statutes.length) return md;
   // longest first, so "Art. 56 Abs. 1 OR" is not broken up by a shorter mention inside it
@@ -38,7 +39,7 @@ interface Props {
   id: string;
   text: string;
   sources: Source[];
-  /** Articles named in the text, linked to the statute; clicking one calls onStatute. */
+  /** Articles, documents and decisions named in the text, linked to their text; clicking one calls onStatute. */
   statutes?: StatuteRef[];
   onStatute?: (source: Source) => void;
   /** Language of the question; the answer is read aloud in it. */
@@ -60,7 +61,9 @@ export default function Answer({ id, text, sources, statutes = [], onStatute, la
           const ref = statutes[+law[1]];
           return (
             <button className="statute-link" onClick={() => ref && onStatute?.(ref.source)}
-              title={ref ? `${ref.source.decision.docket} - open the statute text` : undefined}>
+              title={ref ? `${ref.source.decision.docket} - open ${
+                ref.source.section === "law" ? "the statute text" : ref.source.section === "document" ? "the document"
+                  : "the decision"}` : undefined}>
               {children}
             </button>
           );

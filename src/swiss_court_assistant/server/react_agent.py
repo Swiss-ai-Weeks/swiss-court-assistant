@@ -22,13 +22,13 @@ from pydantic import BaseModel, Field, ValidationError
 
 from swiss_court_assistant.facets import AREAS, CANTONS, COURTS, PROCEEDINGS
 
-from .agent import (AgentEvent, Cite, Clarify, Delta, Status, Thought, ToolEnd, ToolStart, Verdict,
+from .agent import (AgentEvent, Cite, Clarify, Delta, Mention, Status, Thought, ToolEnd, ToolStart, Verdict,
                     original_question, with_clarification)
 from .case_index import CaseHit, CaseIndex, IndexUnavailable
 from .corpus import Corpus, FiltersUnavailable, Passage
 from .decisions import court_label
 from .language import detect_language
-from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
+from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model, today_note
 from .parsing import DocumentStore
 from .schemas import DocumentInfo, Message, Source
 
@@ -240,7 +240,7 @@ ANSWER_FORMAT = {"type": "json_schema",
 SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision, a statute or a document the user attached, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
-COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state - a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
+COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead, or only works out a date from a time limit and a date that the backed sentences state - the last day of a deadline, or whether it has passed as of today's date - with the arithmetic right. Reply {"covered": false} if it adds something the backed sentences do not state - a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline not worked out as just described, an amount - or if its arithmetic is wrong. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
 # The give-up brief (BRIEF_PROMPT) has no sources by design, and saying what the decisions found are about is
 # its point; stating the law is still not allowed. Kept apart from COVERED_PROMPT: allowing "what the passages
 # are about" in answers let an uncited "void under Art. 336c para. 2 OR" through as a description of a passage.
@@ -290,7 +290,8 @@ Never repeat a search you have already made: near-identical wording returns the 
 Lines starting with ">" quote text the user selected (from a decision, named on the "> -" line, or from an earlier answer); the question below them is about that text."""
 
 ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using only the tool results in this conversation, answer the user's last question as a JSON object {"answer": [...]} whose parts alternate between text and citations:
-- A "text" part holds one or two sentences of the answer (Markdown allowed). Write in the language of the user's question and name decisions by court and docket number.
+- A "text" part holds one or two sentences of the answer (Markdown allowed). Write in the language of the user's question and name decisions by court and docket number, a statute article as it is cited ("Art. 271a OR") and an attached document by its file name. Never write a decision_id, chunk_id or document_id in a text part: they are for the citation parts only.
+- A deadline worked out from a cited time limit and a cited date - its last day, or whether it has passed as of today - goes in a text part of its own right after them, with no citation: no passage states the result, so a citation on it fails the check, while the check accepts it uncited when the sentences before it state the time limit and the date and the arithmetic is right.
 - A "citation" part follows the text it supports. It gives the decision_id of a passage from the tool results, its chunk_id (only for search results; null for text read with read_decision), a "quote" copied character for character from that passage in the decision's own language (never translated or shortened; one to three consecutive sentences, at most about 300 characters), and an "explanation": one sentence in the user's language on why the passage supports the text.
 - Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results - neither from your own legal knowledge nor from an earlier answer in this conversation. Earlier turns tell you what is being asked; they are never a source, and an earlier answer is never repeated as the new one.
 - A statute article from search_laws or read_law is cited the same way: its law_id goes in decision_id, with its chunk_id and a quote copied from the article's text. Name it as it is cited ("Art. 271a OR"). Cite the article for what the statute says and a decision for how courts apply it.
@@ -867,7 +868,10 @@ class ResearchThenAnswer(AgentMiddleware):
             tools = [t for t in tools if _tool_name(t) not in DOCUMENT_TOOL_NAMES]
         if not (turn and turn.collection):
             tools = [t for t in tools if _tool_name(t) != "search_case_file"]
-        response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
+        # today's date on every call, not in the prompt the graph was built with at startup
+        system = SystemMessage(f"{request.system_prompt or ''}\n\n{today_note()}".strip())
+        response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools,
+                                                  system_message=system))
         result = response.result if isinstance(response, ModelResponse) else [response]
         replies = [m for m in result if isinstance(m, AIMessage)]
         calls = [tc for m in replies for tc in m.tool_calls]
@@ -973,7 +977,7 @@ class ResearchThenAnswer(AgentMiddleware):
                       f"decision_id {ids}, chunk_id null, and a quote copied character for character from "
                       "its text. The law that applies to those facts goes in separate sentences, cited to the "
                       "decisions and statute articles.")
-        base =[SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
+        base = [SystemMessage(f"{ANSWER_PROMPT}\n\n{today_note()}"), *request.messages, HumanMessage(final)]
         # "checking", not "thinking": the research is over and no more reasoning will stream, so the UI
         # drops the thinking line and follows these instead through the drafting and the checks.
         status(Status("checking", "Drafting the answer"))
@@ -1048,7 +1052,7 @@ class ResearchThenAnswer(AgentMiddleware):
         statements = list(dict.fromkeys(" ".join(r.split()) for r in rejected if r.strip()))[:6]
         said = ("" if not statements else " These statements from the draft were not supported by any passage: "
                 + " ".join(f"«{r}»" for r in statements))
-        prompt = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(BRIEF_PROMPT.format(
+        prompt = [SystemMessage(f"{ANSWER_PROMPT}\n\n{today_note()}"), *request.messages, HumanMessage(BRIEF_PROMPT.format(
             rejected=said, calls=_calls_made(request.messages),
             language=LANGUAGE_NAMES.get(code, "the language of the question")))]
         try:
@@ -1295,6 +1299,43 @@ class _Citations:
         )
         self.by_span[key] = source
         return source
+
+    def link(self, any_id: str) -> Mention | None:
+        """What an id names, as it reads in prose - a document by its file name, a statute article as it is
+        cited, a decision by court and docket number - with a Source that opens it in the preview. n=0: a
+        link, not a numbered citation, like the statute links of mentions.py."""
+        try:
+            if any_id.startswith("doc_"):
+                summary = self.documents.summary(any_id) if self.documents and self.documents.info(any_id) else None
+                name, section = (summary.docket if summary else None), "document"
+            elif any_id.startswith("law_"):
+                store = self.corpus.decisions
+                summary = store.law_summary(any_id) if hasattr(store, "law_summary") else None
+                name, section = (summary.docket if summary else None), "law"
+            else:
+                summary = self.corpus.decisions.summary(any_id)
+                name = " ".join(x for x in (summary.court_label, summary.docket) if x) if summary else None
+                section = "body"
+        except Exception:  # noqa: BLE001 — an id left in the text beats a failed answer
+            log.warning("no name for %s", any_id, exc_info=True)
+            return None
+        if not name or summary is None:
+            return None
+        return Mention(name, Source(n=0, chunk_id=f"{any_id}#0", decision_id=any_id, text="", section=section,
+                                    erwaegungen=[], char_start=None, char_end=None, score=0.0, decision=summary))
+
+    def without_ids(self, text: str, ids: set[str]) -> tuple[str, list[Mention]]:
+        """The text with the ids the model wrote into it replaced by what they name, and those names as
+        links. The prompt says not to write ids, and still a memo read "(doc_91d98fc1b5a5)" and a chat
+        answer "the lease (document 3e1f901f560b)"."""
+        found: list[Mention] = []
+        for any_id in sorted(ids, key=len, reverse=True):
+            # a document's id is also written without its prefix
+            pattern = rf"\b(?:doc_)?{re.escape(any_id[4:])}\b" if any_id.startswith("doc_") else re.escape(any_id)
+            if re.search(pattern, text) and (mention := self.link(any_id)):
+                text = re.sub(pattern, lambda _: mention.text, text)
+                found.append(mention)
+        return text, found
 
     async def resolve(self, c: CitationPart) -> Source | None:
         if c.decision_id.startswith("doc_"):
@@ -1550,7 +1591,8 @@ class Verifier:
 
     async def covered(self, backed: str, statement: str, prompt: str = COVERED_PROMPT) -> bool | None:
         """Does an unsourced sentence only restate what the sourced sentences say?"""
-        return await self._yes_no(self.covered_llm, prompt,
+        # today's date, so that "the deadline is still running" can be judged
+        return await self._yes_no(self.covered_llm, f"{prompt}\n\n{today_note()}",
                                   f"BACKED SENTENCES:\n{backed[:4000] or '(none)'}\n\nSENTENCE WITHOUT A SOURCE:\n{statement}",
                                   "covered", "coverage")
 
@@ -1867,13 +1909,16 @@ class ReactAgent:
         last = ""  # last character sent, to space consecutive parts
         verdicts: dict[int, bool] = {}
         k = 0
+        ids = cites.seen | set(turn.documents) | {s.decision_id for s in result.sources}
         for p in result.parts:
             if isinstance(p, TextPart):
-                text = p.text
+                text, mentions = cites.without_ids(p.text, ids)
                 if last and not last.isspace() and text[:1] not in " \n.,;:!?)":
                     text = " " + text  # parts are written as separate sentences
                 last = text[-1]
                 yield Delta(text)
+                for mention in mentions:
+                    yield mention
                 continue
             if k >= len(result.sources):
                 break
