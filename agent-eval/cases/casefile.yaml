@@ -1,14 +1,14 @@
-# Case-file test cases: the user's own documents, attached. They test what the other suites cannot —
+# Case-file test cases: the user's own documents, attached. They test what the other suites cannot -
 # that the agent finds the decisive facts in files too long to be shown to it whole, cites them to the
 # file they come from, and keeps them apart from the law it cites to decisions.
 #
 # The files are in fixtures/<fixtures>/ and are uploaded through POST /api/documents like the UI does.
-#   attachments — the files to upload, in fixtures/<fixtures>/
-#   mode: matter — run the files through Case Prep (index, intake, research of each issue, memo)
+#   attachments - the files to upload, in fixtures/<fixtures>/
+#   mode: matter - run the files through Case Prep (index, intake, research of each issue, memo)
 #                  instead of asking `question`; the researched issues are graded as one answer
 # `expect` adds two checks to the usual ones:
-#   documents — attached files (by name) the answer must cite: the facts that are only in them
-#   indexed   — the matter's case file must have been indexed for search (see server/case_index.py)
+#   documents - attached files (by name) the answer must cite: the facts that are only in them
+#   indexed   - the matter's case file must have been indexed for search (see server/case_index.py)
 #
 # fixtures/tenancy-retaliation: a tenant in Zurich reports mould, asks for a rent reduction (in the
 # fourth of six e-mails, deep in a 7,000-character thread), is refused, and ten days later receives
@@ -26,7 +26,7 @@
   level: advanced
   question: |
     Case Prep: Bereiten Sie das Mandat aus den beigelegten Unterlagen auf (Kündigung, Mailverkehr,
-    Mietvertrag, Notizen des Erstgesprächs) — die Rechtsfragen, die es entscheiden, und was die
+    Mietvertrag, Notizen des Erstgesprächs) - die Rechtsfragen, die es entscheiden, und was die
     Rechtsprechung dazu sagt.
   reference: |
     Sachverhalt aus den Unterlagen: Frau Brunner mietet seit 2019 eine 3½-Zimmer-Wohnung an der
@@ -40,7 +40,7 @@
     Mietzinses ab Kenntnis der Vermieterin bis zur Behebung (Art. 259d OR). Eine Kündigung ist
     anfechtbar, wenn sie gegen Treu und Glauben verstösst (Art. 271 OR), insbesondere wenn der
     Vermieter sie ausspricht, weil der Mieter nach Treu und Glauben Ansprüche aus dem Mietverhältnis
-    geltend macht (Art. 271a Abs. 1 lit. a OR, Rachekündigung) — die zeitliche Nähe zum
+    geltend macht (Art. 271a Abs. 1 lit. a OR, Rachekündigung) - die zeitliche Nähe zum
     Herabsetzungsbegehren ist ein starkes Indiz. Eine Kündigung wegen Sanierung ist nur dann nicht
     missbräuchlich, wenn das Projekt im Zeitpunkt der Kündigung hinreichend konkret ist und die
     Arbeiten den Auszug erfordern; ein bloss vorgeschobener Grund spricht für Missbrauch. Die

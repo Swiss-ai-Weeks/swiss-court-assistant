@@ -1,6 +1,6 @@
 import { relativeTime } from "../format";
 
-/** Both lists this app keeps — conversations and matters — are the same shape. */
+/** Both lists this app keeps - conversations and matters - are the same shape. */
 export interface Entry {
   id: string;
   title: string;

@@ -39,61 +39,61 @@ LEASE = [
           "Rue du Petit-Chêne 18, 1003 Lausanne (ci-après « le bailleur »)."),
     ("p", "<b>Locataire :</b> Madame Claire Moreau, née le 14 mai 1986, de nationalité suisse "
           "(ci-après « la locataire »)."),
-    ("s", "Art. 1 — Objet du bail"),
+    ("s", "Art. 1 - Objet du bail"),
     ("p", "Le bailleur remet à bail à la locataire un appartement de 3,5 pièces au 3e étage de l'immeuble sis "
           "Avenue de Béthusy 42, 1005 Lausanne, comprenant : hall, séjour, deux chambres, cuisine agencée, "
           "salle de bains/WC, balcon, ainsi que la cave n° 7. Les locaux sont destinés exclusivement à "
           "l'habitation de la locataire et de sa famille."),
-    ("s", "Art. 2 — Durée et résiliation"),
+    ("s", "Art. 2 - Durée et résiliation"),
     ("p", "Le bail commence le 1er avril 2019 et prend fin le 31 mars 2020. Sauf avis de résiliation donné "
           "par écrit au moins trois mois à l'avance pour cette échéance, il se renouvelle tacitement aux "
           "mêmes conditions d'année en année, soit jusqu'au 31 mars de chaque année."),
     ("p", "La résiliation par le bailleur doit être notifiée au moyen de la formule officielle agréée par le "
           "canton de Vaud. Les échéances et délais fixés au présent article sont seuls applicables ; les "
           "termes usuels locaux ne s'appliquent pas."),
-    ("s", "Art. 3 — Loyer et frais accessoires"),
+    ("s", "Art. 3 - Loyer et frais accessoires"),
     ("p", "Le loyer mensuel net est fixé à CHF 1'850.–. Il s'y ajoute un acompte mensuel de CHF 180.– pour "
           "le chauffage et l'eau chaude, faisant l'objet d'un décompte annuel au 30 juin. Le loyer et les "
           "acomptes, soit CHF 2'030.– au total, sont payables d'avance le premier de chaque mois."),
-    ("s", "Art. 4 — Garantie"),
+    ("s", "Art. 4 - Garantie"),
     ("p", "La locataire constitue une garantie de CHF 5'550.–, correspondant à trois mois de loyer net, "
           "déposée sur un compte bancaire bloqué au nom de la locataire."),
-    ("s", "Art. 5 — Chauffage et eau chaude"),
+    ("s", "Art. 5 - Chauffage et eau chaude"),
     ("p", "L'appartement est équipé d'une chaudière murale individuelle au gaz qui assure le chauffage et la "
           "production d'eau chaude. Le bailleur en commande l'entretien annuel ; les frais d'entretien sont "
           "compris dans les frais accessoires. Les réparations de la chaudière sont à la charge du bailleur, "
           "à l'exception des menus travaux de nettoyage et d'entretien, à la charge de la locataire, dont le "
           "coût n'excède pas CHF 150.– par intervention."),
-    ("s", "Art. 6 — Défauts"),
+    ("s", "Art. 6 - Défauts"),
     ("p", "La locataire signale sans retard à la gérance tout défaut de la chose louée qu'elle ne doit pas "
           "réparer elle-même. En cas d'urgence en dehors des heures de bureau, elle s'adresse au service de "
           "piquet indiqué au tableau d'affichage de l'immeuble."),
-    ("s", "Art. 7 — Usage de la chose louée"),
+    ("s", "Art. 7 - Usage de la chose louée"),
     ("p", "La locataire use de la chose louée avec le soin nécessaire et avec égards pour les voisins. Elle "
           "respecte le règlement de maison, notamment les heures de repos de 22 h à 7 h. La détention de "
           "chiens est soumise à l'accord écrit préalable du bailleur ; les petits animaux domestiques sont "
           "autorisés."),
-    ("s", "Art. 8 — Sous-location"),
+    ("s", "Art. 8 - Sous-location"),
     ("p", "Toute sous-location, totale ou partielle, requiert le consentement écrit préalable du bailleur, "
           "auquel la locataire communique les conditions de la sous-location."),
-    ("s", "Art. 9 — Travaux et visites"),
+    ("s", "Art. 9 - Travaux et visites"),
     ("p", "Le bailleur peut exécuter les travaux nécessaires à l'entretien de l'immeuble. Il annonce les "
           "visites et travaux en temps utile, en principe cinq jours à l'avance, sauf urgence. La locataire "
           "autorise la visite des locaux en vue de leur relocation pendant les trois mois précédant la fin "
           "du bail."),
-    ("s", "Art. 10 — État des lieux"),
+    ("s", "Art. 10 - État des lieux"),
     ("p", "Un état des lieux d'entrée a été établi contradictoirement le 1er avril 2019 et signé par les "
           "parties. Il fait partie intégrante du présent contrat. Un état des lieux de sortie sera établi à "
           "la restitution des locaux."),
-    ("s", "Art. 11 — Buanderie"),
+    ("s", "Art. 11 - Buanderie"),
     ("p", "L'usage de la buanderie commune est réglé par le tableau de répartition affiché dans celle-ci. "
           "La locataire dispose du mardi et du vendredi."),
-    ("s", "Art. 12 — Dispositions complémentaires"),
+    ("s", "Art. 12 - Dispositions complémentaires"),
     ("p", "Les Règles et usages locatifs du canton de Vaud (RULV) font partie intégrante du présent contrat, "
           "sous réserve de l'art. 2 ci-dessus. Pour le surplus, les dispositions du Code des obligations "
           "(art. 253 ss CO) sont applicables. For : Lausanne."),
     ("p", "Fait en deux exemplaires, à Lausanne, le 12 mars 2019."),
-    ("sig", "Pour le bailleur : Gérance Lac &amp; Jura SA — O. Chappuis<br/>La locataire : C. Moreau"),
+    ("sig", "Pour le bailleur : Gérance Lac &amp; Jura SA - O. Chappuis<br/>La locataire : C. Moreau"),
 ]
 
 
@@ -118,11 +118,11 @@ def lease_pdf(path: Path) -> None:
 
     def footer(canvas, doc):
         canvas.setFont("Serif", 8)
-        canvas.drawString(2.2 * cm, 1.3 * cm, "Bail Av. de Béthusy 42, 3e étage — Moreau")
+        canvas.drawString(2.2 * cm, 1.3 * cm, "Bail Av. de Béthusy 42, 3e étage - Moreau")
         canvas.drawRightString(A4[0] - 2.2 * cm, 1.3 * cm, f"Page {doc.page}")
 
     doc = SimpleDocTemplate(str(path), pagesize=A4, leftMargin=2.2 * cm, rightMargin=2.2 * cm,
-                            topMargin=2.2 * cm, bottomMargin=2.2 * cm, title="Contrat de bail — Moreau",
+                            topMargin=2.2 * cm, bottomMargin=2.2 * cm, title="Contrat de bail - Moreau",
                             author="Gérance Lac & Jura SA")
     flow = []
     for kind, text in LEASE:
@@ -184,7 +184,7 @@ def termination_pages() -> list[Image.Image]:
         d.text((700, y), line, font=serif, fill=(20, 20, 20))
         y += 34
     d.text((left, 520), "Lausanne, le 31 août 2026", font=serif, fill=(20, 20, 20))
-    d.text((left, 580), "Concerne : appartement de 3,5 pièces, 3e étage, Avenue de Béthusy 42 —",
+    d.text((left, 580), "Concerne : appartement de 3,5 pièces, 3e étage, Avenue de Béthusy 42 -",
            font=bold, fill=(20, 20, 20))
     d.text((left, 612), "résiliation de bail", font=bold, fill=(20, 20, 20))
     y = 690
@@ -214,7 +214,7 @@ def termination_pages() -> list[Image.Image]:
     p2 = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(p2)
     d.text((left, 100), "AVIS DE RÉSILIATION DE BAIL", font=font("DejaVuSerif-Bold.ttf", 34), fill=(20, 20, 20))
-    d.text((left, 150), "pour locaux d'habitation — formule officielle (art. 266l al. 2 CO)", font=serif,
+    d.text((left, 150), "pour locaux d'habitation - formule officielle (art. 266l al. 2 CO)", font=serif,
            fill=(20, 20, 20))
     d.text((left, 185), "Canton de Vaud", font=serif, fill=(20, 20, 20))
     y = 260
@@ -313,7 +313,7 @@ def bill_photo(path: Path) -> float:
     sd = ImageDraw.Draw(stamp)
     sd.rounded_rectangle((4, 4, 356, 126), 14, outline=(30, 60, 160, 230), width=5)
     sd.text((180, 38), "PAYÉ", font=font("DejaVuSans-Bold.ttf", 40), fill=(30, 60, 160, 230), anchor="mm")
-    sd.text((180, 92), "12.03.2026 — comptant", font=font("DejaVuSans-Bold.ttf", 22), fill=(30, 60, 160, 230),
+    sd.text((180, 92), "12.03.2026 - comptant", font=font("DejaVuSans-Bold.ttf", 22), fill=(30, 60, 160, 230),
             anchor="mm")
     stamp = stamp.rotate(12, expand=True)
     page.paste(stamp, (600, ph - 330), stamp)
@@ -371,7 +371,7 @@ def recording(path: Path, voice: str = "Magpie-Multilingual.FR-FR.Louise", rate:
 
 # ---------------------------------------------------------------- 05 lawyer's notes
 
-NOTES = """Notes — premier entretien, 15 septembre 2026
+NOTES = """Notes - premier entretien, 15 septembre 2026
 Dossier : Moreau c. SI Béthusy-Soleil SA (gérance : Gérance Lac & Jura SA)
 Mandante : Claire Moreau, 40 ans, infirmière au CHUV (taux 80 %), mère d'une fille de 8 ans
 (scolarisée au collège du quartier). Locataire depuis le 01.04.2019.
@@ -386,7 +386,7 @@ Chronologie (selon la cliente et les pièces)
 - 20.04.2026  lettre de la cliente : remboursement de la facture + réduction de loyer
 - 04.05.2026  refus de la gérance (« il fallait attendre notre technicien »)
 - 18.05.2026  requête à la Commission de conciliation du district de Lausanne
-- 30.06.2026  audience : transaction — remboursement de la facture et réduction de CHF 300.–
+- 30.06.2026  audience : transaction - remboursement de la facture et réduction de CHF 300.–
               (la cliente dit avoir été payée le 15.07.2026)
 - 31.08.2026  résiliation (formule officielle) pour le 31.12.2026, envoi recommandé
 - 02.09.2026  la cliente retire le pli au guichet postal
@@ -407,7 +407,7 @@ Objectif de la cliente : rester dans l'appartement ; à défaut, obtenir du temp
 (année scolaire de sa fille jusqu'à fin juin 2027).
 
 À vérifier
-- délai pour contester le congé — date limite exacte
+- délai pour contester le congé - date limite exacte
 - motifs d'annulation possibles du congé
 - date d'effet du congé au regard de l'échéance contractuelle (art. 2 du bail)
 - subsidiairement : prolongation du bail

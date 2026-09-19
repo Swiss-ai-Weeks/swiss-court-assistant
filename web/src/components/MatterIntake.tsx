@@ -34,8 +34,8 @@ function describe(item: Item): string {
   return d.kind === "recording" ? `${minutes(d.seconds ?? 0)} min · transcribed` : `${d.pages} page${d.pages === 1 ? "" : "s"}`;
 }
 
-/** The start of a matter: whatever the client handed over — documents, recordings of them telling the
- *  story, notes typed from the first phone call — as many as there are. Each is read as soon as it is
+/** The start of a matter: whatever the client handed over - documents, recordings of them telling the
+ *  story, notes typed from the first phone call - as many as there are. Each is read as soon as it is
  *  added, so the case file is ready by the time the last one is in. */
 export default function MatterIntake({ busy, error, onStart }: Props) {
   const [text, setText] = useState("");

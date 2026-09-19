@@ -54,7 +54,7 @@ class Source(Model):
 
 
 class StatuteRef(Model):
-    """An article named in an answer's text ("Art. 259d CO") and its text — a link, not a citation."""
+    """An article named in an answer's text ("Art. 259d CO") and its text - a link, not a citation."""
 
     text: str  # the mention exactly as it appears in the answer
     source: Source

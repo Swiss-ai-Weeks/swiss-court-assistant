@@ -8,7 +8,7 @@ The agent must never have to guess a filter value. Courts are codes ("bger", not
 cantons are two letters, branches are German words ("oeffentlich"), and a law's abbreviation depends
 on the language it is published in (OR in German, CO in French). So:
 
-  * `vocabulary()` lists the values actually present, with counts — the agent can read them;
+  * `vocabulary()` lists the values actually present, with counts - the agent can read them;
   * `resolve()` turns a loose value into the exact one ("Zurich" -> "ZH") and reports what it did,
     or, when nothing matches, names the closest values instead of silently returning nothing.
 """
@@ -120,7 +120,7 @@ class Library:
 
     def resolve(self, table: str, field: str, value: str | None) -> tuple[str | None, str | None]:
         """(exact value, note). The note is meant to be shown to the agent: it says which value was
-        used, or — when nothing matched — which values exist, so the next call can be right."""
+        used, or - when nothing matched - which values exist, so the next call can be right."""
         if value is None or str(value).strip() == "":
             return None, None
         raw = str(value).strip()
@@ -158,7 +158,7 @@ class Library:
     # ── labels ──────────────────────────────────────────────────────────
     @staticmethod
     def _law_label(r) -> str:
-        """"Art. 271 OR (SR 220)" — how the article would be cited."""
+        """"Art. 271 OR (SR 220)" - how the article would be cited."""
         r = dict(r)
         art = f"Art. {r['article_num']}" if r.get("article_num") else (r.get("heading") or "")
         code = r.get("abbreviation") or r.get("law_title") or ""
@@ -204,8 +204,8 @@ class Library:
         return {"notes": notes, "articles": [dict(r) | {"label": self._law_label(r)} for r in rows]}
 
     def find_decision(self, ref: str) -> list[str]:
-        """Decision ids matching a reference. The agent passes back whatever it saw — an id, a bare
-        docket, or the label a result was printed with ("bger 4A 13/2019") — so all three resolve."""
+        """Decision ids matching a reference. The agent passes back whatever it saw - an id, a bare
+        docket, or the label a result was printed with ("bger 4A 13/2019") - so all three resolve."""
         ref = str(ref).strip()
         if (r := self.db.execute("SELECT decision_id FROM decisions WHERE decision_id = ?",
                                  [ref]).fetchone()):
@@ -298,7 +298,7 @@ class Library:
         return self._hits(keep[:k], scores), notes
 
     def count(self, table: str, group_by: str, limit: int = 25, **filters) -> tuple[list[tuple], list[str]]:
-        """How many decisions (or articles) there are per value — the metadata query."""
+        """How many decisions (or articles) there are per value - the metadata query."""
         fields = DECISION_FIELDS if table == "decisions" else LAW_FIELDS
         if group_by not in fields:
             raise ValueError(f"cannot group {table} by {group_by!r}; use one of {list(fields)}")
@@ -310,7 +310,7 @@ class Library:
         return [(r["v"], r["n"]) for r in self.db.execute(sql, params)], notes
 
     def browse(self, table: str, limit: int = 10, **filters) -> tuple[list[dict], list[str]]:
-        """Items matching metadata only — no query text. Newest decisions first."""
+        """Items matching metadata only - no query text. Newest decisions first."""
         where, params, notes = self._filters(table, filters)
         order = "decision_date DESC" if table == "decisions" else "sr_number, seq"
         sql = f"SELECT * FROM {table}"

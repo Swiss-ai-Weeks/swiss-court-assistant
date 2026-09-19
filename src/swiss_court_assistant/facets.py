@@ -1,4 +1,4 @@
-"""What each decision and statute article is — canton, court, legal area, year, kind of proceeding —
+"""What each decision and statute article is - canton, court, legal area, year, kind of proceeding -
 as arrays aligned with the vector matrix, so the agent's searches can be restricted to a part of the
 corpus ("Geneva decisions", "the Federal Supreme Court since 2020", "criminal law", "Art. … of the OR").
 

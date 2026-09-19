@@ -93,7 +93,7 @@ def render(run: dict[str, Any], results: Rows) -> str:
     weights = ", ".join(f"{k} {v:.0%}" for k, v in run["weights"].items())
 
     out = [
-        f"# Agent evaluation — {run['started'][:16].replace('T', ' ')} UTC",
+        f"# Agent evaluation - {run['started'][:16].replace('T', ' ')} UTC",
         "",
         f"`{run['agent']}` agent over {run['decisions']:,} Swiss court decisions, "
         f"{run['cases']} cases, judged by `{run['judge_model'] or 'nobody (--no-judge)'}`. "
@@ -153,7 +153,7 @@ def render(run: dict[str, Any], results: Rows) -> str:
         for r in sorted(failed, key=lambda r: r["score"] or -1):
             comment = (r["judgment"].get("comment") or "").strip()
             missed = [str(i["point"]) for i in r["judgment"].get("rubric", []) if i["verdict"] == "missing"]
-            out += [f"**`{r['id']}`** — {r['why'] or 'see below'}  ",
+            out += [f"**`{r['id']}`** - {r['why'] or 'see below'}  ",
                     f"{comment}" + (f" Rubric points missed: {', '.join(missed)}." if missed else ""), ""]
     if errors:
         out += ["", "## Turns that failed to run", ""] + [f"- `{r['id']}`: {r['error']}" for r in errors]

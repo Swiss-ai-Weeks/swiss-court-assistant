@@ -126,7 +126,7 @@ export default function App() {
       case "status":
         // Leaving the research stage ends the reasoning stream, so the last step's thinking line would
         // sit there stale through the whole of the drafting and the checks. Drop it and follow the
-        // status instead — that phase is now the longest stretch with nothing else to show.
+        // status instead - that phase is now the longest stretch with nothing else to show.
         setPending(
           (p) =>
             p && {
@@ -278,7 +278,7 @@ export default function App() {
   // the recogniser may understand one language or many; say so only when it is limited to English
   const spoken = health !== null && health !== "offline" ? health.speechLanguages ?? [] : [];
   const voiceHint = spoken.length === 1 && spoken[0].startsWith("en")
-    ? "Speak in English — talk over me to interrupt."
+    ? "Speak in English - talk over me to interrupt."
     : "Talk over me to interrupt.";
   const caseTitle = caseId ? matters.find((m) => m.id === caseId)?.title ?? "this case" : null;
 
@@ -338,7 +338,7 @@ export default function App() {
             {caseTitle && (
               <div className="case-banner">
                 <span className="case-banner-text">
-                  Asking about <b>{caseTitle}</b> — its case file, facts and research go with every question.
+                  Asking about <b>{caseTitle}</b> - its case file, facts and research go with every question.
                 </span>
                 <button className="link-btn" onClick={() => { openMatter(caseId); setPage("matters"); }}>
                   Back to the case

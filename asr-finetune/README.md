@@ -7,7 +7,7 @@ is the gap this fills.
 The trick is in the target text. SwissDial gives, for every recorded sentence, both a dialect
 transcript (`ch_zh`, `ch_be`, …) and the Standard German reference (`de`). Training against
 `de` makes the model a speech *translator* while it still runs as a plain German transcription
-task (`language=de`, `task=transcribe`) — so the result is an ordinary Whisper checkpoint that
+task (`language=de`, `task=transcribe`) - so the result is an ordinary Whisper checkpoint that
 any Whisper serving path loads unchanged.
 
 Everything runs locally. The corpus and the base weights are already on this machine, so
@@ -15,7 +15,7 @@ training needs no network, and the exported model is served by `serve.py` on thi
 
 ## The data
 
-`data/asr/data1.1` (extracted from `data1.1.tar.gz`) — 30,921 clips, mono 22.05 kHz 24-bit,
+`data/asr/data1.1` (extracted from `data1.1.tar.gz`) - 30,921 clips, mono 22.05 kHz 24-bit,
 8 dialects, CC BY-NC 4.0 from ETH Zürich. `data1.1` supersedes `data.tar.gz`: the two are
 identical except that Grisons grows from 2,749 to 10,475 clips, so only v1.1 is used.
 
@@ -43,7 +43,7 @@ dialect-balanced ~19k-clip set if that skew shows up in the per-dialect scores.
 cd asr-finetune && uv run python prepare_data.py
 ```
 
-Get the baseline first — it is the number the fine-tune has to beat:
+Get the baseline first - it is the number the fine-tune has to beat:
 
 ```bash
 cd asr-finetune && uv run python evaluate.py --model-dir openai/whisper-large-v3 --out results/baseline.json
@@ -89,7 +89,7 @@ If instead you free GPU 0 by stopping `nim-llm`, you get ~91 GB but the agent st
 
 One thing worth knowing if you change the model loading: `whisper-large-v3` ships a **float16**
 checkpoint, and transformers 5 honours that dtype by default. `train.py` therefore asks for fp32
-explicitly — half-precision weights mismatch the fp32 input features at the encoder convolutions
+explicitly - half-precision weights mismatch the fp32 input features at the encoder convolutions
 and leave Adam updating half-precision masters. Inference scripts load bf16/fp16 deliberately.
 
 ## Scripts

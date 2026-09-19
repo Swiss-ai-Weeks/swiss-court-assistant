@@ -27,7 +27,7 @@ _TRAILING = re.compile(r"[ \t]+$", re.M)
 
 
 class UnreadableError(Exception):
-    """The file holds no text we can use — an empty or damaged file, or a format we do not read."""
+    """The file holds no text we can use - an empty or damaged file, or a format we do not read."""
 
 
 def _docx(data: bytes) -> str:

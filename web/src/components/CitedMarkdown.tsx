@@ -7,7 +7,7 @@ import { linkCitations } from "./Answer";
 
 interface Props {
   text: string;
-  /** The matter's running authorities list — `sources[n - 1]` is what [n] points to. */
+  /** The matter's running authorities list - `sources[n - 1]` is what [n] points to. */
   sources: Source[];
   onCite: (n: number) => void;
 }

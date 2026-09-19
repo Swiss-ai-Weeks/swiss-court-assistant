@@ -4,7 +4,7 @@ The filters are the columns the index really has, and their values are codes, no
 "bger"/"bvger", cantons are two letters, branches are German words, and a statute's abbreviation
 follows the language it is published in (OR in German, CO in French). Two things keep the agent from
 guessing: `list_values` prints the values actually present with their counts, and every filter
-accepts a loose value, resolves it against the index and says in the result which value it used —
+accepts a loose value, resolves it against the index and says in the result which value it used -
 or, when nothing matches, which values exist. A filter that matches nothing returns no results
 rather than quietly dropping the filter.
 """
@@ -69,7 +69,7 @@ def make_library_tools(lib: Library) -> list:
     async def search_laws(query: str, abbreviation: str | None = None, canton: str | None = None,
                           language: str | None = None) -> tuple[str, dict]:
         """Find statute articles by their wording. Put an exact phrase in double quotes; all other
-        words must appear. Filters: abbreviation (OR, CO, ZGB, CC, StGB ... — language-specific),
+        words must appear. Filters: abbreviation (OR, CO, ZGB, CC, StGB ... - language-specific),
         canton ("CH" for federal law, else two letters like ZH), language (de, fr, it).
         To read one known article in full, use read_law instead."""
         try:
@@ -97,7 +97,7 @@ def make_library_tools(lib: Library) -> list:
         if not arts:
             return head + "No such article in the index.", {"summary": "not found", "notes": notes}
         body = "\n\n".join(
-            f"law_id={a['law_id']}\n{a['label']}" + (f" — {a['law_title']}" if a.get("law_title") else "")
+            f"law_id={a['law_id']}\n{a['label']}" + (f" - {a['law_title']}" if a.get("law_title") else "")
             + f" [{a['language']}]\n{a['text']}" for a in arts)
         return head + body, {"summary": f"{len(arts)} article{'s' * (len(arts) > 1)}"}
 
@@ -106,7 +106,7 @@ def make_library_tools(lib: Library) -> list:
                                branch: str | None = None, language: str | None = None) -> tuple[str, dict]:
         """Find passages of court decisions by their wording. An exact phrase goes in double quotes;
         all other words must appear. Filters, all optional: court (a code such as bger, bvger, bge,
-        bstger — call list_values("decisions", "court") for the full list), canton ("CH" for federal
+        bstger - call list_values("decisions", "court") for the full list), canton ("CH" for federal
         courts, else two letters such as ZH, BE, TI), branch (oeffentlich = public/administrative,
         zivil = civil, straf = criminal, sozialversicherung, unknown), language (de, fr, it)."""
         try:
@@ -144,7 +144,7 @@ def make_library_tools(lib: Library) -> list:
     @tool(response_format="content_and_artifact")
     async def count_decisions(group_by: str, court: str | None = None, canton: str | None = None,
                               branch: str | None = None, language: str | None = None) -> tuple[str, dict]:
-        """How many decisions there are per value of group_by, with the filters applied — for
+        """How many decisions there are per value of group_by, with the filters applied - for
         questions about coverage ("which courts decide social-insurance cases?", "how much is there
         in Italian?"). group_by and the filters are the same fields as search_decisions."""
         try:

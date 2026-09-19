@@ -86,7 +86,7 @@ def with_clarification(question: str, history: list[Message]) -> str:
 
 def original_question(question: str, history: list[Message]) -> str:
     """The question whose language the turn is in: for a reply to a question asked back ("Arbeitsvertrag"),
-    the user's original question — the reply is often one of the suggested answers, and those can be
+    the user's original question - the reply is often one of the suggested answers, and those can be
     in another language than the user writes."""
     if len(history) < 2 or history[-1].role != "assistant" or not history[-1].clarification:
         return question
@@ -121,11 +121,11 @@ TENANCY = Scenario(
     match=re.compile(r"miet|bail|locat|tenan|lease|rent|landlord|vermiet|loyer", re.I),
     query="Anfechtung Kündigung Mietverhältnis Treu und Glauben Art. 271 271a OR",
     chunks=["bger_4A_705_2016#12", "bger_4A_482_2014#4", "bger_4A_482_2014#8"],
-    answer="""An ordinary termination of a residential or commercial lease needs no particular reason: the parties may end an open-ended lease by observing the statutory notice periods (Art. 266a OR). The only limit is good faith — a termination that violates it can be challenged (Art. 271 para. 1 OR) [1].
+    answer="""An ordinary termination of a residential or commercial lease needs no particular reason: the parties may end an open-ended lease by observing the statutory notice periods (Art. 266a OR). The only limit is good faith - a termination that violates it can be challenged (Art. 271 para. 1 OR) [1].
 
-- **Contrary to good faith (Art. 271 OR).** The Federal Supreme Court treats a termination as abusive when it is given without an objective, serious and legitimate interest — i.e. purely as harassment — or when the parties' interests are grossly disproportionate. Hardship for the tenant is not enough; it only matters for an extension of the lease under Art. 272 OR [1].
+- **Contrary to good faith (Art. 271 OR).** The Federal Supreme Court treats a termination as abusive when it is given without an objective, serious and legitimate interest - i.e. purely as harassment - or when the parties' interests are grossly disproportionate. Hardship for the tenant is not enough; it only matters for an extension of the lease under Art. 272 OR [1].
 - **Relevant moment.** Whether a termination breaches good faith is assessed as of the time it is given [1].
-- **Protected periods (Art. 271a para. 1 lit. d OR).** A landlord's termination given during conciliation or court proceedings connected with the lease can be challenged unless the tenant started the proceedings abusively — regardless of whether the termination is actually abusive [2].
+- **Protected periods (Art. 271a para. 1 lit. d OR).** A landlord's termination given during conciliation or court proceedings connected with the lease can be challenged unless the tenant started the proceedings abusively - regardless of whether the termination is actually abusive [2].
 - **Landlord's knowledge.** The retaliation motive is presumed by law; the Court reasoned that whether the landlord actually had that motive, or could have had it given his knowledge of the proceedings, cannot be decisive for fixing the protected period [3].""",
 )
 

@@ -1,7 +1,7 @@
 """Build and update the full-corpus index from the HuggingFace dataset.
 
-One command builds everything the app searches — decisions, passages, embeddings, keyword index
-and the citation graph — and the same command run again only does what is missing. Embeddings come
+One command builds everything the app searches - decisions, passages, embeddings, keyword index
+and the citation graph - and the same command run again only does what is missing. Embeddings come
 from our own NIM (nothing leaves this machine at query time); the dataset is fetched at build time.
 
     decisions          every column of the upstream shards, plus the derived jurisdiction/period
@@ -13,7 +13,7 @@ from our own NIM (nothing leaves this machine at query time); the dataset is fet
 
 Incremental updates ride on the dataset's own `artifacts/manifest.json`: a dated snapshot plus one
 parquet per day of changes, each with a sha256. `update` applies every delta newer than the
-watermark — the delta schema is identical to the shard schema, so a delta row is just an upsert.
+watermark - the delta schema is identical to the shard schema, so a delta row is just an upsert.
 
 Chunk ids are append-only. They are the rowid of both the vector table and the keyword index, so a
 decision that changes gets its old chunks (and their vectors and FTS rows) deleted and new chunks
@@ -143,7 +143,7 @@ def state(con: sqlite3.Connection, key: str, value: str | None = None) -> str | 
 
 
 def _decisions_table(con: sqlite3.Connection, df: pl.DataFrame) -> None:
-    """Create the table from the first shard, then widen it as shards with more columns arrive —
+    """Create the table from the first shard, then widen it as shards with more columns arrive -
     the shards do not all share one layout, and the first one sorted is the narrowest."""
     if not V._exists(con, "decisions"):
         cols = ", ".join(f'"{c}" {V._sql_type(t)}' + (" PRIMARY KEY" if c == "decision_id" else "")
@@ -330,7 +330,7 @@ def law_frame(df: pl.DataFrame) -> pl.DataFrame:
     df = df.with_columns([pl.lit(v, dtype=t).alias(c) for c, (v, t) in defaults.items() if c not in df.columns])
     if "work_uri" in df.columns:
         df = df.with_columns(original_url=pl.coalesce("original_url", "work_uri"))
-    # cantonal article numbers carry markup — "38<sup>bis</sup>\xa0<strong>*</strong>" — which would
+    # cantonal article numbers carry markup - "38<sup>bis</sup>\xa0<strong>*</strong>" - which would
     # defeat a lookup by article number; keep the tag contents ("38bis"), drop the asterisk marker
     df = df.with_columns(article_num=pl.col("article_num").cast(pl.String).str.replace_all(r"<[^>]+>", "")
                          .str.replace_all(r"[* ]", " ").str.strip_chars())

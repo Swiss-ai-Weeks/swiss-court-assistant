@@ -1,7 +1,7 @@
 /** Recordings for a matter, turned into what the ASR NIM wants: 16 kHz mono 16-bit PCM.
  *
  * The browser already knows how to decode every format it can play, so the conversion happens here
- * rather than with ffmpeg on the server — an uploaded voice memo (m4a, mp3, ogg …) and a recording
+ * rather than with ffmpeg on the server - an uploaded voice memo (m4a, mp3, ogg …) and a recording
  * made in the page both end up as the same bytes. */
 
 const RATE = 16000;

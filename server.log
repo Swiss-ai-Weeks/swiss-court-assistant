@@ -2772,3 +2772,100 @@ WARNING swiss_court_assistant.server.react_agent: removed 1 statement(s) whose c
 INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_337c_de_0 HTTP/1.1" 200 OK
 INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+   Building swiss-court-assistant @ file:///home/nvidia/swiss-court-assistant
+      Built swiss-court-assistant @ file:///home/nvidia/swiss-court-assistant
+Uninstalled 1 package in 0.46ms
+Installed 1 package in 1ms
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [710711] using WatchFiles
+INFO:     Started server process [710715]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.gpuvec: vectors on GPU 1: 7891411 x 2048 float16 (32.3 GB) in 4 s
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=GpuVectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 436164 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:39162 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39166 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /assets/index-Bq6Z53L-.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/documents/accepted HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/decisions/law_CH_220_337c_de_0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39184 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: document doc_6c8f82657580: 02_Resiliation_scan.pdf, 2 pages, 1984 chars (nemotron-parse)
+INFO:     127.0.0.1:39180 - "POST /api/documents HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: document doc_b33e9c2cc34b: 03_Facture_Rochat_photo.jpg, 1 pages, 1037 chars (nemotron-parse)
+INFO:     127.0.0.1:39180 - "POST /api/documents HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: recording doc_13d606b49d6c: recording.wav, 1 pages, 1326 chars (nemotron-asr)
+INFO:     127.0.0.1:39180 - "POST /api/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39184 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/7102a4af82e0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/decisions/vd_findinfo_HC___2011___265 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "GET /api/decisions/vd_findinfo_HC___2011___265/citations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39174 - "POST /api/speech HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/doc_6569d51c8495 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/84a9847c8e3d HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/7102a4af82e0 HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 2 problem(s): Citation [3], attached to the statement «Le délai de 30 jours court donc du 3 septembre au 3 octobre 2026 inclusivement.»: the quoted passage from BGE 140 III 244 does not state that. Cite a passage that says it, or remove the statement. | The sentence «Par conséquent, votre cliente doit contester le congé avant le 3 octobre 2026.» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it.
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: generated doc_26219741d9a4: Case prep — Résiliation de bail et congé pour fin d'année.md, 1 pages, 9190 chars (case-prep)
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 2 problem(s): Citation [3], attached to the statement «Le délai de 30 jours court du 3 septembre au 3 octobre 2026 inclusivement.»: the quoted passage from BGE 140 III 244 does not state that. Cite a passage that says it, or remove the statement. | Citation [4], attached to the statement «Votre cliente doit contester le congé avant le 3 octobre 2026.»: the quoted passage from PF110064 does not state that. Cite a passage that says it, or remove the statement.
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: the checks rejected the draft (2 statement(s) failed); researching again, 1 of 2
+WARNING swiss_court_assistant.server.react_agent: a research step returned neither a tool call nor text; writing the answer
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 8 problem(s): Citation [1], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [2], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [3], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [4], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [5], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [6], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | The sentence «The tenant still has until 30 September 2026 to contest the notice before the conciliation authority (art. 273 al. 1 CO).» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it. | The answer does not respond to the question asked: "can you tell me the details of the bail". Answer that question directly, from the tool results; if they do not cover it, say so.
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): Citation [4], attached to the statement «Le délai de 30 jours court donc du 3 septembre au 2 octobre 2026 inclus.»: the quoted passage from BGE 140 III 244 does not state that. Cite a passage that says it, or remove the statement.
+INFO:     127.0.0.1:39184 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39184 - "GET /api/matters/47a2af08cfc9/memo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39184 - "DELETE /api/conversations/a0475f173f2a HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:39184 - "DELETE /api/conversations/84a9847c8e3d HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:39184 - "DELETE /api/conversations/662a22d8228c HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:39184 - "DELETE /api/documents/doc_6c8f82657580 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:39184 - "DELETE /api/documents/doc_b33e9c2cc34b HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:39184 - "DELETE /api/documents/doc_13d606b49d6c HTTP/1.1" 204 No Content
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 6 problem(s): Citation [1], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [2], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [3], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [4], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [5], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement. | Citation [6], attached to the statement «ay carry out necessary maintenance work and must announce visits at least five days in advance, except in urgency. An entry inventory was drawn up jointly on 1 April 2019 and forms part of the contract. The Rules and usages lettings of the canton of Vaud (RULV) are incorporated, subject to Art. 2 of the contract, and for any surplus the provisions of the Code of Obligations (art. 253 ss CO) apply.»: the quoted passage from 01_Contrat_de_bail.pdf does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: removed 1 statement(s) whose citations did not hold
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/doc_d891e1cbeb96 HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: document doc_c0c9999b79be: 02_Resiliation_scan.pdf, 2 pages, 1984 chars (nemotron-parse)
+INFO:     127.0.0.1:44482 - "POST /api/documents HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.parsing: document doc_3d1f7f06ec9f: 03_Facture_Rochat_photo.jpg, 1 pages, 1037 chars (nemotron-parse)
+INFO:     127.0.0.1:44482 - "POST /api/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44482 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/speech HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: a research step returned neither a tool call nor text; writing the answer
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/library.py', 'src/swiss_court_assistant/server/agent.py', 'src/swiss_court_assistant/server/voice.py', 'src/swiss_court_assistant/server/schemas.py', 'src/swiss_court_assistant/index.py', 'src/swiss_court_assistant/server/documents.py', 'src/swiss_court_assistant/server/library_tools.py', 'src/swiss_court_assistant/gpuvec.py', 'src/swiss_court_assistant/vecmatrix.py', 'src/swiss_court_assistant/server/mentions.py', 'src/swiss_court_assistant/server/decisions.py', 'src/swiss_court_assistant/server/citations.py', 'src/swiss_court_assistant/server/app.py', 'src/swiss_court_assistant/evalset.py', 'src/swiss_court_assistant/statutes.py', 'src/swiss_court_assistant/server/react_agent.py', 'src/swiss_court_assistant/server/parsing.py', 'src/swiss_court_assistant/retrieval.py', 'src/swiss_court_assistant/citations.py', 'src/swiss_court_assistant/facets.py', 'src/swiss_court_assistant/server/matters.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 2 problem(s): Citation [3], attached to the statement «Le délai expire donc le 30 septembre 2026.»: the quoted passage from C/24705/2019 does not state that. Cite a passage that says it, or remove the statement. | Citation [4], attached to the statement «La cliente doit saisir l'autorité de conciliation avant le 30 septembre 2026.»: the quoted passage from LF190080 does not state that. Cite a passage that says it, or remove the statement.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [710715]
+INFO:     Started server process [716549]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.gpuvec: vectors on GPU 1: 7891411 x 2048 float16 (32.3 GB) in 4 s
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=GpuVectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 436164 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     127.0.0.1:37956 - "DELETE /api/conversations/3e6156731303 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:37956 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: a research step returned neither a tool call nor text; writing the answer
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): The answer does not respond to the question asked: "Jusqu'à quelle date ma cliente peut-elle contester ce congé ?". Answer that question directly, from the tool results; if they do not cover it, say so.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [3], attached to the statement «Le délai de 30 jours expire donc le 2 octobre 2026.»: the quoted passage from 02_Resiliation_scan.pdf does not state that. Cite a passage that says it, or remove the statement.
+INFO:     127.0.0.1:37956 - "DELETE /api/conversations/8d6440bd83a3 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:37956 - "DELETE /api/documents/doc_c0c9999b79be HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:37956 - "DELETE /api/documents/doc_3d1f7f06ec9f HTTP/1.1" 204 No Content

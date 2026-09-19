@@ -4,7 +4,7 @@
     uv run python -m swiss_court_assistant.citations show bge_BGE_122_V_157
 
 `data/raw/graph/citations.parquet` holds 11.8M edges for the whole corpus. The index keeps the edges
-that touch the development subset (either end), plus a label for every decision they mention — most
+that touch the development subset (either end), plus a label for every decision they mention - most
 citing decisions are outside the subset, so their court and docket come from the full corpus files.
 """
 from __future__ import annotations
@@ -85,7 +85,7 @@ def build(subset: Path = DEFAULT_SUBSET) -> Path:
     """)
     con.commit()
     size = out.stat().st_size / 1e6
-    print(f"{out} — {size:.0f} MB, {time.time() - t0:.0f}s")
+    print(f"{out} - {size:.0f} MB, {time.time() - t0:.0f}s")
     con.close()
     return out
 

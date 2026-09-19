@@ -26,8 +26,8 @@ export interface Source {
   chunkId: string;
   decisionId: string;
   text: string;
-  /** "law": a statute article — its law_id is in decisionId, and `decision` describes the article.
-   *  "document": a document the user attached — its id (doc_…) is in decisionId. */
+  /** "law": a statute article - its law_id is in decisionId, and `decision` describes the article.
+   *  "document": a document the user attached - its id (doc_…) is in decisionId. */
   section: "regeste" | "erwaegung" | "body" | "law" | "document";
   erwaegungen: string[];
   /** Offsets into Decision.fullText; null for Regeste passages. */
@@ -43,7 +43,7 @@ export interface Source {
   supported?: boolean | null;
 }
 
-/** An article the answer names in its text ("Art. 259d CO"), linked to the statute — a reference, not a
+/** An article the answer names in its text ("Art. 259d CO"), linked to the statute - a reference, not a
  *  citation: numbered citations are evidence for a sentence, these only open the article. */
 export interface StatuteRef {
   /** The mention exactly as it appears in the answer. */

@@ -1,29 +1,4 @@
-"""LLM as a judge: grade one answer against the reference answer and the rubric.
-
-The judge is a local model call with constrained JSON decoding — the same NIM the assistant runs on
-unless another one is passed, which is a known limitation and the reason every judgment is kept
-next to the answer in the run's transcripts: the grades are reviewable, not just reportable.
-
-Each judgment is its own short call rather than one call returning a large object. Two reasons: this
-NIM pads long constrained JSON with whitespace until it runs out of tokens (the same failure the
-answer call guards against in `react_agent.ResearchThenAnswer._generate`), and a question asked on its own
-is answered better than the same question as one field among seven — asked inside a big object, the
-judge called a plain "these decisions do not answer the question" a non-abstention. The calls share
-one long prefix (question, reference, answer, passages), so the server's prefix cache carries almost
-all of the cost of the first one.
-
-Legal accuracy is not asked for as a score at all. On a 1-5 scale this judge marks an answer down
-for what it leaves out, however plainly it is told not to, and it twice invented a rule of Swiss law
-to mark a correct answer down with. `_accuracy` makes it name its objection instead: copy out the
-one sentence it says is wrong, checked against the answer, and confirm that the reference answer
-contradicts it. What survives is scored 3 (an aside) or 2 (a main proposition); everything else
-leaves the answer at 5. About a third of what survives is still a bad objection — measured by hand,
-and the reason the objection is kept in the transcript next to the score.
-
-Grounding is judged only against the passages in the prompt, never against the judge's own knowledge
-of Swiss law — an answer that is legally right but cites a passage that does not say so is exactly
-the failure this eval exists to catch.
-"""
+"""LLM as a judge: grade one answer against the reference answer and the rubric."""
 
 from __future__ import annotations
 
@@ -42,49 +17,49 @@ LANGUAGES = {"de": "German", "fr": "French", "it": "Italian", "en": "English"}
 PASSAGE_CHARS = 1200  # per citation: long enough to judge support, short enough to keep the prompt sharp
 MAX_PASSAGES = 10
 
-RUBRIC_TASK = """TASK — one rubric point:
+RUBRIC_TASK = """TASK - one rubric point:
 {point}
 
 Does the answer under review state this point? Judge the substance, not the wording: a point made in other words, in another language, or without the article number still counts. Reply {{"verdict": "covered"}} if the answer states it, {{"verdict": "partial"}} if it gestures at it without the substance, {{"verdict": "missing"}} if it is not there."""
 
-ERROR_TASK = """TASK — find one legal error.
+ERROR_TASK = """TASK - find one legal error.
 
-Copy into "wrong" the one statement in the ANSWER UNDER REVIEW that is wrong about Swiss law — word for word from the answer, one sentence. If every statement in the answer is correct, reply {"wrong": ""}.
+Copy into "wrong" the one statement in the ANSWER UNDER REVIEW that is wrong about Swiss law - word for word from the answer, one sentence. If every statement in the answer is correct, reply {"wrong": ""}.
 
 What the answer does not say is not an error. Omissions, missing rubric points, a one-sided treatment and a short answer are measured separately: an answer of two correct sentences has no error. Copy only from the answer; do not paraphrase it and do not write a statement of your own."""
 
-# Asked to *copy* the contradicting sentence, this judge finds one every time — the objection is
+# Asked to *copy* the contradicting sentence, this judge finds one every time - the objection is
 # already on the table and it justifies it. Only the first objection is asked for by quotation; this
 # second step stays a yes/no, which it answers conservatively.
-CONTRADICTED_TASK = """TASK — is this statement from the answer contradicted by the reference answer?
+CONTRADICTED_TASK = """TASK - is this statement from the answer contradicted by the reference answer?
 
 STATEMENT:
 {statement}
 
-Reply {{"contradicted": true}} only if the reference answer above says something that cannot both be true with this statement — it states the opposite rule, the opposite legal consequence, or a different condition where this one gives a condition. Reply {{"contradicted": false}} if the reference is merely silent on the point, says less, says more, or puts the same thing differently."""
+Reply {{"contradicted": true}} only if the reference answer above says something that cannot both be true with this statement - it states the opposite rule, the opposite legal consequence, or a different condition where this one gives a condition. Reply {{"contradicted": false}} if the reference is merely silent on the point, says less, says more, or puts the same thing differently."""
 
-SEVERITY_TASK = """TASK — how bad is this error?
+SEVERITY_TASK = """TASK - how bad is this error?
 
 STATEMENT (wrong, from the answer):
 {statement}
 
-Reply {{"severity": "central"}} if this statement is one of the answer's main propositions — a reader relying on the answer for the question asked would be misled about the rule or its consequence. Reply {{"severity": "secondary"}} if it is an aside: the answer to the question stands without it."""
+Reply {{"severity": "central"}} if this statement is one of the answer's main propositions - a reader relying on the answer for the question asked would be misled about the rule or its consequence. Reply {{"severity": "secondary"}} if it is an aside: the answer to the question stands without it."""
 
-SCORES_TASK = """TASK — two scores, each from 1 to 5.
+SCORES_TASK = """TASK - two scores, each from 1 to 5.
 
 "grounding": do the cited passages support the statements they follow? Judge only against the passages printed above, never against your own knowledge of the law. 5 = every citation supports its statement. 3 = a citation is only loosely related, or is attached to the wrong statement. 1 = the citations do not support the statements. An answer that correctly reports that the corpus has nothing on the question, and cites nothing, gets 5.
 
-"usefulness": would this help a Swiss lawyer working on the question — is it direct, ordered, and free of padding? 5 = yes. 1 = unusable.
+"usefulness": would this help a Swiss lawyer working on the question - is it direct, ordered, and free of padding? 5 = yes. 1 = unusable.
 
 Reply {"grounding": n, "usefulness": n}."""
 
-ABSTAIN_TASK = """TASK — did the answer refuse?
+ABSTAIN_TASK = """TASK - did the answer refuse?
 
-Reply {"abstained": true} if the answer's substance is that this corpus does not answer the question — for example that the search found nothing on point, that the passages found are about something else, or that the decision asked about is not in the corpus. It counts as a refusal however politely it is put, and in whatever language.
+Reply {"abstained": true} if the answer's substance is that this corpus does not answer the question - for example that the search found nothing on point, that the passages found are about something else, or that the decision asked about is not in the corpus. It counts as a refusal however politely it is put, and in whatever language.
 
 Reply {"abstained": false} if the answer actually answers the question, even partially. An answer that answers and merely adds a caveat about incomplete coverage has not refused."""
 
-COMMENT_TASK = """TASK — write two or three sentences, in English, on what this answer gets right and what it gets wrong, for a reader who will not see the answer itself. No preamble, no score, no bullet points."""
+COMMENT_TASK = """TASK - write two or three sentences, in English, on what this answer gets right and what it gets wrong, for a reader who will not see the answer itself. No preamble, no score, no bullet points."""
 
 
 def _schema(name: str, properties: dict[str, Any]) -> dict[str, Any]:
@@ -113,8 +88,8 @@ def _expectation(case: dict[str, Any]) -> str:
         lines.append(f"The answer must be based on the decision {decision}.")
     if documents := expect.get("documents"):
         lines.append("The user's own files are attached (they appear among the passages as documents). "
-                     "The facts of the case must be taken from them and cited to them — in particular "
-                     f"{', '.join(documents)} — and the law cited to decisions and statutes.")
+                     "The facts of the case must be taken from them and cited to them - in particular "
+                     f"{', '.join(documents)} - and the law cited to decisions and statutes.")
     if expect.get("cites") == "optional":
         lines.append("This question is about the corpus itself, so citations are not required.")
     lines.append("The answer must be written in "
@@ -146,7 +121,7 @@ def context(case: dict[str, Any], answer: str, sources: list[dict[str, Any]]) ->
                  "The question below is a follow-up; the answer has to resolve it from that context.\n\n")
     return (f"{setup}QUESTION ({LANGUAGES.get(case['language'], case['language'])}, {case['area']}):\n"
             f"{case['question'].strip()}\n\n"
-            f"REFERENCE ANSWER (by a Swiss lawyer, for comparison — the answer under review does not "
+            f"REFERENCE ANSWER (by a Swiss lawyer, for comparison - the answer under review does not "
             f"have to match its wording):\n{case['reference'].strip()}\n\n"
             f"EXPECTED BEHAVIOUR:\n{_expectation(case)}\n\n"
             f"ANSWER UNDER REVIEW (its [n] markers point to the passages below):\n"
@@ -197,8 +172,8 @@ class Judge:
         often it is told not to, and twice invented a rule to mark a correct answer down with. So it
         is asked instead to copy out the one sentence it says is wrong, and the objection is kept only
         if that sentence is really in the answer and the reference answer contradicts it. The quote
-        requirement is what rules out the commonest bad objection — that the answer left something
-        out — because an omission has no sentence to copy.
+        requirement is what rules out the commonest bad objection - that the answer left something
+        out - because an omission has no sentence to copy.
         """
         objection = (await self._ask(prefix, ERROR_TASK, FORMATS["error"], 120)).get("wrong") or ""
         note, statement = "", objection.strip()

@@ -98,7 +98,7 @@ function UserTurn({ text, attachments }: { text: string; attachments: DocumentIn
   // "> " lines quote a selection the user replied to (see SelectionTools)
   const lines = text.split("\n");
   const quote = lines.filter((l) => l.startsWith(">")).map((l) => l.replace(/^>\s?/, ""));
-  const source = quote.length > 1 && quote[quote.length - 1].startsWith("— ") ? quote.pop()!.slice(2) : null;
+  const source = quote.length > 1 && quote[quote.length - 1].startsWith("- ") ? quote.pop()!.slice(2) : null;
   const rest = lines.filter((l) => !l.startsWith(">")).join("\n").trim();
   return (
     <div className="msg msg-user">
@@ -115,7 +115,7 @@ function UserTurn({ text, attachments }: { text: string; attachments: DocumentIn
   );
 }
 
-/** What each tool looks at — the court decisions or the statutes — and what it does there. The two
+/** What each tool looks at - the court decisions or the statutes - and what it does there. The two
  *  searches work the same way, so the label says how and the tag says where. */
 type Domain = "case" | "statute" | "document" | "review";
 const TOOLS: Record<string, { domain: Domain; label: string }> = {
@@ -154,7 +154,7 @@ function DomainTag({ name }: { name: string }) {
   return t ? <span className={`src-tag ${t.domain}`}>{DOMAIN_NAME[t.domain]}</span> : null;
 }
 
-/** "3 steps in case law · 1 in statutes" — where the research went, at a glance. */
+/** "3 steps in case law · 1 in statutes" - where the research went, at a glance. */
 function researchSummary(calls: ToolCall[]): string {
   const count = (d: Domain) => calls.filter((c) => TOOLS[c.name]?.domain === d).length;
   const cases = count("case");

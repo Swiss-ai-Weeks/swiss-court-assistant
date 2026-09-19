@@ -55,8 +55,8 @@ AGENT = os.environ.get("SCA_AGENT", "react")  # react | stub
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
 
 log = logging.getLogger(__name__)
-# uvicorn configures only its own loggers, so this package's INFO lines — what the agent checked in a
-# draft and why it revised it — would otherwise be dropped (warnings reached stderr via the last-resort
+# uvicorn configures only its own loggers, so this package's INFO lines - what the agent checked in a
+# draft and why it revised it - would otherwise be dropped (warnings reached stderr via the last-resort
 # handler). One handler for the package, at INFO.
 _package = logging.getLogger("swiss_court_assistant")
 if not _package.handlers:
@@ -190,7 +190,7 @@ async def get_decision(decision_id: str, s: Svc) -> Decision:
 
 @app.get("/api/decisions/{decision_id}/citations", response_model=Citations)
 async def decision_citations(decision_id: str, s: Svc, limit: int = 20) -> Citations:
-    """Which later decisions cite this one — the corpus citation graph, not the agent."""
+    """Which later decisions cite this one - the corpus citation graph, not the agent."""
     if s.citations is None:
         raise HTTPException(503, "The citation index is not built.")
     cited_by_count, cites_count = await asyncio.to_thread(s.citations.counts, decision_id)
@@ -338,7 +338,7 @@ async def new_matter(s: Svc, document_ids: list[str] = Form([]), file: UploadFil
     assets = []
     for document_id in dict.fromkeys(document_ids):
         if (info := s.documents.info(document_id)) is None:
-            raise HTTPException(422, f"Document {document_id} not found — add it again.")
+            raise HTTPException(422, f"Document {document_id} not found - add it again.")
         assets.append(info)
     if file is not None and file.filename:
         assets.append(await _ingest(s, file))
@@ -418,7 +418,7 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
     attachments = []
     for document_id in dict.fromkeys(req.document_ids):
         if (info := s.documents.info(document_id)) is None:
-            raise HTTPException(422, f"Document {document_id} not found — attach it again.")
+            raise HTTPException(422, f"Document {document_id} not found - attach it again.")
         attachments.append(info)
     if req.conversation_id:
         conv = s.store.get(req.conversation_id)

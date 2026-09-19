@@ -1,6 +1,6 @@
 """What can be measured without asking a model, and how a case's scores are combined.
 
-The judge grades the prose; these checks read the turn itself — the language the answer came back
+The judge grades the prose; these checks read the turn itself - the language the answer came back
 in, whether it cited anything, whether the quotes were found verbatim in the decision (`verified`),
 whether the assistant's own grounding check backed each citation (`supported`), which tools ran, and
 what the turn cost in time and calls. They are cheap, deterministic, and they are what makes a
@@ -101,7 +101,7 @@ def score(case: dict[str, Any], mech: dict[str, Any], judgment: dict[str, Any]) 
 
 
 def failure(case: dict[str, Any], mech: dict[str, Any], scored: dict[str, Any]) -> str:
-    """Why a case did not count as correct, in a few words — the column that makes the table useful."""
+    """Why a case did not count as correct, in a few words - the column that makes the table useful."""
     expect = case.get("expect") or {}
     reasons = []
     if not mech["language_ok"]:

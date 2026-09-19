@@ -1,7 +1,7 @@
 """Statute articles named in an answer, linked to their text.
 
-The agent reads articles (`read_law`) and names them in its answers — "Art. 259d CO", "art. 336c al. 1
-let. c CO" — but its numbered citations nearly always point at decisions: of the first answers after
+The agent reads articles (`read_law`) and names them in its answers - "Art. 259d CO", "art. 336c al. 1
+let. c CO" - but its numbered citations nearly always point at decisions: of the first answers after
 the statute tools went live, none cited the article it had read, so there was nothing to open. So every
 article an answer names that the index holds becomes a link to its text, found deterministically after
 the answer is written. These are references, not evidence: they are kept apart from the numbered

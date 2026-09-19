@@ -8,7 +8,7 @@ sorted by kind (decision passage or statute article) and language, so a search i
 touches the German decision slice and nothing else.
 
 The index stores unit-length vectors for cosine distance, so the dot product ranks exactly as
-sqlite-vec does — same passages, same order.
+sqlite-vec does - same passages, same order.
 
 The export reads vec0's own storage tables (1,024 vectors per block) instead of the virtual table,
 which returns about 1,300 vectors a second and would take an hour.
@@ -20,7 +20,7 @@ Files next to the index, for DB = data/vectordb/corpus.sqlite and model nemotron
     corpus.nemotron-embed.f32    float32 rows, row-major
     corpus.nemotron-embed.ids    int64 chunk ids (chunks.id), one per row
     corpus.nemotron-embed.json   dim, segments {"decision/de": [start, end], ...}, and the index state it
-                                 was exported from — a matrix older than the index is not used
+                                 was exported from - a matrix older than the index is not used
 """
 
 from __future__ import annotations

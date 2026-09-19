@@ -1,4 +1,4 @@
-# Swiss Court Assistant — technical details
+# Swiss Court Assistant - technical details
 
 How the app, the agent, the model services and the indexes work, and why they are built this way. For
 getting started, see the [README](../README.md). The agent's components are drawn in
@@ -48,7 +48,7 @@ Remove it with `docker rm -f sca-launchpad-route`.
 | `GET /api/decisions/{id}/citations` | from the corpus citation graph: how often later decisions cite this one, how many it cites, and the most recent decisions at either end (`inCorpus` marks the ones this app serves) |
 | `POST /api/translate` `{text, source, target}` | machine translation of a cited passage by the Riva Translate NIM; statute abbreviations and BGE/ATF/DTF are passed as do-not-translate phrases mapped to the target language's official form (OR → CO); cached |
 | `POST /api/speech` `{text, language}` | read aloud by the Magpie TTS NIM: 16-bit mono PCM streamed sentence by sentence (rate in `X-Sample-Rate`); `[n]` markers and markdown are dropped |
-| `WS /api/voice` | voice mode: 16 kHz PCM from the microphone in; `partial` transcripts, the same turn events as `/api/chat`, and the spoken answer (PCM frames between `speech_start`/`speech_end`) out. Any speech sends `cancel_speech` (the browser drops audio it has not played yet — the server is always ahead) and cancels a running turn, which is saved with a "cut off" marker. The answer starts only after `SCA_VOICE_PAUSE` seconds of silence (default 1.2, ≈2 s after the speaker stops), joining everything heard since the last pause, so an end-of-utterance mid-sentence does not trigger an answer |
+| `WS /api/voice` | voice mode: 16 kHz PCM from the microphone in; `partial` transcripts, the same turn events as `/api/chat`, and the spoken answer (PCM frames between `speech_start`/`speech_end`) out. Any speech sends `cancel_speech` (the browser drops audio it has not played yet - the server is always ahead) and cancels a running turn, which is saved with a "cut off" marker. The answer starts only after `SCA_VOICE_PAUSE` seconds of silence (default 1.2, ≈2 s after the speaker stops), joining everything heard since the last pause, so an end-of-utterance mid-sentence does not trigger an answer |
 | `POST /api/chat` `{conversationId?, message}` | `text/event-stream` of `conversation`, `meta` (the question's language), `status`, `tool_start`, `tool_end`, `delta`, `citation`, then `done` or `error` |
 | `GET /api/matters`, `GET/DELETE /api/matters/{id}` | matters (see below) |
 | `POST /api/matters` (multipart `file`/`text`/`title`) | opens a matter on what the client handed over: a PDF, a Word file, plain text, or a recording already decoded to 16 kHz PCM (`*.pcm`), which is transcribed by the ASR NIM |
@@ -70,7 +70,7 @@ Selecting any text in the answer or in the decision opens a small toolbar (`Sele
 **Read aloud**, **Translate** (only when the selection is not in the conversation's language) and
 **Reply**, which shows the selection as a card above the message box ("Replying to <court docket>",
 not editable; × or Esc removes it) for a follow-up question. The message is sent with the quote
-as `> …` lines plus a `> — court docket` line, and the thread shows it as the same card. Quoted lines are ignored when detecting the question's language
+as `> …` lines plus a `> - court docket` line, and the thread shows it as the same card. Quoted lines are ignored when detecting the question's language
 and for the conversation title; the agent's prompt says they are the text the question is about.
 
 ### Matters: intake → research → assessment → drafting
@@ -79,18 +79,18 @@ A second page (`Matters` in the top bar) works a whole client case rather than o
 in a firm moves through five stages; four of them are things software can touch, and the fifth is
 shown greyed out because it is practice management, not case law:
 
-1. **Intake** — one constrained call over the client's document or recording returns the matter
+1. **Intake** - one constrained call over the client's document or recording returns the matter
    title, the facts as given, the parties, a dated timeline and up to four legal questions
    (`Pipeline._intake`). A question that names a statute article the client's own text never
    mentions has it stripped (`without_invented_articles`): the model guesses article numbers from
    memory, and a wrong one sends the research after the wrong provision.
-2. **Research** — each issue runs through the ordinary agent (`Agent.answer`), so it gets the same
+2. **Research** - each issue runs through the ordinary agent (`Agent.answer`), so it gets the same
    per-language searches, citations, verbatim quotes and grounding checks as a chat question. The
    page shows the searches as they happen and streams each answer.
-3. **Assessment** — one call over the researched issues only: where the client stands, what is in
+3. **Assessment** - one call over the researched issues only: where the client stands, what is in
    their favour, what the other side will argue, what is still open. The citation markers are
    renumbered onto the memo's running series first, so `[3]` means the same decision everywhere.
-4. **Drafting** — the memo is *assembled*, not rewritten by a model (`matters.memo` for Markdown,
+4. **Drafting** - the memo is *assembled*, not rewritten by a model (`matters.memo` for Markdown,
    `matters.docx_memo` for Word): facts, parties, timeline, every issue with its researched answer,
    the assessment, and a table of authorities where a citation that failed its grounding check is
    flagged. Headings follow the matter's language. The page downloads it as `.docx` for the client
@@ -98,14 +98,14 @@ shown greyed out because it is practice management, not case law:
 
 Opening a matter whose stage is still `new` starts the run by itself. That has to happen in the
 load effect rather than right after the upload: selecting the freshly created matter re-runs the
-effect, which aborts whatever stream is open — a run started before that arrived was cancelled a
+effect, which aborts whatever stream is open - a run started before that arrived was cancelled a
 moment after it began, and the page just sat there. While the upload is being read (ASR on a
 recording takes about as long as the recording lasted) the intake screen says so, and a running
 matter shows which stage and which issue it is on.
 
 Recordings are decoded in the browser (`web/src/audio.ts`): `AudioContext.decodeAudioData` plus an
-`OfflineAudioContext` at 16 kHz turn any format the browser can play — or a recording made in the
-page — into the mono PCM the ASR NIM wants, so the server needs no ffmpeg. Matters are stored in
+`OfflineAudioContext` at 16 kHz turn any format the browser can play - or a recording made in the
+page - into the mono PCM the ASR NIM wants, so the server needs no ffmpeg. Matters are stored in
 `data/app/matters.sqlite` (`SCA_MATTERS_DB`), and each stage is saved as it finishes, so a browser
 that disconnects loses the stream, not the work.
 
@@ -118,7 +118,7 @@ that disconnects loses the stream, not the work.
 |---|---|
 | `semantic_search(query_de, query_fr, query_it, …filters)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the decisions in its language (the in-memory vector matrix, else sqlite-vec; the three run in parallel), and its top 40 are reranked against it by the Nemotron reranker NIM; returns 8 passages, at least 2 per language and at most 2 per decision |
 | `keyword_search(keyword, …filters)` | SQLite FTS5 over all passages; `"quoted text"` is an exact phrase, other words must all appear; docket numbers in the query are matched to decisions |
-| `list_decisions(…filters, oldest=False)` | how many decisions match the filters, split by court, area and decade, and the ten newest (or oldest) with Regeste or title — for questions about the corpus or a court's latest decisions |
+| `list_decisions(…filters, oldest=False)` | how many decisions match the filters, split by court, area and decade, and the ten newest (or oldest) with Regeste or title - for questions about the corpus or a court's latest decisions |
 | `read_decision(decision_id, offset=0)` | metadata, Regeste and 8,000 characters of the full text per call |
 | `citing_decisions(decision_id)` | how often later decisions cite it, and the most recent ones (citation graph) |
 | `read_law(code, article, canton="CH")` | one statute article verbatim, in German, French and Italian. The code may be the abbreviation in any language (OR or CO, ZGB or CC) or the SR number: it is resolved to the act's SR number first, so "OR" also finds the French text |
@@ -144,7 +144,7 @@ chamber too, and cantonal courts are named from their code ("Obergericht (ZH)", 
 **Asking back.** A fifth research tool, `ask_user(question, options, found_so_far)`, lets the agent end
 the turn with one question instead of an answer. Two things call for it: the answer turns on a fact
 the question leaves open and the passages go different ways on it ("Kündigungsfrist für meinen
-Vertrag" — employment or lease?), or the research found the article or the line of decisions that
+Vertrag" - employment or lease?), or the research found the article or the line of decisions that
 would govern but they apply only under a premise the question never states (Art. 337 OR only if the
 contract was ended with immediate effect), in which case the agent names what it found and asks the
 user to confirm it rather than answering on the assumption. The middleware turns that call into the
@@ -170,21 +170,21 @@ It works in two phases:
    cannot answer from memory or in free text. It calls a fourth tool, `write_answer`, once it has
    enough (it is forced to after 8 tool calls). Left to itself it did not stop: for a question this
    corpus cannot answer, it spent all 8 calls rewording one search and was then forced to answer
-   from whatever had come back. Three things end the loop now — the prompt says that reporting
+   from whatever had come back. Three things end the loop now - the prompt says that reporting
    "this corpus does not answer it" *is* a correct answer, a reminder to that effect is added to the
    request after 4 tool calls (`NUDGE_AFTER`), and a search that repeats an earlier one is refused
    instead of run: `_already_searched()` keeps the turn's queries as token sets (in a `ContextVar`,
    because `make_tools` runs once and its tools are shared between turns) and rejects a query whose
    overlap with an earlier one reaches `SAME_SEARCH = 0.8` by Jaccard **or** by containment.
-   Containment is what catches real repeats — rewording drops words, so "DSGVO Wettbewerbsrecht
+   Containment is what catches real repeats - rewording drops words, so "DSGVO Wettbewerbsrecht
    Sanktionen SVKG" followed by "DSGVO Wettbewerbsrecht" is only 0.73 Jaccard but fully contained.
    The opposite failure showed up once the agent eval existed: offered `write_answer` from the first
    step, it answered after a single search on 19 of 33 questions of the 48,774-decision subset.
    `write_answer` is now left out of the tool list until two research calls have been made
    (`MIN_TOOL_CALLS`). On the current corpus, with the law tools, the agent already answers after
    one search far less often (15 % of turns), so the minimum matters less: in an A/B test, two runs
-   per arm, it raised rubric coverage on the exam questions from 68 % to 71 % — both runs with it
-   above both runs without — for about a second per turn (`agent-eval/RESULTS.md`).
+   per arm, it raised rubric coverage on the exam questions from 68 % to 71 % - both runs with it
+   above both runs without - for about a second per turn (`agent-eval/RESULTS.md`).
 2. **Answer.** A middleware (`ResearchThenAnswer`) intercepts `write_answer` and makes one call
    whose output is constrained to the JSON schema of `AgentAnswer` (vLLM structured outputs):
    `{"answer": [{"type": "text", "text": …} | {"type": "citation", "decision_id": …, "chunk_id": …, "quote": …, "explanation": …}, …]}`.
@@ -194,12 +194,12 @@ It works in two phases:
    grammar rules this out, but decodes about six times slower on this NIM.) The instruction closing
    that call names the question being answered: while it only said "write the final answer now", a
    follow-up question was answered with the *previous* turn's answer. For the same reason
-   `_history()` strips the `[n]` markers from earlier answers — they used to be replaced by the
+   `_history()` strips the `[n]` markers from earlier answers - they used to be replaced by the
    cited docket number, which made an earlier answer's invented sentences look sourced.
    A turn can also end with nothing to show, and nothing logged: `{"answer": []}` is valid
    against the schema, and a research step once returned neither a tool call nor text, which ends
    the graph. An empty answer is asked for once more, a stalled step is answered from what was
-   found, and a turn that still ends empty says so instead of returning an empty message — which
+   found, and a turn that still ends empty says so instead of returning an empty message - which
    the client cannot tell from an answer.
 
 The answer streams: text parts as they are written, each citation once it is complete. The
@@ -296,13 +296,13 @@ question's language), `SCA_VOICE_PAUSE` (default 1.2 s of silence before answeri
 ## Evaluating the agent
 
 The retrieval evaluation further down scores the search: how often the gold decision comes back in
-the top ten. That says nothing about the answer the user reads. `agent-eval/` scores that — 33 cases
+the top ten. That says nothing about the answer the user reads. `agent-eval/` scores that - 33 cases
 put to the running assistant through its own HTTP API and graded by a local model against a
 reference answer written for each one:
 
-* **21 Swiss law exam questions** (`agent-eval/cases/exam.yaml`) over the areas the corpus covers —
+* **21 Swiss law exam questions** (`agent-eval/cases/exam.yaml`) over the areas the corpus covers -
   tenancy, employment, tort, contract, persons and family law, criminal law and procedure, debt
-  enforcement, social insurance, constitutional law — eleven in German, six in French, three in
+  enforcement, social insurance, constitutional law - eleven in German, six in French, three in
   Italian, one in English. Each carries the model answer a Swiss lawyer would give and a rubric of
   the points the answer has to make.
 * **12 behavioural cases** (`agent-eval/cases/behaviour.yaml`): saying the corpus does not answer a
@@ -312,7 +312,7 @@ reference answer written for each one:
   instruction embedded in a quoted passage.
 
 The judge grades each rubric point on its own, plus grounding and usefulness on 1-5 and whether the
-answer refused — grounding against the passages in the prompt, never against its own knowledge of
+answer refused - grounding against the passages in the prompt, never against its own knowledge of
 Swiss law. Legal accuracy is not asked for as a score at all: a judge on a scale marks an answer
 down for what it leaves out, so it has to quote the sentence it says is wrong instead, and the
 objection counts only if that sentence is really in the answer and the reference contradicts it.
@@ -333,7 +333,7 @@ uv run python agent-eval/report.py                 # re-render the last run's re
 ## Model services (Docker)
 
 Every model the app calls is a self-hosted NVIDIA NIM, and `deploy/compose.yaml` runs exactly those
-six — nothing else:
+six - nothing else:
 
 | Service | Container | Host port | GPU | Used for |
 |---|---|---|---|---|
@@ -353,7 +353,7 @@ The NGC key comes from `~/.config/swiss-court-assistant/nim.env` (`NGC_API_KEY=�
 the repository, and only the LLM, embed and rerank services get it.
 
 **Speech and translation start offline in under a minute.** A Riva NIM compiles its TensorRT engines
-into the container whenever it finds its downloaded model package — on every start, restarts
+into the container whenever it finds its downloaded model package - on every start, restarts
 included: 30 minutes each for ASR and TTS here. The compose file sets `NIM_DISABLE_MODEL_DOWNLOAD`
 and `NIM_EXPORT_PATH`, so they unpack already-compiled models from
 `~/.cache/nim/riva-export/<service>/` instead (measured: ASR 46 s, TTS 41 s, translate 21 s, no NGC
@@ -367,7 +367,7 @@ one, so it showed "unhealthy" while serving.
 Every turn is recorded as one MLflow trace: each research step with the exact prompt sent to the
 model, every tool call with its arguments and result, the constrained final-answer call and the
 grounding checks. `server/tracing.py` enables LangChain autologging and opens a root `turn` span
-holding what the user saw — the answer, its citations and their verdicts — tagged with the
+holding what the user saw - the answer, its citations and their verdicts - tagged with the
 conversation id. Tracing is off unless `SCA_MLFLOW_URI` is set, and a tracing failure never costs
 an answer.
 
@@ -386,8 +386,8 @@ The UI is at http://localhost:5000 (on LaunchPad, through the code-server proxy:
 
 ## Full-corpus index
 
-`swiss_court_assistant/index.py` builds one index over the whole upstream dataset — decisions,
-passages, embeddings, keyword index and citation graph — with our own NIM embeddings, and updates it
+`swiss_court_assistant/index.py` builds one index over the whole upstream dataset - decisions,
+passages, embeddings, keyword index and citation graph - with our own NIM embeddings, and updates it
 incrementally. The dataset is fetched at build time; nothing is called at query time.
 
 ```bash
@@ -401,8 +401,8 @@ uv run python -m swiss_court_assistant.index status
 Everything is resumable and idempotent. Each upstream file is recorded by sha256 in `index_sources`,
 so a rerun skips what has not changed; `pending_embeddings` holds passages still waiting for a
 vector, committed batch by batch, so an interrupted run loses at most one batch. Updates ride on the
-dataset's own `artifacts/manifest.json` — a dated snapshot plus one parquet per day, each with a
-sha256, verified before it is applied — and `index_state.delta_date` is the watermark. Run `build`
+dataset's own `artifacts/manifest.json` - a dated snapshot plus one parquet per day, each with a
+sha256, verified before it is applied - and `index_state.delta_date` is the watermark. Run `build`
 before `update`: a shard carries the snapshot, so ingesting one after a delta would put those
 decisions back to their older text (`build` clears the watermark so `update` replays them).
 
@@ -410,7 +410,7 @@ Chunk ids are append-only, because `chunks.id` is the rowid of both the vector t
 keyword index. A decision that changes has its old passages deleted from all three (the contentless
 FTS5 table needs the original text to delete a row) and new ones appended at the end.
 
-The case-law dataset holds decisions only — plus the citation and statute-reference graphs and the
+The case-law dataset holds decisions only - plus the citation and statute-reference graphs and the
 Erwägungen structure. Statute text comes from a second dataset, `voilaj/swiss-legislation`: `--laws`
 indexes every federal and cantonal article as passages in the same `chunks` table (`section = 'law'`,
 the article's `law_id` in place of a decision id, metadata in `laws`). There is still no commentary
@@ -424,23 +424,23 @@ decisions** (a stratified quarter of everything since 1980), **725,481 statute a
 passages and a 57.8 GB index. What changed to serve it:
 
 - **Decisions** are read from the index's `decisions` table on demand (`SqliteDecisionStore`) instead
-  of loading a parquet into memory — only the docket lookup is kept in memory (1.1 s at startup).
+  of loading a parquet into memory - only the docket lookup is kept in memory (1.1 s at startup).
 - **Vector search** runs on an in-memory copy of the vectors (`vecmatrix.py`). sqlite-vec's vec0 scan
   reads every stored vector whatever the filter, so on this index one query took 11–15 s, and
   splitting it into parallel year-range shards made it slower (25 s: the scans only compete for
-  memory bandwidth). The matrix — rows sorted by kind and language, 40 GB, exported from vec0's own
-  storage tables in about three minutes — answers the same query in ~130 ms with the same passages
+  memory bandwidth). The matrix - rows sorted by kind and language, 40 GB, exported from vec0's own
+  storage tables in about three minutes - answers the same query in ~130 ms with the same passages
   in the same order (vectors are unit length, so the dot product ranks like cosine distance; only
   exact ties between duplicate passages can swap). A search in three languages plus reranking now
   takes ~1.3 s, faster than on the old subset. `build` and `update` re-export it; a matrix older
   than the index is ignored and the app falls back to sqlite-vec, so restart the app after an update.
 - **Statute articles** share the passage table but are not decisions: the decision tools skip them
-  (the keyword search over-fetches 8× to make up for it — e.g. "Eigenbedarf" matches 24 statute
+  (the keyword search over-fetches 8× to make up for it - e.g. "Eigenbedarf" matches 24 statute
   passages among its first 64).
 - **Statutes are sources.** An answer cites an article the way it cites a decision: its `law_id` in
   the citation's `decision_id`, a verbatim quote from the article. The resolver finds the quote in
-  whichever language version holds it, and — because the model once copied the result's label line
-  into the quote — drops leading words until the rest is found verbatim (never fewer than 40
+  whichever language version holds it, and - because the model once copied the result's label line
+  into the quote - drops leading words until the rest is found verbatim (never fewer than 40
   characters). The Source has `section: "law"` and a decision-shaped summary ("Federal law", "Art.
   271a OR", the act's title, the Fedlex link), so chips, the grounding check, the memo and the
   preview show it without a second code path; `GET /api/decisions/{law_id}` serves the article and the
@@ -515,7 +515,7 @@ comparing full-corpus vs subset shares for every stratum.
    uv run python -m swiss_court_assistant.retrieval build qwen3-4b $C --device cuda:0
    ```
 
-3. **Generate the test set** — a local LLM writes one question per gold passage
+3. **Generate the test set** - a local LLM writes one question per gold passage
    (balanced over language × period) and translates it to de/fr/it/rm/en.
    Needs an OpenAI-compatible server:
 

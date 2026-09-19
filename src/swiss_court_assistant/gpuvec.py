@@ -143,7 +143,7 @@ class GpuVectorMatrix:
 
     def search(self, query: np.ndarray, k: int, kind: str = "decision",
                language: str | None = None, mask: np.ndarray | None = None) -> list[tuple[int, float]]:
-        """(chunk id, cosine similarity) of the k nearest rows, best first — as VectorMatrix.search."""
+        """(chunk id, cosine similarity) of the k nearest rows, best first - as VectorMatrix.search."""
         import cupy as cp
         from cuvs.neighbors import brute_force, filters
 

@@ -6,7 +6,7 @@ import CitedMarkdown from "./CitedMarkdown";
 import MatterIntake from "./MatterIntake";
 import { toolTitle } from "./Thread";
 
-/** Every issue's cited sources, concatenated and renumbered on one running series — the same
+/** Every issue's cited sources, concatenated and renumbered on one running series - the same
  *  authorities list the memo builds server-side (see `numbered()` in matters.py), so a [n] marker
  *  in the assessment or the memo points at the same source here as it does there. */
 function citationSources(matter: Matter): Source[] {
@@ -38,7 +38,7 @@ function assetMeta(d: DocumentInfo): string {
   return `${d.pages} page${d.pages === 1 ? "" : "s"}`;
 }
 
-/** "2 documents · 1 recording · notes" — what the matter was opened on, at a glance. */
+/** "2 documents · 1 recording · notes" - what the matter was opened on, at a glance. */
 function contents(assets: DocumentInfo[]): string {
   const n = (k: string) => assets.filter((a) => (a.kind ?? "document") === k).length;
   const parts = [];
@@ -117,7 +117,7 @@ const STAGES: { key: MatterStage | "filing"; label: string; hint: string }[] = [
   { key: "research", label: "Research", hint: "Swiss case law on each question" },
   { key: "assessment", label: "Assessment", hint: "Where the client stands, and what the other side will say" },
   { key: "drafting", label: "Drafting", hint: "A memo in which every proposition carries a citation" },
-  { key: "filing", label: "Filing & deadlines", hint: "Practice management — outside this assistant" },
+  { key: "filing", label: "Filing & deadlines", hint: "Practice management - outside this assistant" },
 ];
 
 type Live = {
@@ -218,7 +218,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
   );
 
   // Opening a matter that has not been researched yet starts it. This has to happen here and not in
-  // `start()`: selecting the new matter re-runs this effect, which aborts whatever stream is open —
+  // `start()`: selecting the new matter re-runs this effect, which aborts whatever stream is open -
   // a run started before that arrives was cancelled a moment after it began.
   useEffect(() => {
     abort.current?.abort();
@@ -259,7 +259,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
     }
   };
 
-  /** Run the whole matter again — intake, research, assessment, memo — on the same case file. */
+  /** Run the whole matter again - intake, research, assessment, memo - on the same case file. */
   const rerun = (m: Matter) => {
     if (!window.confirm("Run this case again from the intake? The current research, assessment and memo are replaced.")) return;
     setMatter({ ...m, stage: "intake", assessment: null, memo: null });

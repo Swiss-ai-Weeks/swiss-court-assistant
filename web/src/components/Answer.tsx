@@ -60,7 +60,7 @@ export default function Answer({ id, text, sources, statutes = [], onStatute, la
           const ref = statutes[+law[1]];
           return (
             <button className="statute-link" onClick={() => ref && onStatute?.(ref.source)}
-              title={ref ? `${ref.source.decision.docket} — open the statute text` : undefined}>
+              title={ref ? `${ref.source.decision.docket} - open the statute text` : undefined}>
               {children}
             </button>
           );

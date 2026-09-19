@@ -32,7 +32,7 @@ class Citing:
 
 
 class CitationIndex:
-    """How often a decision is cited by later ones, and by which — from the corpus citation graph
+    """How often a decision is cited by later ones, and by which - from the corpus citation graph
     (`python -m swiss_court_assistant.citations build`). Read-only, one connection per thread."""
 
     def __init__(self, path: Path, known: set[str] | None = None):

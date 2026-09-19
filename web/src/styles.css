@@ -192,7 +192,7 @@ textarea { font: inherit; }
 .status-line { display: flex; align-items: center; gap: var(--space-sm); margin: 0 0 var(--space-lg); font-size: 14px; font-weight: 700; color: var(--ink); }
 .status-line .dot { width: 8px; height: 8px; flex: none; }
 .activity li.running .dot, .status-line .dot { background: var(--primary); border: 1px solid var(--primary); animation: pulse 1s ease-in-out infinite; }
-/* checking its own draft against the passages: the same line, hollow square — auditing, not searching */
+/* checking its own draft against the passages: the same line, hollow square - auditing, not searching */
 .status-checking .dot { background: transparent; }
 @keyframes pulse { 50% { opacity: 0.3; } }
 .msg-error { color: var(--error); }
@@ -527,7 +527,7 @@ mark.hl.active { background: #fbdc6a; }
   .tabs { margin-left: var(--space-md); gap: var(--space-md); }
 }
 
-/* the upload is a slow silence — transcription takes about as long as the recording */
+/* the upload is a slow silence - transcription takes about as long as the recording */
 .working { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
 .working .dot { width: 8px; height: 8px; background: var(--primary); animation: pulse 1s ease-in-out infinite; }
 .working-main { font-size: 18px; font-weight: 700; color: var(--ink); margin: var(--space-sm) 0 0; }

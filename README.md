@@ -16,7 +16,7 @@ The corpus is the public [voilaj/swiss-caselaw](https://huggingface.co/datasets/
 and [voilaj/swiss-legislation](https://huggingface.co/datasets/voilaj/swiss-legislation) datasets.
 Every model is a self-hosted NVIDIA NIM, so nothing leaves the machine at runtime.
 
-How it works in detail — the agent, the grounding check, the indexes, the API — is in
+How it works in detail - the agent, the grounding check, the indexes, the API - is in
 [docs/TECHNICAL.md](docs/TECHNICAL.md). A demo script with sample questions and a client case is in
 [demo/](demo/README.md).
 

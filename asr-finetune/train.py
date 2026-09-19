@@ -2,7 +2,7 @@
 
 The audio is Swiss German dialect, the target is the Standard German reference sentence, so the
 model learns speech translation while running as an ordinary German transcription task
-(language=de, task=transcribe) — which is what lets it drop into a normal Whisper serving path.
+(language=de, task=transcribe) - which is what lets it drop into a normal Whisper serving path.
 
   LoRA (default)  ~25 GB of VRAM, trains adapters only, exports by merging into the base model.
   Full           ~55 GB of VRAM, updates all 1.55B parameters, usually a point or two better.

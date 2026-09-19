@@ -1,7 +1,7 @@
 # Swiss law exam questions: substantive questions a Swiss bar-exam candidate should be able to
 # answer, over areas the corpus of court decisions actually covers.
 #
-# `reference` is the model answer a Swiss lawyer would give — it is the judge's yardstick for legal
+# `reference` is the model answer a Swiss lawyer would give - it is the judge's yardstick for legal
 # accuracy, not a string the agent has to reproduce. `rubric` lists the points the answer must make;
 # each is graded covered / partial / missing. `expect` overrides the defaults
 # (abstain: false, cites: true, language: the case's language).
@@ -17,14 +17,14 @@
   reference: |
     Eine ordentliche Kündigung braucht keinen Grund: Beide Parteien können ein unbefristetes
     Mietverhältnis unter Einhaltung der Fristen und Termine kündigen (Art. 266a OR). Die Schranke
-    ist Treu und Glauben — eine dagegen verstossende Kündigung ist anfechtbar (Art. 271 Abs. 1 OR).
+    ist Treu und Glauben - eine dagegen verstossende Kündigung ist anfechtbar (Art. 271 Abs. 1 OR).
     Treuwidrig ist eine Kündigung nach der Praxis des Bundesgerichts namentlich dann, wenn sie ohne
     objektives, ernsthaftes und schützenswertes Interesse, also aus reiner Schikane erfolgt, wenn
     die Interessen der Parteien in einem krassen Missverhältnis zueinander stehen, oder wenn der
     angegebene Kündigungsgrund bloss vorgeschoben und der wahre Grund nicht feststellbar ist.
     Massgebend ist der Zeitpunkt, in dem die Kündigung ausgesprochen wird; fällt der Grund später
     dahin, wird die Kündigung nicht nachträglich treuwidrig. Dass die Kündigung für den Mieter eine
-    Härte bedeutet, genügt für sich allein nicht — Härte ist nur für die Erstreckung nach Art. 272
+    Härte bedeutet, genügt für sich allein nicht - Härte ist nur für die Erstreckung nach Art. 272
     OR erheblich. Art. 271a OR zählt weitere Tatbestände auf, insbesondere die Rachekündigung,
     nachdem der Mieter nach Treu und Glauben Ansprüche geltend gemacht hat, und die Sperrfristen
     während und nach einem Verfahren. Die Beweislast für die Treuwidrigkeit trägt grundsätzlich der
@@ -57,7 +57,7 @@
     eine weniger schwere Verletzung nur dann, wenn sie trotz Verwarnung wiederholt wurde. Über das
     Vorliegen des wichtigen Grundes entscheidet das Gericht nach seinem Ermessen (Art. 337 Abs. 3 OR
     i.V.m. Art. 4 ZGB); das Bundesgericht überprüft solche Ermessensentscheide zurückhaltend. Die
-    Kündigung muss zudem umgehend nach Kenntnis des Grundes ausgesprochen werden — die Praxis
+    Kündigung muss zudem umgehend nach Kenntnis des Grundes ausgesprochen werden - die Praxis
     gewährt in der Regel zwei bis drei Arbeitstage Überlegungsfrist, längeres Zuwarten gilt als
     Verzicht. Die fristlose Kündigung beendet das Arbeitsverhältnis in jedem Fall sofort, auch wenn
     sie ungerechtfertigt ist. Ist sie ungerechtfertigt, schuldet der Arbeitgeber nach Art. 337c
@@ -92,7 +92,7 @@
     Gegenstand angemessen zu begrenzen, so dass es das wirtschaftliche Fortkommen des Arbeitnehmers
     nicht unbillig erschwert; es darf nur unter besonderen Umständen drei Jahre überschreiten
     (Art. 340a Abs. 1 OR). Ein übermässiges Verbot wird vom Richter nach seinem Ermessen eingeschränkt
-    (Art. 340a Abs. 2 OR) — es ist also nicht nichtig, sondern wird auf das zulässige Mass
+    (Art. 340a Abs. 2 OR) - es ist also nicht nichtig, sondern wird auf das zulässige Mass
     zurückgeführt. Das Verbot fällt dahin, wenn der Arbeitgeber am Verbot kein erhebliches Interesse
     mehr hat; ferner, wenn der Arbeitgeber ohne begründeten Anlass kündigt oder der Arbeitnehmer aus
     einem Anlass kündigt, den der Arbeitgeber zu verantworten hat (Art. 340c OR). Bei Verletzung
@@ -153,7 +153,7 @@
     haftet für den Schaden, den dieses infolge fehlerhafter Anlage oder Herstellung oder mangelhafter
     Unterhaltung verursacht, ohne dass ihm ein Verschulden nachzuweisen wäre. Voraussetzungen sind
     ein Werk (ein künstlich hergestellter, mit dem Boden direkt oder indirekt verbundener,
-    stabiler Gegenstand — dazu zählen Treppen, Zugänge, Strassen), ein Werkmangel, ein Schaden und
+    stabiler Gegenstand - dazu zählen Treppen, Zugänge, Strassen), ein Werkmangel, ein Schaden und
     der natürliche und adäquate Kausalzusammenhang zwischen Mangel und Schaden. Ob ein Mangel
     vorliegt, beurteilt sich nach dem Zweck des Werks: Mangelhaft ist es, wenn es für den
     bestimmungsgemässen Gebrauch nicht genügend Sicherheit bietet. Massstab ist, womit ein
@@ -163,7 +163,7 @@
     Schutzzweck stehen, sind nicht verlangt, und bei winterlicher Glätte darf nicht jederzeit
     schneefreier Zustand erwartet werden, wohl aber ein zumutbarer Räumungs- und Streudienst nach den
     örtlichen Verhältnissen. Der Eigentümer kann sich nicht durch den Nachweis der gehörigen
-    Sorgfalt entlasten — anders als bei Art. 41 oder Art. 55 OR gibt es keinen Sorgfaltsbeweis. Er
+    Sorgfalt entlasten - anders als bei Art. 41 oder Art. 55 OR gibt es keinen Sorgfaltsbeweis. Er
     kann nur den Mangel, die Kausalität oder den Schaden bestreiten; Selbstverschulden des
     Geschädigten oder das Verhalten eines Dritten führen zur Herabsetzung oder ausnahmsweise zur
     Unterbrechung des Kausalzusammenhangs (Art. 44 OR). Auf den Hersteller oder den
@@ -188,8 +188,8 @@
     Irrtum befand (Art. 23 OR). Der Grundlagenirrtum nach Art. 24 Abs. 1 Ziff. 4 OR liegt vor, wenn
     der Irrtum einen bestimmten Sachverhalt betrifft, der von der irrenden Partei nach Treu und
     Glauben im Geschäftsverkehr als notwendige Grundlage des Vertrags betrachtet wurde. Nach der
-    Rechtsprechung des Bundesgerichts braucht es dafür kumulativ die subjektive Wesentlichkeit — die
-    irrende Partei hätte den Vertrag ohne den Irrtum nicht oder nicht so geschlossen — und die
+    Rechtsprechung des Bundesgerichts braucht es dafür kumulativ die subjektive Wesentlichkeit - die
+    irrende Partei hätte den Vertrag ohne den Irrtum nicht oder nicht so geschlossen - und die
     objektive Wesentlichkeit: Der Sachverhalt musste auch nach Treu und Glauben im Geschäftsverkehr
     als notwendige Vertragsgrundlage erscheinen, und dies musste für die Gegenpartei erkennbar sein.
     Der Irrtum muss einen gegenwärtigen oder vergangenen Sachverhalt betreffen; eine blosse
@@ -264,7 +264,7 @@
     verlangt. Die Beweise sind im Übrigen frei nach der aus dem gesamten Verfahren gewonnenen
     Überzeugung zu würdigen (Art. 10 Abs. 2 StPO). Vor Bundesgericht gilt: Die Beweislastregel prüft
     es frei, weil sie ein verfassungsmässiger Verfahrensgrundsatz ist; der Beweiswürdigungsregel
-    kommt dagegen neben dem Willkürverbot (Art. 9 BV) keine selbstständige Bedeutung zu — die
+    kommt dagegen neben dem Willkürverbot (Art. 9 BV) keine selbstständige Bedeutung zu - die
     Sachverhaltsfeststellung wird nur auf Willkür überprüft (Art. 97 Abs. 1 und Art. 105 BGG), und
     die Rüge muss den qualifizierten Anforderungen von Art. 106 Abs. 2 BGG genügen.
   rubric:
@@ -294,7 +294,7 @@
     ZPO); der Rechtsöffnungsrichter entscheidet nur über die Vollstreckbarkeit des Titels, nicht
     über den materiellen Bestand der Forderung, und seinem Entscheid kommt keine materielle
     Rechtskraft zu. Der Schuldner kann die Rechtsöffnung abwenden, indem er Einwendungen, welche die
-    Schuldanerkennung entkräften, sofort glaubhaft macht (Art. 82 Abs. 2 SchKG) — verlangt ist also
+    Schuldanerkennung entkräften, sofort glaubhaft macht (Art. 82 Abs. 2 SchKG) - verlangt ist also
     blosses Glaubhaftmachen, nicht der volle Beweis; typische Einwendungen sind Tilgung, Stundung,
     Verrechnung, Simulation oder Willensmängel. Wird die provisorische Rechtsöffnung erteilt, kann
     der Schuldner innert zwanzig Tagen auf dem Weg des ordentlichen Prozesses Aberkennungsklage
@@ -353,10 +353,10 @@
     das unmündige Kind gegenseitig Anspruch auf angemessenen persönlichen Verkehr. Das Besuchsrecht
     ist ein Pflichtrecht beider Seiten und dient in erster Linie dem Kindeswohl; das Kind ist
     Rechtssubjekt und nicht Objekt des elterlichen Anspruchs. Bei der Ausgestaltung ist deshalb
-    massgebend, was dem Wohl des Kindes entspricht — zu berücksichtigen sind das Alter des Kindes,
+    massgebend, was dem Wohl des Kindes entspricht - zu berücksichtigen sind das Alter des Kindes,
     die bisherige Beziehung zum Elternteil, die Entfernung der Wohnorte, die Belastbarkeit des
-    Kindes und der Wille des urteilsfähigen Kindes, der mit zunehmendem Alter — praxisgemäss etwa ab
-    zwölf Jahren — erheblich ins Gewicht fällt; das Kind ist in der Regel persönlich anzuhören
+    Kindes und der Wille des urteilsfähigen Kindes, der mit zunehmendem Alter - praxisgemäss etwa ab
+    zwölf Jahren - erheblich ins Gewicht fällt; das Kind ist in der Regel persönlich anzuhören
     (Art. 298 ZPO, Art. 314a ZGB). Nach Art. 274 Abs. 1 ZGB haben die Eltern alles zu unterlassen,
     was das Verhältnis des Kindes zum anderen Elternteil beeinträchtigt oder die Erziehungsaufgabe
     erschwert. Verweigert oder entzogen wird der persönliche Verkehr nur, wenn er das Wohl des
@@ -427,7 +427,7 @@
     obtenu un sursis postérieurement au jugement, ou en se prévalant de la prescription
     (art. 81 al. 1 LP). La preuve doit être immédiate et par titre, ce qui exclut les témoignages et
     les expertises ; les moyens de fond qui auraient pu être invoqués dans le procès au fond
-    — contestation de la créance, compensation non établie par titre, vices du consentement — sont
+    - contestation de la créance, compensation non établie par titre, vices du consentement - sont
     irrecevables, de même que la critique du jugement lui-même. Lorsque le jugement a été rendu dans
     un autre canton, le débiteur peut encore faire valoir qu'il n'a pas été régulièrement assigné ou
     légalement représenté (art. 81 al. 2 LP) ; s'agissant d'un jugement étranger, il peut soulever
@@ -453,7 +453,7 @@
   reference: |
     Si le prévenu est acquitté totalement ou en partie ou s'il bénéficie d'une ordonnance de
     classement, il a droit, selon l'art. 429 al. 1 CPP, à une indemnité pour les dépenses occasionnées
-    par l'exercice raisonnable de ses droits de procédure — en pratique surtout les frais de défense,
+    par l'exercice raisonnable de ses droits de procédure - en pratique surtout les frais de défense,
     dont le caractère raisonnable s'apprécie d'après la complexité de la cause et le travail
     nécessaire ; à une indemnité pour le dommage économique subi au titre de sa participation
     obligatoire à la procédure, notamment la perte de gain ; et à une réparation du tort moral subi
@@ -523,7 +523,7 @@
     Selon l'art. 404 al. 1 CO, le mandat peut être révoqué ou répudié en tout temps. Le mandataire ne
     peut donc pas s'opposer à la révocation ni en exiger l'exécution : la révocation met fin au
     contrat avec effet immédiat, sans qu'un motif doive être invoqué. Selon la jurisprudence
-    constante du Tribunal fédéral — critiquée par une partie de la doctrine mais maintenue —, cette
+    constante du Tribunal fédéral - critiquée par une partie de la doctrine mais maintenue -, cette
     règle est de droit impératif ; les parties ne peuvent donc ni l'exclure, ni la rendre
     pratiquement inopérante par une indemnité de résiliation dissuasive. Le mandataire conserve ses
     prétentions pour les prestations déjà fournies : rémunération des services accomplis et
@@ -564,8 +564,8 @@
     satisfait pleinement à ses devoirs envers ses collaborateurs ; un comportement de la victime
     difficile n'exclut cependant pas le mobbing. Le travailleur doit prouver les faits constitutifs,
     ce qui est difficile, de sorte que le juge apprécie les indices dans leur ensemble. Si l'employeur
-    viole son devoir de protection — soit en harcelant lui-même, soit en tolérant le harcèlement par
-    des collègues ou des supérieurs —, il répond du dommage selon les règles de la responsabilité
+    viole son devoir de protection - soit en harcelant lui-même, soit en tolérant le harcèlement par
+    des collègues ou des supérieurs -, il répond du dommage selon les règles de la responsabilité
     contractuelle (art. 97 CO), ce qui peut comprendre la perte de gain et les frais médicaux ; une
     indemnité pour tort moral peut être allouée aux conditions de l'art. 49 CO, c'est-à-dire en cas
     d'atteinte d'une certaine gravité. Le congé notifié au travailleur dont l'employeur a toléré le
@@ -625,9 +625,9 @@
     per trattenere l'autore dal commettere nuovi crimini o delitti. La giurisprudenza ha precisato che
     la sospensione condizionale è la regola e che per negarla occorre una prognosi sfavorevole: non è
     più richiesta, come sotto il diritto anteriore, una prognosi favorevole. Il giudice deve compiere
-    una valutazione globale di tutte le circostanze rilevanti per la prognosi — i precedenti penali,
+    una valutazione globale di tutte le circostanze rilevanti per la prognosi - i precedenti penali,
     la reputazione, la situazione personale e professionale, l'atteggiamento dell'autore dopo il
-    fatto, l'eventuale riparazione del danno e la capacità di autocritica — senza attribuire un peso
+    fatto, l'eventuale riparazione del danno e la capacità di autocritica - senza attribuire un peso
     preponderante a un singolo elemento. Se l'autore, nei cinque anni precedenti il reato, è stato
     condannato a una pena detentiva di sei mesi o più, la sospensione è possibile soltanto in presenza
     di circostanze particolarmente favorevoli (art. 42 cpv. 2 CP). Il giudice fissa un periodo di
@@ -694,7 +694,7 @@
     yet expired when it started, the notice period is suspended and only resumes after the blocking
     period ends; if the employment would then end on a day that is not the usual termination date
     (typically the end of a month), it is extended to the next such date (art. 336c paras. 2 and 3
-    CO). The protection applies only against termination by the employer — it does not cover notice
+    CO). The protection applies only against termination by the employer - it does not cover notice
     given by the employee, termination during the probation period, termination by mutual agreement,
     or immediate termination for good cause under art. 337 CO. Each new, medically distinct illness
     triggers its own blocking period, whereas a relapse of the same illness continues the period

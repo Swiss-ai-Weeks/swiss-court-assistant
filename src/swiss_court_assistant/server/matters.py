@@ -2,11 +2,11 @@
 
 A lawyer's case moves through five stages. Four of them are here:
 
-1. **Intake** — the client tells a messy story; the legal questions in it have to be spotted.
-2. **Research** — for each question: which provision applies, what do the courts say, is that still
+1. **Intake** - the client tells a messy story; the legal questions in it have to be spotted.
+2. **Research** - for each question: which provision applies, what do the courts say, is that still
    the current line. This is the existing agent, run once per issue.
-3. **Assessment** — how strong is the position, and what will the other side argue.
-4. **Drafting** — a memo in which every proposition carries a citation.
+3. **Assessment** - how strong is the position, and what will the other side argue.
+4. **Drafting** - a memo in which every proposition carries a citation.
 
 The fifth, filing and deadlines and client files, is practice management: no case law would help,
 so the app says so rather than pretending.
@@ -68,17 +68,17 @@ class _Intake(BaseModel):
 INTAKE_FORMAT = {"type": "json_schema",
                  "json_schema": {"name": "intake", "schema": _Intake.model_json_schema()}}
 
-INTAKE_PROMPT = """You are a Swiss lawyer taking in a new matter. You are given what the client handed over — a document, or a transcript of the client telling their story. Read it and return JSON:
+INTAKE_PROMPT = """You are a Swiss lawyer taking in a new matter. You are given what the client handed over - a document, or a transcript of the client telling their story. Read it and return JSON:
 
 - "title": a short name for the matter, e.g. "Termination of a lease in Zurich" (in {language}).
 - "summary": three to five sentences stating the facts as they are given, in {language}. Facts only, no legal conclusions, no advice.
-- "parties": who is involved, one entry each, with their role ("Client — tenant", "Landlord (AG)").
+- "parties": who is involved, one entry each, with their role ("Client - tenant", "Landlord (AG)").
 - "timeline": the dated facts in order, one per entry ("2024-03-14: termination served"). Leave empty if the text gives no dates.
 - "issues": between one and {max_issues} legal questions that decide this matter, most important first. Each has "question": the question as a lawyer would research it in Swiss case law, in {language}; "why": one sentence on why it decides this case; "area": one of "Zivilrecht", "Strafrecht", "öffentliches Recht", "Sozialversicherungsrecht".
 
-Name a statute article in a question **only** if the client's text names it. Writing an article number from memory puts a wrong provision into the research — ask the question in words instead ("termination during pregnancy", not "art. 336c CO").
+Name a statute article in a question **only** if the client's text names it. Writing an article number from memory puts a wrong provision into the research - ask the question in words instead ("termination during pregnancy", not "art. 336c CO").
 
-Only use what the text says. If a fact is missing, do not invent it — an issue may note that it is open."""
+Only use what the text says. If a fact is missing, do not invent it - an issue may note that it is open."""
 
 # A statute reference in an intake question, with whatever leads into it ("nach Art. 271a Abs. 1
 # lit. d OR", "selon l'art. 336c CO").
@@ -111,19 +111,19 @@ ASSESS_PROMPT = """You are a Swiss lawyer assessing a matter for the file, writi
 
 You are given the facts and, for each legal issue, what case-law research found. Write a short assessment in Markdown with these sections:
 
-**Where the client stands** — two or three sentences.
-**In our favour** — bullets. Each bullet must rest on something the research found; keep the [n] citation markers from the research text exactly as they are, so the reader can check it.
-**Against us** — bullets: what the other side will argue. Where a bullet rests on a decision the research found — one that cuts the other way, or is silent — keep its [n] marker too, exactly as it appears in the research text; only a bullet that states no case law was found may go without one.
-**What is still open** — bullets: facts or documents needed before this can be advised on; these describe a gap, so they carry no [n].
+**Where the client stands** - two or three sentences.
+**In our favour** - bullets. Each bullet must rest on something the research found; keep the [n] citation markers from the research text exactly as they are, so the reader can check it.
+**Against us** - bullets: what the other side will argue. Where a bullet rests on a decision the research found - one that cuts the other way, or is silent - keep its [n] marker too, exactly as it appears in the research text; only a bullet that states no case law was found may go without one.
+**What is still open** - bullets: facts or documents needed before this can be advised on; these describe a gap, so they carry no [n].
 
-Write the four headings in {language} as well, in bold — not in English.
+Write the four headings in {language} as well, in bold - not in English.
 
-Rules: use only the facts given and the research results below. Every claim about what a decision holds must carry the [n] that supports it — never state what the case law says without its marker. Where the research found nothing on point, say that plainly instead of filling the gap from your own knowledge. Do not predict a percentage chance of success. Do not give the client instructions; this is a note for the lawyer's file."""
+Rules: use only the facts given and the research results below. Every claim about what a decision holds must carry the [n] that supports it - never state what the case law says without its marker. Where the research found nothing on point, say that plainly instead of filling the gap from your own knowledge. Do not predict a percentage chance of success. Do not give the client instructions; this is a note for the lawyer's file."""
 
 
 def _digest(matter: Matter) -> str:
     """The researched issues as one block for the assessment prompt, with the citation markers already
-    renumbered the way the memo numbers them — otherwise every issue contributes its own [1] and the
+    renumbered the way the memo numbers them - otherwise every issue contributes its own [1] and the
     assessment's markers point at the wrong decisions."""
     _, answers = numbered(matter)
     out = [f"FACTS:\n{matter.intake.summary if matter.intake else matter.facts[:2000]}"]
@@ -183,16 +183,16 @@ def prep_document_id(matter_id: str) -> str:
 
 
 def case_prep_document(documents: DocumentStore, matter: Matter) -> DocumentInfo | None:
-    """What Case Prep generated for the matter — intake, issues with their research, assessment and table
-    of authorities, i.e. the memo — kept as a document of its case file, so the assistant asked about
+    """What Case Prep generated for the matter - intake, issues with their research, assessment and table
+    of authorities, i.e. the memo - kept as a document of its case file, so the assistant asked about
     the matter can read and cite it. None before the intake has run. Blocking."""
     if matter.intake is None:
         return None
-    return documents.keep_generated(prep_document_id(matter.id), f"Case prep — {matter.title}.md", memo(matter))
+    return documents.keep_generated(prep_document_id(matter.id), f"Case prep - {matter.title}.md", memo(matter))
 
 
 def memo(matter: Matter) -> str:
-    """The matter as one Markdown memo, assembled from the researched answers — not rewritten by a
+    """The matter as one Markdown memo, assembled from the researched answers - not rewritten by a
     model, so the citations stay attached to the sentences the research put them on."""
     lang = matter.language if matter.language in HEADINGS else "en"
     head, facts, parties, timeline, issues, assessment, authorities, uncovered = HEADINGS[lang]
@@ -206,7 +206,7 @@ def memo(matter: Matter) -> str:
     sources, answers = numbered(matter)
     out += [f"## {issues}", ""]
     for issue, answer in zip(matter.issues, answers, strict=True):
-        out += [f"### {issue.n}. {issue.question}", "", f"*{issue.why}*", "", answer or "_—_", ""]
+        out += [f"### {issue.n}. {issue.question}", "", f"*{issue.why}*", "", answer or "_-_", ""]
     if matter.assessment:
         out += [f"## {assessment}", "", matter.assessment, ""]
     if sources:
@@ -218,7 +218,7 @@ def memo(matter: Matter) -> str:
             erw = (", ".join(s.erwaegungen) if s.section == "document" else f"E. {', '.join(s.erwaegungen)}") \
                 if s.erwaegungen else None  # a page of the client's document: "p. 2"
             where = " · ".join(x for x in (d.court_label, d.docket, erw, d.date) if x)
-            link = f" — {d.source_url}" if d.source_url else ""
+            link = f" - {d.source_url}" if d.source_url else ""
             mark = "" if s.supported is not False else "  ⚠ check: the passage may not state this"
             out.append(f"{i}. {where}{link}{mark}")
         out.append("")
@@ -248,7 +248,7 @@ def _runs(paragraph, text: str) -> None:
 
 def _body(document, text: str) -> None:
     """A researched answer or the assessment: its paragraphs, bullets and emphasis into the document.
-    The [n] markers are left exactly as they are — they point into the table of authorities."""
+    The [n] markers are left exactly as they are - they point into the table of authorities."""
     for line in (text or "").splitlines():
         stripped = line.strip()
         if not stripped:
@@ -296,7 +296,7 @@ def docx_memo(matter: Matter) -> bytes:
         for issue, answer in zip(matter.issues, answers, strict=True):
             document.add_heading(f"{issue.n}. {issue.question}", level=2)
             document.add_paragraph().add_run(issue.why).italic = True
-            _body(document, answer or "—")
+            _body(document, answer or "-")
     if matter.assessment:
         document.add_heading(assessment, level=1)
         _body(document, matter.assessment)
@@ -417,7 +417,7 @@ class Pipeline:
         """One issue through the ordinary research agent, so it gets the same searches, citations
         and grounding checks as a question asked in the chat."""
         context = matter.intake.summary if matter.intake else matter.facts[:800]
-        question = f"{issue.question}\n\n(Context — the matter this is asked for: {context})"
+        question = f"{issue.question}\n\n(Context - the matter this is asked for: {context})"
         parts: list[str] = []
         sources: list[Source] = []
         yield {"type": "issue_start", "n": issue.n}
@@ -467,7 +467,7 @@ class Pipeline:
 
     async def _index(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
         """Put the case file into its own collection of the case index: cut into passages and embedded, so
-        each issue's research can search all of it. Idempotent — a rerun only adds what is missing. Without
+        each issue's research can search all of it. Idempotent - a rerun only adds what is missing. Without
         the embedder the research falls back to the documents' beginnings and read_document."""
         if self.case_index is None or not matter.assets:
             return

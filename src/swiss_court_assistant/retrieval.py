@@ -94,7 +94,7 @@ class NimEncoder:
                 async def one(i: int, batch: list[str]) -> np.ndarray:
                     async with sem:
                         # no encoding_format: the SDK then asks for base64 and decodes it with numpy,
-                        # which measured 165 vs 100 passages/s — parsing JSON floats was the bottleneck
+                        # which measured 165 vs 100 passages/s - parsing JSON floats was the bottleneck
                         r = await clients[i % len(clients)].embeddings.create(
                             model=self.model, input=batch,
                             extra_body={"input_type": input_type, "truncate": "END"},

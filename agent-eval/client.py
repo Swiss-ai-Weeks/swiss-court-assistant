@@ -1,11 +1,4 @@
-"""Ask the running assistant a question and collect the whole turn.
-
-The evaluation drives the agent through its own HTTP API rather than importing it, so what is
-measured is the assistant as it is served: the same corpus, the same retrieval, the same grounding
-check. `POST /api/chat` streams the turn as SSE; the closing `done` event carries the finished
-message with its sources (including `verified` and `supported`), so the turn is read off that and
-the deltas are only a fallback.
-"""
+"""Ask the running assistant a question and collect the whole turn."""
 
 from __future__ import annotations
 
@@ -111,9 +104,9 @@ async def ask(client: httpx.AsyncClient, question: str, conversation_id: str | N
 
 async def prepare_matter(client: httpx.AsyncClient, document_ids: list[str]) -> tuple[Turn, str | None]:
     """Case Prep on a case file: open a matter on the uploaded documents and run it through intake,
-    research, assessment and drafting. The researched issues become one answer — each issue as a
+    research, assessment and drafting. The researched issues become one answer - each issue as a
     heading with its answer below, the [n] markers renumbered across issues so they point into one
-    list of sources — which is what gets graded. Returns the turn and the matter's id, to delete."""
+    list of sources - which is what gets graded. Returns the turn and the matter's id, to delete."""
     turn = Turn(question="(Case Prep)")
     started = time.monotonic()
     matter_id = None
@@ -161,7 +154,7 @@ async def prepare_matter(client: httpx.AsyncClient, document_ids: list[str]) -> 
 
 
 async def delete_matter(client: httpx.AsyncClient, matter_id: str) -> None:
-    """Remove a matter this run opened — with its case file and its collection in the case index."""
+    """Remove a matter this run opened - with its case file and its collection in the case index."""
     try:
         await client.delete(f"/api/matters/{matter_id}")
     except httpx.HTTPError:

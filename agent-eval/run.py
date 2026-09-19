@@ -105,7 +105,7 @@ async def run_case(case: dict[str, Any], client: httpx.AsyncClient, judge: Judge
 
 
 def stored(run_dir: Path) -> list[tuple[dict[str, Any], dict[str, Any]]]:
-    """The answers of a finished run, as (case, transcript) pairs — everything needed to grade them
+    """The answers of a finished run, as (case, transcript) pairs - everything needed to grade them
     again without asking the agent anything. Judge changes are checked against the same answers."""
     pairs = []
     for path in sorted((run_dir / "transcripts").glob("*.json")):

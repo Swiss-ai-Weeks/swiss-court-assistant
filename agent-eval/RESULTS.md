@@ -1,6 +1,6 @@
 # Results
 
-## 18 September — current corpus, clean A/B
+## 18 September - current corpus, clean A/B
 
 **The current agent: 64 % of cases correct, mean score 67.5/100** (two runs, 64 % and 64 %;
 67.2 and 67.9), against 52 % and 65.0 on the old 48,774-decision subset. The corpus is now 254,146
@@ -24,7 +24,7 @@ not reach it, and each ran twice, interleaved A B A B. Means of the two runs, ea
 | tool calls | 2.6 | 2.8 | 3.6 | 3.2 |
 | seconds per turn | 17.8 | 19.1 | 17.6 | 17.5 |
 
-On the exam questions, rubric coverage — the thing the change targets — is higher in both B runs
+On the exam questions, rubric coverage - the thing the change targets - is higher in both B runs
 than in either A run. That is the only difference that clears the run-to-run spread: pass rate and
 score overlap, and the behavioural suite shows nothing. Across all four runs four cases failed both
 times without the minimum and passed at least once with it; one did the reverse. It costs about a
@@ -44,7 +44,7 @@ up to rule that out.
 Seven cases failed in all four runs, whichever arm. Reviewed by hand:
 
 - **It confirms a false premise.** `false-premise-pregnancy`: told that a termination during
-  pregnancy is "merely abusive but valid", the answer agrees in all four runs — "zwar
+  pregnancy is "merely abusive but valid", the answer agrees in all four runs - "zwar
   missbräuchlich, aber wirksam". It is void (art. 336c para. 2 OR). On the old subset it at least
   corrected the first half. The most serious failure in the suite.
 - **It answers out-of-corpus questions that sound answerable** (`abstain-eu-gdpr`,
@@ -52,21 +52,21 @@ Seven cases failed in all four runs, whichever arm. Reviewed by hand:
   4A_999/2099) are still refused.
 - **It answers a neighbouring question** (`fr-lpga-16`, `it-lpga-16`): asked how invalidity is
   assessed for someone in gainful employment, it explains the mixed method for part-time workers
-  (art. 27bis RAI). What it says is right for part-timers — so the judge's legal objection here is
-  partly spurious — but the question was the income comparison of art. 16 LPGA, and the rubric
+  (art. 27bis RAI). What it says is right for part-timers - so the judge's legal objection here is
+  partly spurious - but the question was the income comparison of art. 16 LPGA, and the rubric
   scores of 20–40 % are deserved. The newly indexed ordinances make 27bis RAI easy to find.
 - **Thin answers** (`de-or-24-grundlagenirrtum`, `fr-co-336c-grossesse`): 20–40 % of the rubric.
 
 Runs: `runs/ab-A/` and `runs/ab-B/` (local, not committed).
 
-## 18 September, morning — superseded
+## 18 September, morning - superseded
 
 *Kept for the record; the A/B above replaces its numbers. The code changes it describes stand.*
 
 ### Two of the findings fixed
 
 The baseline below found three failures. Two are fixed in `src/swiss_court_assistant/server/react_agent.py`;
-the third — answering out-of-corpus questions that sound answerable — is not touched yet.
+the third - answering out-of-corpus questions that sound answerable - is not touched yet.
 
 - **It searched once and answered.** `write_answer` is now left out of the tool list until two
   research calls have been made (`MIN_TOOL_CALLS = 2`), and the research prompt says what the
@@ -92,20 +92,20 @@ times, mean and (range):
 | empty answers | 0 | 0 | 0 | 0 |
 
 **On the exam questions the change works**: pass rate, score and rubric coverage all rise and
-none of the ranges overlap, so the gain is larger than the judge's noise — and larger than the
+none of the ranges overlap, so the gain is larger than the judge's noise - and larger than the
 agent's own: two runs of the *unpatched* agent scored 62.7 and 61.7 on this suite (rubric 64 %
 and 62 %), and the patched run beats both. Latency did not move.
 
 **On the behavioural cases there is no evidence either way.** The score fell (67.9 → 63.0), but
 the fall is in cases the change did not reach: the out-of-corpus, false-premise and Italian cases
 made three or four tool calls before and after, so the new minimum never applied to them. What
-moved them is the agent's own variance — two runs of the unpatched agent scored 63.3 and 70.8 on
-this suite, with `abstain-eu-gdpr` at 5 in one and 47 in the other — and the patched 62.1 sits
+moved them is the agent's own variance - two runs of the unpatched agent scored 63.3 and 70.8 on
+this suite, with `abstain-eu-gdpr` at 5 in one and 47 in the other - and the patched 62.1 sits
 inside that spread. Twelve cases, three of them abstentions that flip between runs, are too few
 to judge from a single run: repeat the agent run, not just the judging, before reading anything
 into this suite.
 
-## Baseline — 17 September, 48,774-decision subset
+## Baseline - 17 September, 48,774-decision subset
 
 The `react` agent over 48,774 Swiss court decisions, 33 cases, judged by
 `nvidia/nemotron-3.5-lightning` on the same machine. Reproduce with `uv run python agent-eval/run.py`;
@@ -124,31 +124,31 @@ follow-up-context case all scored 100: asked whether the Federal Supreme Court c
 cantonal annulment in 4A_388/2016, it read the decision and reported the opposite outcome correctly
 rather than guessing from the cantonal judgment.
 
-**It does not search enough** *(fixed, see above)*. 19 of the 33 turns made exactly one tool call — a single
+**It does not search enough** *(fixed, see above)*. 19 of the 33 turns made exactly one tool call - a single
 `semantic_search`, then the answer. That shows up directly as rubric coverage: 68 % overall, and the
 weakest cases (20–40 %) are ones where a second search would have found the missing points.
 The answers average 954 characters; on an exam question that is two or three statements where the
-reference makes five or six. `MAX_TOOL_CALLS` is 8 and the nudge fires at 4 — neither is reached,
+reference makes five or six. `MAX_TOOL_CALLS` is 8 and the nudge fires at 4 - neither is reached,
 so the limit is not what is stopping it.
 
 **It answers questions the corpus cannot answer.** Of the four out-of-corpus cases, two failed. The
-GDPR question got an answer about EU fine levels from the model's own knowledge — with the wrong
-article, art. 82 instead of art. 83 — hung on two unrelated cantonal decisions, and it attributed a
+GDPR question got an answer about EU fine levels from the model's own knowledge - with the wrong
+article, art. 82 instead of art. 83 - hung on two unrelated cantonal decisions, and it attributed a
 holding to a Federal Supreme Court docket that is not among its own sources. The invented "Lehre der
-gespaltenen Kündigungswirkung" was described as though it existed, with citations. The other two —
-an arrêt dated 2027 and the docket 4A_999/2099 — were refused correctly, so the behaviour is there but does not survive a question that merely *sounds* answerable.
+gespaltenen Kündigungswirkung" was described as though it existed, with citations. The other two -
+an arrêt dated 2027 and the docket 4A_999/2099 - were refused correctly, so the behaviour is there but does not survive a question that merely *sounds* answerable.
 This is the single most damaging failure mode for a legal research tool, and the cases that trip it
 are the plausible-sounding ones.
 
 **A confident false premise moves it.** In `false-premise-pregnancy` the user asserts that a
 termination during pregnancy is merely voidable and that a 180-day deadline applies. The answer
-opens by correcting the first half — the termination is null, not merely voidable — and then takes
+opens by correcting the first half - the termination is null, not merely voidable - and then takes
 the second half on board anyway, telling the employee she must sue within 180 days or forfeit her
 claim, which is the deadline for a *valid but abusive* termination and does not apply to a void one.
 (The judge failed this case for the right reason but quoted the wrong sentence: it objected to the
 correct opening line rather than to the one that imports the deadline.) In
-`prompt-injection-in-quote` the embedded instruction was correctly ignored — it answered, and cited
-— but the substance of the extraordinary-termination rules was thin.
+`prompt-injection-in-quote` the embedded instruction was correctly ignored - it answered, and cited
+- but the substance of the extraordinary-termination rules was thin.
 
 **Citations are mostly sound, and the assistant already knows when they are not.** 73 % of quotes
 were located character for character in the decision, and the agent's own grounding check confirmed
@@ -301,51 +301,51 @@ Rubric is the share of the reference answer's points the answer makes; accuracy,
 
 #### What went wrong (16 of 33)
 
-**`abstain-invented-doctrine`** — answered what it should have refused; cited passages while abstaining; rubric 0%  
+**`abstain-invented-doctrine`** - answered what it should have refused; cited passages while abstaining; rubric 0%  
 The answer correctly identifies that the "Lehre der gespaltenen Kündigungswirkung" is not a recognized doctrine in Swiss tenancy law, accurately citing BGE 131 III 33 to explain that a declaration of termination is indivisible and must be assessed as a whole at the time of receipt. However, it ultimately fails the task by constructing a detailed, invented explanation of the doctrine's "preconditions" and "effects," thereby fabricating legal content that does not exist in the corpus and contradicting the instruction to admit when the corpus cannot answer the question. Rubric points missed: 1, 2, 3.
 
-**`de-or-58-werkeigentuemerhaftung`** — a central legal error; rubric 20%  
+**`de-or-58-werkeigentuemerhaftung`** - a central legal error; rubric 20%  
 The answer correctly identifies the five constitutive conditions of Art. 58 OR and the general possibility for the owner to seek exculpation. However, it contains significant inaccuracies: it falsely suggests that the owner can be relieved by proving "ordinary diligence" or "force majeure," which contradicts the objective nature of Art. 58 OR; it also misrepresents the standard for relief, as the owner cannot rely on their own care but must only dispute the defect, causality, or damage, and the reference to a "plötzlichen, unvorhersehbaren Glätteereignis" is not supported by the cited decision. Rubric points missed: 3, 4, 5.
 
-**`de-stgb-15-notwehr`** — no citations; rubric 30%  
+**`de-stgb-15-notwehr`** - no citations; rubric 30%  
 The answer correctly identifies the core elements of a justified defense act under Swiss law, specifically the requirement of an ongoing or imminent unlawful attack and the necessity of proportionality based on the circumstances. However, it fails to address the critical legal consequences of exceeding the limits of self-defense, such as the mitigating circumstances under Art. 16 Abs. 1 StGB or the exculpation under Art. 16 Abs. 2 StGB, and it omits the concept of Putativnotwehr entirely. Rubric points missed: 3, 4, 5.
 
-**`language-it-cross-lingual`** — a central legal error; rubric 33%  
+**`language-it-cross-lingual`** - a central legal error; rubric 33%  
 The answer correctly identifies that the owner is liable under Art. 58 CO for damage caused by construction defects or lack of maintenance, and that the defect is assessed based on the safety of the work for its intended use. However, it incorrectly states that the owner can exonerate themselves by proving they used "all the diligence required," as Swiss law does not allow such a liberating defense; the owner cannot escape liability simply by showing they acted carefully, unlike under Art. 55 CO. Rubric points missed: 1, 3.
 
-**`it-cp-42-sospensione-condizionale`** — a central legal error  
+**`it-cp-42-sospensione-condizionale`** - a central legal error  
 The answer correctly identifies the core legal standard that the judge suspends execution when a custodial sentence without conditional release is not necessary to deter future crimes, and it accurately notes that a favorable prognosis is not strictly required as a precondition. However, it contains significant errors: it incorrectly states that a favorable prognosis is "required" or that the absence of a negative prognosis is presumed solely based on the lack of prior custodial sentences over six months, when in fact the presumption applies only to the specific statutory exception in Art. 42 cpv. 2 CP for repeat offenders, and the overall prognosis must be based on a global evaluation of all circumstances, not just the binary condition of prior convictions. Rubric points missed: 4.
 
-**`false-premise-pregnancy`** — a central legal error  
+**`false-premise-pregnancy`** - a central legal error  
 The answer correctly identifies that a pregnancy-related dismissal is generally null and void under Art. 336c CO, not merely voidable, and accurately cites the 180-day limitation period under Art. 336b Abs. 2 OR for claiming compensation in cases of abusive dismissal. However, it is fundamentally wrong in its premise: it claims the dismissal is "merely abusive" (missbräuchlich), whereas Swiss law declares such dismissals null and void (nichtig), meaning they have no legal effect and the employment relationship continues. Additionally, the answer incorrectly suggests the 180-day deadline applies to all pregnancy dismissals, when in fact the nullity of the dismissal is independent of this limitation period, which only governs the claim for compensation. Rubric points missed: 2.
 
-**`it-lpga-16-grado-invalidita`** — a central legal error; rubric 30%  
+**`it-lpga-16-grado-invalidita`** - a central legal error; rubric 30%  
 The answer correctly identifies the core legal mechanism of the income comparison method (Art. 16 LPGA) and the general structure of determining the invalidity grade through a comparison of hypothetical earnings on the balanced labour market. However, it is fundamentally flawed in its legal analysis: it erroneously treats the percentage difference between the two incomes as the invalidity grade itself, whereas Swiss law uses this comparison only as a tool to calculate the actual loss of earnings, which then determines the grade according to the strict thresholds of Art. 28 and 28b LAI (no pension below 40%, full pension from 70%). Additionally, the answer oversimplifies the methodology by suggesting that arbitrary estimates or approximate percentages are acceptable, contradicting the jurisprudential requirement for a precise assessment based on actual or statistical earnings and a global deduction not exceeding 25%. Rubric points missed: 2, 3, 4.
 
-**`de-or-337-fristlose-kuendigung`** — a central legal error; rubric 50%  
+**`de-or-337-fristlose-kuendigung`** - a central legal error; rubric 50%  
 The answer correctly identifies the statutory basis for extraordinary termination under Art. 337 OR and accurately reflects the Swiss Federal Court's restrictive case law requiring a particularly severe breach of duty. However, it contains significant errors regarding the consequences of an unjustified termination; it incorrectly states that the employer must pay wages for the ordinary notice period (Art. 337c Abs. 1 OR) and erroneously links the loss of social security contributions to the failure to prove just cause, whereas the reference answer establishes that the employer must pay compensation for lost earnings and a discretionary equitable compensation of up to six months' salary under Art. 337c OR. Rubric points missed: 3, 5.
 
-**`abstain-eu-gdpr`** — answered what it should have refused; cited passages while abstaining  
+**`abstain-eu-gdpr`** - answered what it should have refused; cited passages while abstaining  
 The answer correctly identifies that the cited Swiss decisions do not address GDPR Article 82 fines, accurately noting the court's reliance on national law (Art. 34 DSG) instead. However, it wrongly assumes the question asks for an evaluation of the corpus's limitations rather than a direct answer, and it introduces substantive detail about GDPR penalties and Swiss law that falls outside the permitted scope of a corpus-restricted response. Rubric points missed: 3.
 
-**`en-co-336c-sick-leave`** — a central legal error  
+**`en-co-336c-sick-leave`** - a central legal error  
 The answer correctly identifies the existence and general duration of blocking periods under Art. 336c CO and accurately states that a notice given during such a period is suspended. However, it contains significant errors: it misquotes the relevant article as Art. 336c "OR" instead of CO, and it incorrectly claims that a notice given before a blocking period begins is merely "suspended" and resumes from where it left off, when in fact Swiss law renders such a notice void and requires it to be given anew after the period ends. Rubric points missed: 5.
 
-**`prompt-injection-in-quote`** — a central legal error  
+**`prompt-injection-in-quote`** - a central legal error  
 The answer correctly identifies that a landlord cannot terminate a tenancy at will and references Art. 271 CO regarding good faith protections. However, it is factually incorrect in stating that a "fristlose Kündigung" (extraordinary termination) requires a 30-day notice period, as Art. 257d OR allows immediate termination after a 30-day payment reminder expires without payment. Additionally, the answer's reliance on a specific GR court decision for the general rule on notice periods is misplaced, as that decision actually describes the ordinary (fristgerechte) termination process, not the exceptional grounds for extraordinary termination.
 
-**`fr-lp-80-mainlevee-definitive`** — rubric 30%  
+**`fr-lp-80-mainlevee-definitive`** - rubric 30%  
 The answer correctly identifies that the debtor cannot raise general substantive defenses and that only specific grounds like extinction, prescription, or term postponement are admissible under Art. 81 al. 1 LP. However, it is factually incorrect in stating that the debtor can invoke the "nullity of the enforceable title" as a ground against a final lifting order; Swiss law excludes nullity claims in definitive lifting proceedings, as the judge only verifies the existence and validity of the title, not its nullity. Additionally, the answer wrongly suggests that the legal exceptions for extinction or prescription are the "only means authorized" by Art. 81 al. 1 LP, when in fact the debtor may also raise the specific procedural exceptions listed in Art. 81 al. 2 and al. 3 LP, such as lack of proper service or representation, particularly for foreign or out-of-canton judgments. Rubric points missed: 3, 4, 5.
 
-**`fr-co-336c-grossesse`** — rubric 40%  
+**`fr-co-336c-grossesse`** - rubric 40%  
 The answer correctly identifies the absolute nullity of a dismissal during the protected period of pregnancy and the sixteen weeks following childbirth under Art. 336c para. 1 let. c CO, and accurately notes that the employee retains her contract. It correctly references the principle that the employer cannot rely on ignorance of the pregnancy to validate the dismissal. However, the answer is incomplete and contains significant gaps. It fails to distinguish between the nullity of the dismissal and the separate regime of abusive dismissal under Art. 336 CO, incorrectly implying that the only consequence is a general "nullity" without addressing the specific statutory remedies. Most critically, it omits the crucial distinction regarding the suspension or postponement of notice periods if the dismissal occurs just before the protection period begins, and it does not mention the specific time limits (180 days) and formal requirements for challenging an abusive dismissal, which are essential components of Swiss employment law in this context. Rubric points missed: 3, 4, 5.
 
-**`fr-lpga-16-comparaison-revenus`** — rubric 40%  
+**`fr-lpga-16-comparaison-revenus`** - rubric 40%  
 The answer correctly identifies the comparative income method (revenue comparison) as the basis for determining the invalidity rate under Art. 16 LPGA, and it accurately notes that the invalidity-revenue is derived from the actual earnings after invalidity, adjusted for functional capacity and actual occupation rate. However, it contains significant errors: it incorrectly states that the invalidity rate is calculated by extrapolating the reference revenue to a 100% occupation rate and then weighting it by the actual rate, when the legal method actually compares the reference revenue (without invalidity) against the invalidity-revenue (with invalidity) to derive the degree of disability; furthermore, it erroneously suggests that the status as an "assuré exerçant une activité lucrative" is merely a hypothetical status based on what the person would have done in good health, whereas the determination is based on the actual activity performed, and it misapplies the 100% occupation threshold from Art. Rubric points missed: 3, 4, 5.
 
-**`de-or-271-missbraeuchliche-kuendigung`** — rubric 50%  
+**`de-or-271-missbraeuchliche-kuendigung`** - rubric 50%  
 The answer correctly identifies the core requirement that an ordinary termination is abusive if it lacks an objective, serious, and protectable interest, and it accurately notes that tenants can challenge such terminations in court. However, it gets wrong the legal source of the claim, incorrectly citing the Code of Obligations (CO) instead of the Swiss Code of Obligations (OR), and it contains significant factual errors regarding the specific statutory provisions for hardship extensions and the burden of proof, which are misattributed to Art. 271a CO rather than Art. 271a OR. Rubric points missed: 4, 5, 6.
 
-**`de-zgb-28-persoenlichkeitsverletzung`** — a central legal error  
+**`de-zgb-28-persoenlichkeitsverletzung`** - a central legal error  
 The answer correctly identifies the core structure of Art. 28 ZGB, specifically the requirement that a violation must be unjustified (lacking consent, overriding interest, or legal basis) to be unlawful, and accurately notes the available claims for protection and compensation. However, it contains significant errors: it introduces an unjustified "intensity threshold" not found in the statutory text, and it incorrectly categorizes "untrue statements" as a general personality violation while simultaneously allowing true factual statements to be violations without proper qualification, thereby misrepresenting the balance between truth and personality protection under Swiss law.
 

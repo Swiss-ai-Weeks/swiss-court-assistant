@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 .venv/
 
-# Data (downloaded / generated — never commit)
+# Data (downloaded / generated - never commit)
 data/
 
 # Secrets (NGC_API_KEY etc.)

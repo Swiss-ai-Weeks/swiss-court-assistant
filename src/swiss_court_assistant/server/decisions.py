@@ -196,7 +196,7 @@ class SqliteDecisionStore:
 
         `code` is an abbreviation or an SR number. Abbreviations differ by language (OR in German, CO
         in French and Italian), so the code is resolved to the act's SR number first and the article
-        comes back in all languages — asking for "OR" finds the French text too."""
+        comes back in all languages - asking for "OR" finds the French text too."""
         canton = (canton or "CH").strip().upper()
         srs = self.find_acts(code, canton)
         if not srs:

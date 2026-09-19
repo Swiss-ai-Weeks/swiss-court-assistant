@@ -1,8 +1,8 @@
 """Documents the user attaches, read with the Nemotron Parse NIM and kept on disk.
 
 Nemotron Parse reads page images, not files: a PDF is rendered page by page (pypdfium2, locally) and
-each page goes to the NIM, which returns the page's elements in reading order — titles, text, tables as
-Markdown, captions — with their type. Page headers and footers are dropped (they repeat on every page
+each page goes to the NIM, which returns the page's elements in reading order - titles, text, tables as
+Markdown, captions - with their type. Page headers and footers are dropped (they repeat on every page
 and would land in the middle of sentences), section headers become Markdown headings. Scans and photos
 of letters work the same way, which the old text-layer extraction could not do. Word and plain-text
 files have their text already and are read directly.
@@ -133,7 +133,7 @@ def pdf_pages(data: bytes) -> list[bytes]:
     try:
         pdf = pdfium.PdfDocument(data)
     except pdfium.PdfiumError as e:
-        raise UnreadableError("That PDF could not be opened — it may be damaged or password-protected.") from e
+        raise UnreadableError("That PDF could not be opened - it may be damaged or password-protected.") from e
     if len(pdf) > MAX_PAGES:
         raise UnreadableError(f"That PDF has {len(pdf)} pages; up to {MAX_PAGES} can be read.")
     out = []
@@ -181,7 +181,7 @@ class DocumentStore:
     async def parse(self, filename: str, data: bytes) -> Parsed:
         suffix = PurePosixPath(filename).suffix.lower()
         if suffix == ".doc":
-            raise UnreadableError("Old .doc files are not supported — save it as .docx or PDF first.")
+            raise UnreadableError("Old .doc files are not supported - save it as .docx or PDF first.")
         if suffix in (".docx", ".dotx"):
             try:
                 return Parsed(_tidy(await asyncio.to_thread(_docx, data)), 1, "python-docx")

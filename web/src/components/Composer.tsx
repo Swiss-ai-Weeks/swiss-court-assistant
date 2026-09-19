@@ -61,7 +61,7 @@ export function AttachmentChip({ name, info, error, onRemove }: {
 
 /** The message as sent: the quote as "> " lines (the thread and the backend recognise them), then the text. */
 function withQuote(text: string, q: Quote | null): string {
-  return q ? `> ${q.text}\n${q.source ? `> — ${q.source}\n` : ""}\n${text}` : text;
+  return q ? `> ${q.text}\n${q.source ? `> - ${q.source}\n` : ""}\n${text}` : text;
 }
 
 export function QuoteCard({ text, source, language, onRemove }: {

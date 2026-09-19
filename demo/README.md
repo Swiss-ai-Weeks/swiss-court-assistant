@@ -6,7 +6,7 @@ timings are from those runs.
 
 ## 1. Two questions (English and French)
 
-### Question 1 — answers right away
+### Question 1 - answers right away
 
 > How long does a tenant have to challenge a termination of the lease, and what happens if the deadline is missed?
 
@@ -18,7 +18,7 @@ the English run took 95 s because it made 8 tool calls, so start with the French
 
 Point out: the "Thinking" chain, citations that open the decision, statute links (Art. 273 OR).
 
-### Question 2 — asks you back
+### Question 2 - asks you back
 
 > My employer let me go yesterday. Am I still entitled to my salary?
 
@@ -26,7 +26,7 @@ Point out: the "Thinking" chain, citations that open the decision, statute links
 
 The answer turns on whether the contract was ended immediately (Art. 337 CO) or with notice, so the
 agent searches first and then asks one question with answer buttons, e.g. *"Was the termination
-ordinary (with notice period) or immediate (without notice, for just cause)?"* — **Ordinary termination
+ordinary (with notice period) or immediate (without notice, for just cause)?"* - **Ordinary termination
 with notice period** / **Immediate termination without notice**. Click a button and it answers in the
 language of the question. It asked back in all 6 test runs, after 15–40 s; the exact wording and the
 buttons vary from run to run, and the French one sometimes bundles two questions into one.

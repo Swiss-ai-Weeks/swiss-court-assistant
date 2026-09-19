@@ -1,4 +1,4 @@
-# The NVIDIA NIMs the Swiss Court Assistant runs on — and nothing else.
+# The NVIDIA NIMs the Swiss Court Assistant runs on - and nothing else.
 #
 #   service     port (host)            GPU  used for
 #   llm         9100 (OpenAI API)       0   the agent, the answer, grounding checks, matters
@@ -17,7 +17,7 @@
 # from this file. Only llm, embed, rerank and parse get it; the speech and translation NIMs start offline.
 #
 # Speech and translation start from exported models. A Riva NIM compiles its TensorRT engines into the
-# container on every start whenever it finds its downloaded model package — 30 minutes for asr and for
+# container on every start whenever it finds its downloaded model package - 30 minutes for asr and for
 # tts on this box, even for a plain restart. With NIM_DISABLE_MODEL_DOWNLOAD it finds no package and
 # instead unpacks the compiled models from NIM_EXPORT_PATH: 20–50 seconds, no NGC call at all. The
 # exports in ~/.cache/nim/riva-export/<service>/ are tars of the running containers' /data/models.
@@ -88,7 +88,7 @@ services:
       - embed-model:/model
     shm_size: 16gb
     # The image's own check needs /bin/sh, which the image does not have, and its health binary
-    # cannot create a CUDA context when run as a check — it reported "unhealthy" while serving.
+    # cannot create a CUDA context when run as a check - it reported "unhealthy" while serving.
     healthcheck:
       disable: true
 

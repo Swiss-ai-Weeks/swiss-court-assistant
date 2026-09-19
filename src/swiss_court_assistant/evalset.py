@@ -37,7 +37,7 @@ from swiss_court_assistant.statutes import GLOSSARY, STATUTE_GLOSSARY
 MODEL = os.environ.get("LLM_MODEL", "Qwen/Qwen3-30B-A3B-Instruct-2507")
 BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:8000/v1")
 # Romansh is supported but off by default: in the pilot, Qwen3-30B's "Romansh"
-# was an Italo-Lombard mix, not Rumantsch Grischun — rm needs a better translator.
+# was an Italo-Lombard mix, not Rumantsch Grischun - rm needs a better translator.
 QUERY_LANGS = ["de", "fr", "it", "en"]
 LANG_NAMES = {"de": "German", "fr": "French", "it": "Italian",
               "rm": "Romansh (Rumantsch Grischun)", "en": "English"}

@@ -63,7 +63,7 @@ class Listener:
     async def transcribe(self, audio: asyncio.Queue[bytes | None],
                          language: str = "en") -> AsyncIterator[tuple[str, bool]]:
         """Transcribe audio chunks from the queue (None ends it). The gRPC stream blocks, so it runs on
-        a daemon thread — never the event loop's executor, where a stuck read would hold up shutdown —
+        a daemon thread - never the event loop's executor, where a stuck read would hold up shutdown -
         and hands results back through the loop."""
         loop = asyncio.get_running_loop()
         inbox: queue.Queue[bytes | None] = queue.Queue()
