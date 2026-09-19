@@ -259,6 +259,15 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
     }
   };
 
+  /** Run the whole matter again — intake, research, assessment, memo — on the same case file. */
+  const rerun = (m: Matter) => {
+    if (!window.confirm("Run this case again from the intake? The current research, assessment and memo are replaced.")) return;
+    setMatter({ ...m, stage: "intake", assessment: null, memo: null });
+    setLive(EMPTY);
+    setStages({});
+    run(m.id);
+  };
+
   const authorities = useMemo(() => (matter ? citationSources(matter) : []), [matter]);
 
   if (!matter) return <div className="matter"><MatterIntake busy={busy} error={error} onStart={start} /></div>;
@@ -286,6 +295,12 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
             {running && (
               <button className="btn-outline" onClick={() => abort.current?.abort()}>
                 Stop
+              </button>
+            )}
+            {!running && done && (
+              <button className="btn-outline" onClick={() => rerun(matter)}
+                title="Run intake, research, assessment and drafting again on the same case file">
+                Rerun
               </button>
             )}
             {!running && (

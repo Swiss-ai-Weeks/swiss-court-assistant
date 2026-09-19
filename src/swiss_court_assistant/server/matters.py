@@ -498,7 +498,8 @@ class Pipeline:
     async def run(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
         """Stage by stage, saving as it goes: a browser that disconnects loses the stream, not the work."""
         try:
-            matter.stage = "intake"
+            # a rerun starts over: the last run's assessment and memo belong to research it replaces
+            matter.stage, matter.assessment, matter.memo = "intake", None, None
             yield {"type": "stage", "stage": "intake", "status": "running"}
             async for ev in self._index(matter):
                 yield ev
