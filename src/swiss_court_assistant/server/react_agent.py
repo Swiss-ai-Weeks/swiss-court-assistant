@@ -239,7 +239,11 @@ ANSWER_FORMAT = {"type": "json_schema",
 SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision, a statute or a document the user attached, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
-COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found, or what the decisions and articles found are about instead and why they do not answer the question, is covered."""
+COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
+# The give-up brief (BRIEF_PROMPT) has no sources by design, and saying what the decisions found are about is
+# its point; stating the law is still not allowed. Kept apart from COVERED_PROMPT: allowing "what the passages
+# are about" in answers let an uncited "void under Art. 336c para. 2 OR" through as a description of a passage.
+BRIEF_COVERED_PROMPT = """You review a short report to a user on legal research that found no answer to their question. You are given one sentence of it. Reply {"covered": true} if the sentence only reports what was searched for, which decisions or statute articles came up and what their subject or facts are, or that and why they do not answer the question. Reply {"covered": false} if it states what the law is or what a court or a statute holds on the point — a rule, a holding, a deadline, an amount, a legal consequence, an outcome for the user — or guesses one."""
 COVERED_FORMAT = {"type": "json_schema", "json_schema": {"name": "covered", "schema": {
     "type": "object", "properties": {"covered": {"type": "boolean"}}, "required": ["covered"]}}}
 ANSWERS_PROMPT = """You review whether a legal answer responds to the question it was written for. Reply {"answers": true} if the answer addresses what the question asks — its subject and the point it turns on — including when it says that the sources do not cover the question, or corrects a premise of the question. Reply {"answers": false} if it answers a neighbouring question instead, states a general rule without reaching the point asked, or talks past the question."""
@@ -991,7 +995,7 @@ class ResearchThenAnswer(AgentMiddleware):
             status(Status("thinking", "The passages found do not support the draft: researching again "
                                       f"({turn.researched_again} of {MAX_RESEARCH_AGAIN})"))
             return self._research_again(request, report, turn.researched_again)
-        if empty:
+        if empty or (rejected and not answer.sources):  # nothing sourced: what is left is no answer either
             log.warning("nothing of the draft held up against the passages; giving up with a brief")
             status(Status("checking", "Summarising what the research found"))
             brief = await self._brief(request, question, code, seen, [*failed, *report.failed_statements])
@@ -1022,7 +1026,7 @@ class ResearchThenAnswer(AgentMiddleware):
             parts = [p for p in _parse_answer(await self._generate(prompt)) if isinstance(p, TextPart) and p.text.strip()]
             if not parts:
                 return []
-            report = await self.verifier.verify(parts, question, code, seen, check_answers=False)
+            report = await self.verifier.verify(parts, question, code, seen, check_answers=False, brief=True)
             kept = report.prune(parts, [])
         except Exception:  # noqa: BLE001 — the fixed message is still an answer
             log.warning("could not write the brief of the research", exc_info=True)
@@ -1364,10 +1368,11 @@ class Report:
         """Whether the checks rejected so much of the draft that the passages, not the wording, are at
         fault: every citation failed, or at least REJECTED_SHARE of the cited statements."""
         statements = {c.statement for c in self.citations}
-        if not statements:
-            return False
         if not any(c.ok for c in self.citations):
-            return True
+            # Nothing sourced left. A draft with no citations that only reports what was not found is an
+            # answer; one that had citations, or sentences the coverage check removed, made claims that
+            # nothing supports — shown without them, it read as an uncited statement of the law.
+            return bool(statements) or bool(self.rewritten)
         return len(set(self.failed_statements)) >= REJECTED_SHARE * len(statements)
 
     def prune(self, parts: list[TextPart | CitationPart], failed_before: list[str]) -> VerifiedAnswer:
@@ -1514,9 +1519,9 @@ class Verifier:
             f"PASSAGE ({source.decision.docket}; the quoted sentences are between ⟦ and ⟧):\n{passage}\n\n"
             f"STATEMENT:\n{statement}", "supported", "grounding")
 
-    async def covered(self, backed: str, statement: str) -> bool | None:
+    async def covered(self, backed: str, statement: str, prompt: str = COVERED_PROMPT) -> bool | None:
         """Does an unsourced sentence only restate what the sourced sentences say?"""
-        return await self._yes_no(self.covered_llm, COVERED_PROMPT,
+        return await self._yes_no(self.covered_llm, prompt,
                                   f"BACKED SENTENCES:\n{backed[:4000] or '(none)'}\n\nSENTENCE WITHOUT A SOURCE:\n{statement}",
                                   "covered", "coverage")
 
@@ -1525,8 +1530,9 @@ class Verifier:
                                   f"QUESTION:\n{question[:1500]}\n\nANSWER:\n{answer[:4000]}", "answers", "answers")
 
     async def verify(self, parts: list[TextPart | CitationPart], question: str, language: str | None,
-                     seen: set[str], lenient: bool = False, check_answers: bool = True) -> Report:
-        """The problems with a draft. `lenient`: the last round, see CheckedCitation.lenient."""
+                     seen: set[str], lenient: bool = False, check_answers: bool = True, brief: bool = False) -> Report:
+        """The problems with a draft. `lenient`: the last round, see CheckedCitation.lenient. `brief`: the
+        report written when giving up, whose sentences are checked with BRIEF_COVERED_PROMPT."""
         cites = _Citations(self.corpus, self.documents)
         cites.seen = set(seen)
         free = {_any_language(s) for s in seen}
@@ -1590,7 +1596,7 @@ class Verifier:
         async def coverage(index: int, sentence: str) -> tuple[int, str, bool | None]:
             if len(sentence) < 25:  # "Zusammenfassend:" — framing, not a claim
                 return index, sentence, True
-            return index, sentence, await self.covered(backed, sentence)
+            return index, sentence, await self.covered(backed, sentence, BRIEF_COVERED_PROMPT if brief else COVERED_PROMPT)
 
         verdicts: dict[tuple[int, str], bool | None] = {}
         for outcome in await asyncio.gather(*(coverage(i, s) for i, s in sentences[:2 * MAX_CHECKS]),
