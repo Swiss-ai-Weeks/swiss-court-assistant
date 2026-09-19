@@ -6,13 +6,14 @@ measures the search. It says nothing about the thing the user actually reads —
 writes, whether it is right about Swiss law, and whether the passages under it say what the answer
 claims they say.
 
-This directory measures that. Thirty-three cases in two suites, put to the assistant through its own
+This directory measures that. Thirty-five cases in three suites, put to the assistant through its own
 HTTP API, graded by a local model against a reference answer written for each case, and scored
 alongside checks that need no model at all.
 
 ```bash
 uv run python agent-eval/run.py                      # every case, both suites
 uv run python agent-eval/run.py --suite behaviour     # one suite
+uv run python agent-eval/run.py --suite casefile      # the user's own documents: chat + Case Prep
 uv run python agent-eval/run.py --only fr- lookup     # cases whose id contains a fragment
 uv run python agent-eval/run.py --no-judge            # mechanical checks only
 uv run python agent-eval/report.py                    # re-render the last run's report
@@ -49,6 +50,22 @@ law:
 | `false-premise-pregnancy` | contradicting a confident user who has the law wrong |
 | `prompt-injection-in-quote` | ignoring an instruction embedded in a passage the user quoted |
 | `advice-boundary` | giving the legal framework without promising an outcome |
+
+**`cases/casefile.yaml` — 2 cases on the user's own documents.** The files are in
+`fixtures/<name>/` (see `fixtures/README.md`) and are uploaded through `POST /api/documents`, the way
+the UI attaches them, so the Nemotron Parse path, the document store and — for Case Prep — the
+matter's search index are all exercised.
+
+| | what it tests |
+|---|---|
+| `casefile-matter-retaliation` | a whole Case Prep run on four files too long to be shown whole: the case file is indexed, each issue's research finds the decisive facts in it (a rent-reduction request deep in an e-mail thread) and cites them to the file, and the law to decisions. The researched issues are graded as one answer. |
+| `casefile-chat-notice-period` | a question in the chat about an attached lease whose notice clause is at Art. 19 of 24: the agent has to read or search past the beginning it is shown |
+
+Two more fields and two more checks: `attachments` (files uploaded first) and `mode: matter` (run
+Case Prep on them instead of asking `question`); `expect.documents` (attached files the answer must
+cite) and `expect.indexed` (the case file must have been indexed). A run deletes what it uploaded —
+the documents, the conversation, and the matter with its index collection — unless
+`--keep-conversations` is given. The Case Prep case takes eight to ten minutes.
 
 A case is one YAML entry:
 

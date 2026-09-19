@@ -16,7 +16,7 @@ first when it is older than the index, and records the index state it came from,
 The app uses this matrix unless SCA_VECTORS=cpu, and falls back to the float32 one when cuVS is
 missing, the float16 copy is stale, or it does not fit in GPU memory.
 
-    uv sync --extra gpu
+    uv sync                                                  # cuVS is in the default `gpu` group
     uv run python -m swiss_court_assistant.gpuvec export     # after `index build` / `index update`
     uv run python -m swiss_court_assistant.gpuvec bench      # GPU vs CPU: speed and top-k overlap
     uv run python -m swiss_court_assistant.gpuvec status
@@ -127,7 +127,7 @@ class GpuVectorMatrix:
         try:
             return cls(path, meta, device)
         except ImportError:
-            log.warning("cuVS is not installed (`uv sync --extra gpu`); searching on the CPU")
+            log.warning("cuVS is not installed (`uv sync`); searching on the CPU")
             return None
         except Exception as e:  # typically out of GPU memory: another model took the space
             log.warning("vectors do not fit on GPU %d (%s); searching on the CPU", device, e)
@@ -190,7 +190,7 @@ def bench(db: Path, model: str, device: int, n: int = 50, k: int = 40) -> None:
     t0 = time.time()
     gpu = GpuVectorMatrix.open(db, model, con, device)
     if gpu is None:
-        raise SystemExit("no usable float16 matrix; run `gpuvec export` (and `uv sync --extra gpu`)")
+        raise SystemExit("no usable float16 matrix; run `gpuvec export` (and `uv sync`)")
     print(f"GPU matrix loaded in {time.time() - t0:.0f} s")
     cpu = M.VectorMatrix.open(db, model, con)
     rng = np.random.default_rng(0)

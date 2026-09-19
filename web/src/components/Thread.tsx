@@ -130,6 +130,7 @@ const TOOLS: Record<string, { domain: Domain; label: string }> = {
   count_decisions: { domain: "case", label: "Count" },
   read_document: { domain: "document", label: "Read document" },
   search_document: { domain: "document", label: "Find in document" },
+  search_case_file: { domain: "document", label: "Search the case file" },
 };
 const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes", document: "Your document" };
 

@@ -49,6 +49,12 @@ def mechanical(case: dict[str, Any], turn: Turn) -> dict[str, Any]:
         "decision_ok": None if "decision" not in expect else
         any(s.get("decisionId") == expect["decision"] for s in sources),
         "tool_ok": None if "tool" not in expect else expect["tool"] in tools,
+        # attached files the answer must cite (by file name): the facts that are only in them
+        "documents_ok": None if "documents" not in expect else all(
+            any(s.get("section") == "document" and (s.get("decision") or {}).get("docket") == name
+                for s in sources) for name in expect["documents"]),
+        "indexed": turn.indexed,
+        "indexed_ok": None if "indexed" not in expect else bool(turn.indexed) == bool(expect["indexed"]),
     }
     return out
 
@@ -69,7 +75,8 @@ def score(case: dict[str, Any], mech: dict[str, Any], judgment: dict[str, Any]) 
     abstained = judgment.get("abstained")
     abstain_ok = abstained is None or abstained == bool(expect.get("abstain", False))
     behaviour = [mech["language_ok"], mech["cites_ok"], abstain_ok,
-                 *(x for x in (mech["decision_ok"], mech["tool_ok"]) if x is not None)]
+                 *(x for x in (mech["decision_ok"], mech["tool_ok"], mech.get("documents_ok"),
+                               mech.get("indexed_ok")) if x is not None)]
     behaviour_ok = all(behaviour)
     accuracy, grounding, usefulness = (judgment.get(k) for k in ("legal_accuracy", "grounding", "usefulness"))
     blend = None
@@ -109,6 +116,10 @@ def failure(case: dict[str, Any], mech: dict[str, Any], scored: dict[str, Any]) 
         reasons.append(f"did not cite {expect['decision']}")
     if mech["tool_ok"] is False:
         reasons.append(f"never called {expect['tool']}")
+    if mech.get("documents_ok") is False:
+        reasons.append(f"did not cite all of {', '.join(expect['documents'])}")
+    if mech.get("indexed_ok") is False:
+        reasons.append("the case file was not indexed" if expect["indexed"] else "the case file was indexed")
     if (scored["legal_accuracy"] or 5) < ACCURACY_PASS:
         reasons.append("a central legal error" if scored["legal_accuracy"] == 2 else "a legal error")
     if scored["rubric_coverage"] < RUBRIC_PASS:

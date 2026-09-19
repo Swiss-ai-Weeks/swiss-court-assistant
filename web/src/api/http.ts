@@ -76,11 +76,11 @@ export const httpApi: Api = {
     if (!res.ok) throw new Error(await errorText(res));
   },
 
-  async *chat(conversationId, text, signal, documentIds = []) {
+  async *chat(conversationId, text, signal, documentIds = [], matterId = null) {
     const res = await fetch("api/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ conversationId, message: text, documentIds }),
+      body: JSON.stringify({ conversationId, message: text, documentIds, matterId }),
       signal,
     });
     yield* events<ChatEvent>(res);

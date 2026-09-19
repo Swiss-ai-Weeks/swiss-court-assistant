@@ -64,17 +64,20 @@ class ConversationStore:
             self._db.execute("ALTER TABLE messages ADD COLUMN clarification TEXT")  # JSON Clarification
         if "attachments" not in columns:
             self._db.execute("ALTER TABLE messages ADD COLUMN attachments TEXT")  # JSON list[DocumentInfo]
+        if "matter_id" not in {r["name"] for r in self._db.execute("PRAGMA table_info(conversations)")}:
+            # a conversation asked from Case Prep about one matter; NULL for the general assistant
+            self._db.execute("ALTER TABLE conversations ADD COLUMN matter_id TEXT")
         self._lock = threading.Lock()
 
     def list(self) -> list[ConversationSummary]:
         with self._lock:
             rows = self._db.execute(
-                "SELECT id, title, updated_at FROM conversations ORDER BY updated_at DESC").fetchall()
+                "SELECT id, title, updated_at, matter_id FROM conversations ORDER BY updated_at DESC").fetchall()
         return [ConversationSummary(**dict(r)) for r in rows]
 
     def get(self, conversation_id: str) -> Conversation | None:
         with self._lock:
-            c = self._db.execute("SELECT id, title, updated_at FROM conversations WHERE id = ?",
+            c = self._db.execute("SELECT id, title, updated_at, matter_id FROM conversations WHERE id = ?",
                                  (conversation_id,)).fetchone()
             rows = self._db.execute(
                 "SELECT id, role, content, search_query, sources, tool_calls, statutes, clarification, attachments, "
@@ -95,11 +98,12 @@ class ConversationStore:
         ]
         return Conversation(**dict(c), messages=messages)
 
-    def create(self, title: str) -> ConversationSummary:
+    def create(self, title: str, matter_id: str | None = None) -> ConversationSummary:
         cid, t = new_id(), now()
         with self._lock, self._db:
-            self._db.execute("INSERT INTO conversations VALUES (?, ?, ?, ?)", (cid, title, t, t))
-        return ConversationSummary(id=cid, title=title, updated_at=t)
+            self._db.execute("INSERT INTO conversations (id, title, created_at, updated_at, matter_id) "
+                             "VALUES (?, ?, ?, ?, ?)", (cid, title, t, t, matter_id))
+        return ConversationSummary(id=cid, title=title, updated_at=t, matter_id=matter_id)
 
     def add_message(self, conversation_id: str, msg: Message) -> None:
         sources = _SOURCES.dump_json(msg.sources).decode() if msg.sources is not None else None

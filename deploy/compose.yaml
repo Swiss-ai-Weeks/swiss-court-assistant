@@ -149,9 +149,11 @@ services:
     volumes: ["${HOME}/.cache/nim:/opt/nim/.cache"]
     shm_size: 16gb
     environment:
-      # KV cache = this share of the GPU memory free after loading (default 0.9, which took 51 GB and
-      # left no room for the app's 20 GB cuVS vector matrix on the same GPU)
-      NIM_KVCACHE_PERCENT: "0.3"
+      # defaults took 51 GB of GPU1 (KV cache 0.9 of free memory, engine built for batches of 128) and
+      # left no room for the app's 20 GB cuVS vector matrix. The app sends at most PARALLEL pages at
+      # once (server/parsing.py), each a few thousand tokens.
+      NIM_KVCACHE_PERCENT: "0.05"
+      NIM_MAX_BATCH_SIZE: "16"
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8000/v1/health/ready"]
       interval: 15s

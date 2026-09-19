@@ -55,6 +55,11 @@ function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sou
   return (
     <section className="matter-block case-file">
       <h2>Case file · {assets.length + (matter.memo ? 1 : 0)} item{assets.length + (matter.memo ? 1 : 0) === 1 ? "" : "s"}</h2>
+      {!!matter.indexed && (
+        <p className="case-indexed" title="Cut into passages and embedded, so the research searches all of it by meaning">
+          Indexed for the research · {matter.indexed.toLocaleString("en")} passage{matter.indexed === 1 ? "" : "s"}
+        </p>
+      )}
       <ul>
         {assets.map((d) => (
           <li key={d.id} className={`case-asset ${d.kind ?? "document"}`}>
@@ -101,6 +106,8 @@ interface Props {
   onOpenMatter: (id: string | null) => void;
   onChanged: () => void;
   onOpenSource: (sources: Source[], n: number) => void;
+  /** Open the assistant on this matter: its case file and research go with every question. */
+  onAsk: () => void;
 }
 
 /** The five stages a matter goes through in a firm. The fifth is here to be honest about the edge of
@@ -122,7 +129,7 @@ type Live = {
 
 const EMPTY: Live = { text: {}, sources: {}, tools: {}, assessment: "" };
 
-export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSource }: Props) {
+export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSource, onAsk }: Props) {
   const [matter, setMatter] = useState<Matter | null>(null);
   const [live, setLive] = useState<Live>(EMPTY);
   const [stages, setStages] = useState<Record<string, "running" | "done">>({});
@@ -140,6 +147,9 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
         break;
       case "intake":
         setMatter((m) => m && { ...m, title: ev.title, intake: ev.intake, issues: ev.issues });
+        break;
+      case "indexed":
+        setMatter((m) => m && { ...m, indexed: ev.passages });
         break;
       case "issue_start":
         setLive((l) => ({ ...l, text: { ...l.text, [ev.n]: "" }, sources: { ...l.sources, [ev.n]: [] } }));
@@ -278,6 +288,12 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
                 Stop
               </button>
             )}
+            {!running && (
+              <button className={done ? "btn-primary" : "btn-outline"} onClick={onAsk}
+                title="Open the assistant with this case loaded: its documents, facts, issues and research">
+                Ask the assistant about this case
+              </button>
+            )}
           </div>
         </header>
 
@@ -314,7 +330,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
         {error && <p className="msg-error">{error}</p>}
 
         {matter.intake && (
-          <section className="matter-block">
+          <section className="matter-block" data-select-lang={matter.language} data-select-source="the facts">
             <h2>Facts as understood</h2>
             <p className="facts">{matter.intake.summary}</p>
             <div className="facts-grid">
@@ -367,6 +383,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
                       streaming={!issue.answer}
                       activeN={null}
                       onCite={(n) => onOpenSource(sources, n)}
+                      selectSource={`issue ${issue.n}`}
                     />
                   ) : (
                     <p className="status-line">
@@ -381,7 +398,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
         )}
 
         {(matter.assessment || live.assessment) && (
-          <section className="matter-block">
+          <section className="matter-block" data-select-lang={matter.language} data-select-source="the assessment">
             <h2>Assessment</h2>
             <CitedMarkdown
               text={matter.assessment || live.assessment}
@@ -392,7 +409,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
         )}
 
         {matter.memo && (
-          <section className="matter-block">
+          <section className="matter-block" data-select-lang={matter.language} data-select-source="the memo">
             <h2>Memo</h2>
             <div className="matter-actions">
               <a className="btn-primary" href={api.memoUrl(matter.id)} download>

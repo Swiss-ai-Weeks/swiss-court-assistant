@@ -110,6 +110,7 @@ class ConversationSummary(Model):
     id: str
     title: str
     updated_at: str
+    matter_id: str | None = None  # asked from Case Prep about this matter; None for the general assistant
 
 
 class Conversation(ConversationSummary):
@@ -121,6 +122,8 @@ class ChatRequest(Model):
     message: str = Field(min_length=1, max_length=4000)
     allow_questions: bool = True  # whether the assistant may ask back instead of answering (off for evals)
     document_ids: list[str] = Field(default=[], max_length=5)  # uploaded with POST /api/documents
+    # a new conversation about this matter (Case Prep's "Ask the assistant"); a conversation keeps its matter
+    matter_id: str | None = None
 
 
 Language = Literal["de", "fr", "it", "rm", "en"]
@@ -209,6 +212,7 @@ class Matter(MatterSummary):
     language: str
     facts: str  # the client's story as text, however it arrived: every asset's text, one after the other
     assets: list[DocumentInfo] = []  # the case file: documents, recordings and notes, kept in the document store
+    indexed: int = 0  # passages of the case file in its collection of the case index (0: not indexed)
     intake: Intake | None = None
     issues: list[Issue] = []
     assessment: str | None = None

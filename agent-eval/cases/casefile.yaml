@@ -1,0 +1,90 @@
+# Case-file test cases: the user's own documents, attached. They test what the other suites cannot —
+# that the agent finds the decisive facts in files too long to be shown to it whole, cites them to the
+# file they come from, and keeps them apart from the law it cites to decisions.
+#
+# The files are in fixtures/<fixtures>/ and are uploaded through POST /api/documents like the UI does.
+#   attachments — the files to upload, in fixtures/<fixtures>/
+#   mode: matter — run the files through Case Prep (index, intake, research of each issue, memo)
+#                  instead of asking `question`; the researched issues are graded as one answer
+# `expect` adds two checks to the usual ones:
+#   documents — attached files (by name) the answer must cite: the facts that are only in them
+#   indexed   — the matter's case file must have been indexed for search (see server/case_index.py)
+#
+# fixtures/tenancy-retaliation: a tenant in Zurich reports mould, asks for a rent reduction (in the
+# fourth of six e-mails, deep in a 7,000-character thread), is refused, and ten days later receives
+# a termination "for renovation". The notice period is in Art. 19 of a 12,500-character lease padded
+# with standard clauses. Together the files are longer than what the agent is shown whole.
+
+- id: casefile-matter-retaliation
+  suite: casefile
+  mode: matter
+  fixtures: tenancy-retaliation
+  attachments: [Kuendigung_Seefeld.txt, Mailverkehr_Schimmel.txt, Mietvertrag_Hornbachstrasse.txt,
+                Notizen_Erstgespraech.txt]
+  area: Tenancy law (Case Prep)
+  language: de
+  level: advanced
+  question: |
+    Case Prep: Bereiten Sie das Mandat aus den beigelegten Unterlagen auf (Kündigung, Mailverkehr,
+    Mietvertrag, Notizen des Erstgesprächs) — die Rechtsfragen, die es entscheiden, und was die
+    Rechtsprechung dazu sagt.
+  reference: |
+    Sachverhalt aus den Unterlagen: Frau Brunner mietet seit 2019 eine 3½-Zimmer-Wohnung an der
+    Hornbachstrasse 12 in Zürich (Nettomietzins CHF 2'340.–). Am 12. Januar 2024 meldete sie
+    Schimmel im Schlafzimmer; am 26. Februar 2024 verlangte sie gestützt auf Art. 259d OR eine
+    Herabsetzung des Mietzinses um 15 % ab 1. März 2024 und die Prüfung einer Senkung wegen des
+    gesunkenen Referenzzinssatzes. Die Vermieterin lehnte am 4. März 2024 ab. Mit Schreiben vom
+    14. März 2024 (auf amtlichem Formular, abgeholt am 16. März 2024) kündigte sie auf den
+    30. Juni 2024 wegen einer geplanten Sanierung, die der Mieterin nie angekündigt worden war.
+    Rechtlich: Ein Mangel wie Schimmel gibt Anspruch auf eine verhältnismässige Herabsetzung des
+    Mietzinses ab Kenntnis der Vermieterin bis zur Behebung (Art. 259d OR). Eine Kündigung ist
+    anfechtbar, wenn sie gegen Treu und Glauben verstösst (Art. 271 OR), insbesondere wenn der
+    Vermieter sie ausspricht, weil der Mieter nach Treu und Glauben Ansprüche aus dem Mietverhältnis
+    geltend macht (Art. 271a Abs. 1 lit. a OR, Rachekündigung) — die zeitliche Nähe zum
+    Herabsetzungsbegehren ist ein starkes Indiz. Eine Kündigung wegen Sanierung ist nur dann nicht
+    missbräuchlich, wenn das Projekt im Zeitpunkt der Kündigung hinreichend konkret ist und die
+    Arbeiten den Auszug erfordern; ein bloss vorgeschobener Grund spricht für Missbrauch. Die
+    Anfechtung muss innert 30 Tagen nach Empfang bei der Schlichtungsbehörde erfolgen (Art. 273
+    Abs. 1 OR); hilfsweise kommt eine Erstreckung in Betracht (Art. 272 OR). Die vertragliche
+    Kündigungsfrist (drei Monate auf jedes Monatsende ausser Dezember, Art. 19 des Mietvertrags)
+    ist mit der Kündigung auf den 30. Juni 2024 eingehalten.
+  rubric:
+    - "Entnimmt dem Mailverkehr, dass die Mieterin am 26. Februar 2024 eine Mietzinsherabsetzung wegen des Schimmels verlangte und die Vermieterin sie am 4. März ablehnte, kurz vor der Kündigung vom 14. März 2024"
+    - "Stellt fest, dass eine Kündigung als Reaktion auf die Geltendmachung von Ansprüchen aus dem Mietverhältnis anfechtbar ist (Art. 271a Abs. 1 lit. a OR bzw. Art. 271 OR, Treu und Glauben)"
+    - "Prüft den angegebenen Kündigungsgrund der Sanierung: nur zulässig bei hinreichend konkretem Projekt, ein vorgeschobener Grund spricht für Missbrauch"
+    - "Nennt den Anspruch auf verhältnismässige Herabsetzung des Mietzinses bei einem Mangel wie Schimmel (Art. 259d OR)"
+    - "Nennt die Anfechtungsfrist von 30 Tagen ab Empfang bei der Schlichtungsbehörde (Art. 273 OR) oder die Erstreckung (Art. 272 OR)"
+  expect:
+    cites: true
+    documents: [Mailverkehr_Schimmel.txt, Kuendigung_Seefeld.txt]
+    indexed: true
+
+- id: casefile-chat-notice-period
+  suite: casefile
+  fixtures: tenancy-retaliation
+  attachments: [Mietvertrag_Hornbachstrasse.txt, Kuendigung_Seefeld.txt]
+  area: Tenancy law (attached documents)
+  language: de
+  level: basic
+  question: |
+    Welche Kündigungsfrist und welche Kündigungstermine gelten nach meinem beigelegten Mietvertrag?
+    Die Vermieterin hat mir mit dem beigelegten Schreiben auf den 30. Juni 2024 gekündigt; ich habe
+    das Einschreiben am 16. März 2024 abgeholt. Ist die Frist eingehalten?
+  reference: |
+    Nach Art. 19 des Mietvertrags kann das Mietverhältnis von beiden Parteien mit einer Frist von
+    drei Monaten auf das Ende jedes Monats, ausgenommen Dezember, gekündigt werden; die Kündigung
+    der Vermieterin muss auf dem amtlich genehmigten Formular erfolgen (so auch Art. 266l Abs. 2
+    OR), und das Schreiben vom 14. März 2024 nennt es als Beilage. Massgebend für die Frist ist der
+    Empfang der Kündigung, nicht ihr Versand. Bei Empfang am 16. März 2024 endet die dreimonatige
+    Frist am 16. Juni 2024; der 30. Juni 2024 ist ein zulässiger Termin (Monatsende, nicht
+    Dezember), die Frist ist also eingehalten. Wäre sie nicht eingehalten, gälte die Kündigung auf
+    den nächstmöglichen Termin (Art. 266a Abs. 2 OR). Für Wohnungen schreibt das Gesetz mindestens
+    drei Monate vor (Art. 266c OR).
+  rubric:
+    - "Nennt aus Art. 19 des Mietvertrags die Frist von drei Monaten auf jedes Monatsende ausser Dezember"
+    - "Kommt zum Schluss, dass die Kündigung auf den 30. Juni 2024 bei Empfang am 16. März 2024 fristgerecht ist"
+    - "Erwähnt, dass die Vermieterin mit dem amtlichen Formular kündigen muss (Art. 266l OR bzw. Mietvertrag), und dass es hier beigelegt war"
+    - "Stellt für die Frist auf den Empfang der Kündigung ab"
+  expect:
+    cites: true
+    documents: [Mietvertrag_Hornbachstrasse.txt]

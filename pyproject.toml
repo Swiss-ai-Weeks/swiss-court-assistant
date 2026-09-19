@@ -27,12 +27,17 @@ dependencies = [
     "uvicorn[standard]>=0.53.0",
 ]
 
-[project.optional-dependencies]
-# vector search on the GPU with NVIDIA cuVS (gpuvec.py, SCA_VECTORS=gpu); CUDA 13 driver
+[dependency-groups]
+# vector search on the GPU with NVIDIA cuVS (gpuvec.py); CUDA 13 driver. A default group, so a plain
+# `uv sync` keeps it (as an extra, `uv sync` without --extra gpu uninstalled it and the app fell back
+# to the CPU). `uv sync --no-group gpu` on a machine without one.
 gpu = [
     "cuvs-cu13>=26.8.0",
     "cupy-cuda13x>=13.6",
 ]
+
+[tool.uv]
+default-groups = ["gpu"]
 
 [project.scripts]
 swiss-court-assistant = "swiss_court_assistant:main"

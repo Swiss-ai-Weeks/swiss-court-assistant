@@ -137,6 +137,8 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
+  /** Asked from Case Prep about this matter: answered against its case file and research. */
+  matterId?: string | null;
 }
 
 export interface Conversation extends ConversationSummary {
@@ -208,6 +210,8 @@ export interface Matter extends MatterSummary {
   facts: string;
   /** The case file: every document, recording and note the matter was opened on. */
   assets?: DocumentInfo[];
+  /** Passages of the case file in its search index (0: not indexed, so not searchable by meaning). */
+  indexed?: number;
   intake: Intake | null;
   issues: Issue[];
   assessment: string | null;
@@ -217,6 +221,7 @@ export interface Matter extends MatterSummary {
 export type MatterEvent =
   | { type: "stage"; stage: MatterStage; status: "running" | "done" }
   | { type: "intake"; title: string; intake: Intake; issues: Issue[] }
+  | { type: "indexed"; passages: number }
   | { type: "issue_start"; n: number }
   | { type: "issue_tool"; n: number; name: string; arg: string }
   | { type: "issue_delta"; n: number; text: string }
@@ -248,8 +253,10 @@ export interface Api {
   /** Speech for `text` read in `language`: a stream of 16-bit little-endian mono PCM at `sampleRate`. */
   speech(text: string, language: string, signal?: AbortSignal): Promise<{ sampleRate: number; stream: ReadableStream<Uint8Array> }>;
   /** Streams one assistant turn. A null conversationId starts a new conversation. `documentIds`: documents
-   *  uploaded with uploadDocument, attached to this message. */
-  chat(conversationId: string | null, text: string, signal?: AbortSignal, documentIds?: string[]): AsyncIterable<ChatEvent>;
+   *  uploaded with uploadDocument, attached to this message. `matterId`: a new conversation about this matter
+   *  (an existing conversation keeps the matter it was started on). */
+  chat(conversationId: string | null, text: string, signal?: AbortSignal, documentIds?: string[],
+    matterId?: string | null): AsyncIterable<ChatEvent>;
   /** Parses and stores a document to attach to a message or a matter. A recording goes as 16 kHz PCM with
    *  a name ending in ".pcm"; it is transcribed and kept as audio. */
   uploadDocument(file: Blob, signal?: AbortSignal, filename?: string): Promise<DocumentInfo>;

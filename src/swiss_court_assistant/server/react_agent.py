@@ -24,6 +24,7 @@ from swiss_court_assistant.facets import AREAS, CANTONS, COURTS, PROCEEDINGS
 
 from .agent import (AgentEvent, Cite, Clarify, Delta, Status, Thought, ToolEnd, ToolStart, Verdict,
                     original_question, with_clarification)
+from .case_index import CaseHit, CaseIndex, IndexUnavailable
 from .corpus import Corpus, FiltersUnavailable, Passage
 from .decisions import court_label
 from .language import detect_language
@@ -119,6 +120,7 @@ class Turn:
     pushback: str | None = None  # what write_answer returns when the agent is sent back to research
     documents: list[str] = field(default_factory=list)  # ids of the documents attached in this conversation
     reads: set[tuple[str, int]] = field(default_factory=set)  # (document_id, offset) already read this turn
+    collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
     pushed_back: bool = False    # only once per turn
     result: VerifiedAnswer | None = None
 
@@ -211,6 +213,7 @@ FILTER_TOOLS = """- Filters, for semantic_search, keyword_search and list_decisi
 """
 
 DOCUMENT_TOOLS = """- read_document(document_id, offset): reads a document the user attached to the conversation, 8,000 characters per call, with a "[Page n]" line where each page starts. search_document(document_id, words): the passages of that document containing the words, with the offset to read them at. The user's message names the attached documents and shows their text or its beginning. When the question is about an attached document, first find in it what the question turns on — the clause, the dates, the amounts, what a party wrote — and then research the law and the decisions that apply to it. What the document says is a fact of the user's case, not a statement of the law.
+- search_case_file(query): only when a matter's case file is attached (several documents, recordings and notes too long to show whole). Finds by meaning, in any language, the passages of all of them that answer the query — "date the termination was served", "rent amount", "what the client said about the defects" — each with its document_id, page and the offset to read on at. Search the case file for the facts an issue turns on before researching the law, and again whenever you need a fact you have not seen.
 """
 
 ASK_TOOL = """- ask_user(question, options, found_so_far): ask the user one short question instead of answering. Two things call for it.
@@ -383,13 +386,29 @@ def attachment_block(documents: DocumentStore, attached: list[DocumentInfo]) -> 
             + " to their message:\n\n" + "\n\n---\n\n".join(blocks))
 
 
+def _case_passage(h: CaseHit) -> str:
+    return (f"document_id={h.document_id} · {h.name} · page {h.page or '?'} · offset {h.char_start}\n"
+            f"{h.text.strip()}")
+
+
+def case_file_block(documents: DocumentStore, attached: list[DocumentInfo], hits: list[CaseHit]) -> str:
+    """A case file too long to show whole: what is in it, and the passages most relevant to the question,
+    found in its collection. The rest is found with search_case_file and read with read_document."""
+    catalogue = "\n".join(f"- {_document_head(documents, d)}" for d in attached)
+    found = "\n\n".join(_case_passage(h) for h in hits) or "(none found)"
+    return (f"The case file of this matter holds {len(attached)} item{'s' * (len(attached) != 1)}, "
+            f"{sum(d.chars for d in attached):,} characters in all — too long to show whole. They are indexed: "
+            f"search_case_file finds the passages on any point by meaning, and read_document reads on around "
+            f"one.\n{catalogue}\n\nPassages of the case file most relevant to the question:\n\n{found}")
+
+
 def attachment_note(attached: list[DocumentInfo]) -> str:
     """How an earlier message's attachments appear in the history: named, to read again if needed."""
     return "\n".join(f"[Attached: {d.name}, document_id={d.id}, {d.pages} page{'s' * (d.pages != 1)} — "
                      f"read it with read_document]" for d in attached)
 
 
-def make_tools(corpus: Corpus, documents: DocumentStore | None = None) -> list:
+def make_tools(corpus: Corpus, documents: DocumentStore | None = None, case_index: CaseIndex | None = None) -> list:
     @tool(response_format="content_and_artifact")
     async def semantic_search(query_de: str, query_fr: str, query_it: str, canton: str | None = None,
                               court: Court | None = None, area: Area | None = None,
@@ -658,9 +677,32 @@ def make_tools(corpus: Corpus, documents: DocumentStore | None = None) -> list:
                 + "\n\n".join(blocks),
                 {"summary": f"{len(hits)} passage{'s' * (len(hits) != 1)}", "decisions": [document_id]})
 
+    @tool(response_format="content_and_artifact")
+    async def search_case_file(query: str) -> tuple[str, dict]:
+        """Find what the matter's case file says about something: the passages of all its documents,
+        recordings and notes that answer the query, by meaning and in any language, each with its
+        document_id, page and the offset to read_document on at."""
+        turn = _turn.get()
+        if case_index is None or turn is None or not turn.collection:
+            return "No case file is attached to this question.", {"summary": "no case file", "error": True}
+        try:
+            hits = await asyncio.to_thread(case_index.search, turn.collection, query, 6)
+        except IndexUnavailable as e:
+            return (f"The case file cannot be searched right now ({e}). Use search_document or read_document "
+                    f"on its documents instead.", {"summary": "index unavailable", "error": True})
+        if not hits:
+            return f"Nothing in the case file answers {query!r}.", {"summary": "nothing found"}
+        ids = list(dict.fromkeys(h.document_id for h in hits))
+        return (f"{len(hits)} passage{'s' * (len(hits) != 1)} of the case file:\n\n"
+                + "\n\n---\n\n".join(_case_passage(h) for h in hits),
+                {"summary": f"{len(hits)} passage{'s' * (len(hits) != 1)} in {len(ids)} "
+                            f"document{'s' * (len(ids) != 1)}", "decisions": ids})
+
     laws = [read_law, search_laws] if corpus.has_laws else []
     listing = [list_decisions] if corpus.facets else []
     reading = [read_document, search_document] if documents is not None else []
+    if case_index is not None and documents is not None:
+        reading.append(search_case_file)
     return [semantic_search, keyword_search, read_decision, citing_decisions, *listing, *laws, *reading, ask_user,
             write_answer]
 
@@ -736,6 +778,8 @@ class ResearchThenAnswer(AgentMiddleware):
             tools = [t for t in tools if _tool_name(t) != "ask_user"]
         if not (turn and turn.documents):
             tools = [t for t in tools if _tool_name(t) not in DOCUMENT_TOOL_NAMES]
+        if not (turn and turn.collection):
+            tools = [t for t in tools if _tool_name(t) != "search_case_file"]
         response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
         result = response.result if isinstance(response, ModelResponse) else [response]
         replies = [m for m in result if isinstance(m, AIMessage)]
@@ -1508,8 +1552,8 @@ class ReasoningChatOpenAI(ChatOpenAI):
 class ReactAgent:
     name = "react"
 
-    def __init__(self, corpus: Corpus, documents: DocumentStore | None = None):
-        self.corpus, self.documents = corpus, documents
+    def __init__(self, corpus: Corpus, documents: DocumentStore | None = None, case_index: CaseIndex | None = None):
+        self.corpus, self.documents, self.case_index = corpus, documents, case_index
         self.model = served_model()
         common = dict(base_url=LLM_URL, api_key=LLM_KEY, model=self.model,
                       temperature=0.2, streaming=True)
@@ -1533,7 +1577,7 @@ class ReactAgent:
                                         filter_tools=FILTER_TOOLS.format(this_year=date.today().year)
                                         if corpus.facets else "", ask_tool=ASK_TOOL,
                                         document_tools=DOCUMENT_TOOLS if documents is not None else "")
-        self.graph = create_agent(research_llm, make_tools(corpus, documents), system_prompt=prompt,
+        self.graph = create_agent(research_llm, make_tools(corpus, documents, case_index), system_prompt=prompt,
                                   middleware=[ResearchThenAnswer(answer_llm, verifier, translate_llm)])
         log.info("react agent: %s at %s (thinking=%s, up to %d revisions)", self.model, LLM_URL, LLM_THINKING,
                  MAX_REVISIONS)
@@ -1546,7 +1590,8 @@ class ReactAgent:
                                                          "response_format": response_format})
 
     async def answer(self, question: str, history: list[Message], ask: bool = True,
-                     attachments: list[DocumentInfo] | None = None) -> AsyncIterator[AgentEvent]:
+                     attachments: list[DocumentInfo] | None = None,
+                     collection: str | None = None, context: str | None = None) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus, self.documents)
         # one question back per question: after the user has answered one, the agent answers
         last = next((m for m in reversed(history) if m.role == "assistant"), None)
@@ -1556,17 +1601,34 @@ class ReactAgent:
         # every document attached so far in the conversation stays readable, not only this message's
         earlier = [d for m in history if m.attachments for d in m.attachments]
         turn.documents = list(dict.fromkeys(d.id for d in [*earlier, *attachments]))
+        # a case file that fits is shown whole; a longer one is searched in its collection
+        turn.collection = (collection if collection and self.case_index and self.documents
+                           and sum(d.chars for d in attachments) > INLINE_DOCUMENT else None)
         cites.seen.update(turn.documents)
         _turn.set(turn)  # before the graph starts, so its tasks share this turn's state
         question = with_clarification(question, history)
-        yield Status("thinking", "Reading the attached document" if attachments else "Planning the research")
+        yield Status("thinking", "Searching the case file" if turn.collection else
+                     "Reading the attached document" if attachments else "Planning the research")
         # the documents go in their own message before the question, so the question stays the last
         # human message the answer step and the checks read
         attached = ([HumanMessage(attachment_block(self.documents, attachments))]
-                    if attachments and self.documents else [])
+                    if attachments and self.documents and not turn.collection else [])
+        if turn.collection:
+            try:
+                # the question itself, not the matter summary Case Prep appends to it: that matches every passage
+                hits = await asyncio.to_thread(self.case_index.search, turn.collection,  # type: ignore[union-attr]
+                                               question.split("\n\n")[0], 6)
+            except IndexUnavailable as e:
+                log.warning("case file %s not searchable (%s): showing the documents' beginnings", collection, e)
+                turn.collection = None
+                attached = [HumanMessage(attachment_block(self.documents, attachments))]  # type: ignore[arg-type]
+            else:
+                attached = [HumanMessage(case_file_block(self.documents, attachments, hits))]  # type: ignore[arg-type]
 
+        # the matter a Case Prep conversation is about: background, ahead of the case file and the question
+        background = [HumanMessage(context)] if context else []
         events = self.graph.astream(
-            {"messages": [*_history(history), *attached, HumanMessage(question)]},
+            {"messages": [*background, *_history(history), *attached, HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates", "custom"])
         thought: list[str] = []  # reasoning since the last tool call
         shown = False  # whether any part of an answer has been sent

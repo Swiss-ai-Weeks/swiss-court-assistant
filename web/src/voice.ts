@@ -112,6 +112,8 @@ class Playback {
 
 export async function startVoice(opts: {
   conversationId: string | null;
+  /** A new conversation about this matter (Case Prep); an existing one keeps its own. */
+  matterId?: string | null;
   language: string;
   onEvent: (e: VoiceEvent) => void;
 }): Promise<VoiceSession> {
@@ -153,7 +155,8 @@ export async function startVoice(opts: {
     ws.onopen = () => resolve();
     setTimeout(() => reject(new Error("The voice connection timed out.")), 10000);
   });
-  ws.send(JSON.stringify({ type: "start", conversationId: opts.conversationId, language: opts.language }));
+  ws.send(JSON.stringify({ type: "start", conversationId: opts.conversationId, matterId: opts.matterId ?? null,
+    language: opts.language }));
 
   await mic.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: "text/javascript" })));
   const tap = new AudioWorkletNode(mic, "mic-tap");

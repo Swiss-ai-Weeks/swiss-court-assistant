@@ -23,10 +23,11 @@ from .agent import (Agent, Cite, Clarify, Delta, Status, StubAgent, Thought, Too
                     original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import MAX_CHARS, UnreadableError, transcribe
-from .matters import MatterStore, Pipeline, create_matter, docx_memo, memo
+from .matters import MatterStore, Pipeline, case_brief, create_matter, docx_memo, memo
 from .language import detect_language
 from .mentions import statute_links
 from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
+from .case_index import CaseIndex, collection_of
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Clarification, Conversation, ConversationSummary,
                       Decision, DocumentInfo, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, ToolCall,
@@ -77,6 +78,7 @@ class Services:
     matters: MatterStore
     pipeline: Pipeline
     documents: DocumentStore
+    case_index: CaseIndex | None
 
 
 @asynccontextmanager
@@ -86,18 +88,19 @@ async def lifespan(app: FastAPI):
                  else DecisionStore(DECISIONS))
     citations = open_index(CITATION_INDEX, decisions.ids())
     documents = DocumentStore()
-    agent = _make_agent(decisions, citations, documents)
+    case_index = CaseIndex(documents) if AGENT != "stub" else None
+    agent = _make_agent(decisions, citations, documents, case_index)
     matters = MatterStore(MATTERS_DB)
     app.state.services = Services(decisions, ConversationStore(DB), agent, Translator(),
-                                  Speaker(), Listener(), citations, matters, Pipeline(agent, matters, decisions),
-                                  documents)
+                                  Speaker(), Listener(), citations, matters,
+                                  Pipeline(agent, matters, decisions, case_index=case_index), documents, case_index)
     log.info("index=%s (%s): %d decisions; agent=%s", INDEX, VECTOR_DB, len(decisions),
              app.state.services.agent.name)
     yield
 
 
 def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: CitationIndex | None = None,
-                documents: DocumentStore | None = None) -> Agent:
+                documents: DocumentStore | None = None, case_index: CaseIndex | None = None) -> Agent:
     if AGENT == "stub":
         return StubAgent(CHUNKS, decisions)
     import torch
@@ -108,7 +111,7 @@ def _make_agent(decisions: DecisionStore | SqliteDecisionStore, citations: Citat
     device = os.environ.get("SCA_EMBED_DEVICE", "cuda:1" if torch.cuda.device_count() > 1 else "cpu")
     corpus = Corpus(VECTOR_DB, KEYWORD_INDEX, decisions, os.environ.get("SCA_EMBED_MODEL"), device,
                     rerank=os.environ.get("SCA_RERANK", "1") == "1", citations=citations)
-    return ReactAgent(corpus, documents)
+    return ReactAgent(corpus, documents, case_index)
 
 
 def services(request: Request) -> Services:
@@ -276,6 +279,14 @@ async def get_document(document_id: str, s: Svc) -> DocumentInfo:
     return info
 
 
+@app.delete("/api/documents/{document_id}", status_code=204)
+async def delete_document(document_id: str, s: Svc) -> Response:
+    """Remove an attached document (the evaluation cleans up after itself with this)."""
+    if not await asyncio.to_thread(s.documents.delete, document_id):
+        raise HTTPException(404, "Document not found")
+    return Response(status_code=204)
+
+
 @app.get("/api/documents/{document_id}/file")
 async def document_file(document_id: str, s: Svc) -> FileResponse:
     """The document as it was uploaded (a recording as WAV)."""
@@ -362,6 +373,8 @@ async def delete_matter(matter_id: str, s: Svc) -> Response:
         raise HTTPException(404, "Matter not found")
     for asset in _with_assets(s, matter).assets:  # the case file goes with the matter
         s.documents.delete(asset.id)
+    if s.case_index is not None:
+        await asyncio.to_thread(s.case_index.drop, collection_of(matter_id))
     return Response(status_code=204)
 
 
@@ -388,6 +401,7 @@ async def run_matter(matter_id: str, s: Svc) -> StreamingResponse:
     matter = s.matters.get(matter_id)
     if matter is None:
         raise HTTPException(404, "Matter not found")
+    matter = _with_assets(s, matter)  # so an older matter's document is indexed too
 
     async def stream() -> AsyncIterator[str]:
         async for event in s.pipeline.run(matter):
@@ -409,13 +423,16 @@ async def chat(req: ChatRequest, s: Svc) -> StreamingResponse:
         if conv is None:
             raise HTTPException(404, "Conversation not found")
         cid, title, history = conv.id, conv.title, conv.messages
+        matter_id = conv.matter_id
     else:
-        created = s.store.create(_title(req.message))
-        cid, title, history = created.id, created.title, []
+        if req.matter_id and s.matters.get(req.matter_id) is None:
+            raise HTTPException(404, "Matter not found")
+        created = s.store.create(_title(req.message), req.matter_id)
+        cid, title, history, matter_id = created.id, created.title, [], created.matter_id
     user = Message(id=new_id(), role="user", content=req.message, attachments=attachments or None,
                    created_at=now())
     s.store.add_message(cid, user)
-    summary = ConversationSummary(id=cid, title=title, updated_at=user.created_at)
+    summary = ConversationSummary(id=cid, title=title, updated_at=user.created_at, matter_id=matter_id)
     return StreamingResponse(
         # a reply to a question asked back is short ("Wohnmietvertrag"); its language is the question's
         _stream(s, summary, req.message, history, detect_language(original_question(req.message, history)),
@@ -445,9 +462,19 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
         s.store.add_message(conv.id, msg)
         return msg
 
+    # a conversation asked from Case Prep answers against its matter: the case file, and the prep as background
+    case_file, collection, context = attachments or [], None, None
+    if conv.matter_id and (matter := s.matters.get(conv.matter_id)) is not None:
+        matter = _with_assets(s, matter)
+        kept = {d.id for d in matter.assets}
+        case_file = [*matter.assets, *(d for d in attachments or [] if d.id not in kept)]
+        collection = collection_of(matter.id) if matter.indexed else None
+        context = case_brief(matter)
+
     with tracing.turn(question, conv.id, language) as trace:
         try:
-            async for ev in s.agent.answer(question, history, ask=ask, attachments=attachments):
+            async for ev in s.agent.answer(question, history, ask=ask, attachments=case_file,
+                                           collection=collection, context=context):
                 trace.event(ev)
                 match ev:
                     case Status():
@@ -584,14 +611,14 @@ async def _voice_turn(ws: WebSocket, s: Services, state: dict[str, Any], questio
     """One spoken turn: save the question, then stream the answer as events and as speech."""
     conv = s.store.get(state["cid"]) if state["cid"] else None
     if conv is None:
-        created = s.store.create(_title(question))
-        state["cid"], title, history = created.id, created.title, []
+        created = s.store.create(_title(question), state.get("matter"))
+        state["cid"], title, history, matter_id = created.id, created.title, [], created.matter_id
     else:
-        title, history = conv.title, conv.messages
+        title, history, matter_id = conv.title, conv.messages, conv.matter_id
     user = Message(id=new_id(), role="user", content=question, created_at=now())
     s.store.add_message(state["cid"], user)
     await ws.send_json({"type": "user", "message": user.model_dump(by_alias=True)})
-    summary = ConversationSummary(id=state["cid"], title=title, updated_at=user.created_at)
+    summary = ConversationSummary(id=state["cid"], title=title, updated_at=user.created_at, matter_id=matter_id)
     language = detect_language(original_question(question, history), default=state["language"])
     voice = _Voice(ws, s.speaker, language)
     try:
@@ -611,7 +638,8 @@ async def voice(ws: WebSocket) -> None:
     await ws.accept()
     s: Services = ws.app.state.services
     start = await ws.receive_json()
-    state = {"cid": start.get("conversationId"), "language": start.get("language") or "en"}
+    state = {"cid": start.get("conversationId"), "language": start.get("language") or "en",
+             "matter": start.get("matterId") if s.matters.get(start.get("matterId") or "") else None}
     audio: asyncio.Queue[bytes | None] = asyncio.Queue()
     turn: asyncio.Task | None = None
     answering: asyncio.Task | None = None

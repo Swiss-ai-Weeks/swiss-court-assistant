@@ -35,6 +35,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, ValidationError
 
 from .agent import Agent, Cite, Delta, ToolStart, Verdict
+from .case_index import CaseIndex, IndexUnavailable, collection_of
 from .language import detect_language
 from .mentions import statute_links
 from .llm import LLM_KEY, LLM_URL, served_model
@@ -172,6 +173,37 @@ def numbered(matter: Matter) -> tuple[list[Source], list[str]]:
             mapping[source.n] = len(sources)
         answers.append(_renumber(issue.answer or "", mapping))
     return sources, answers
+
+
+def case_brief(matter: Matter) -> str:
+    """The matter's case prep as background for a question asked about it in the assistant.
+
+    Each citation marker becomes the decision id behind it, so the agent knows which decisions to read
+    again — the brief is not a source itself: a statement the answer makes still needs a passage the
+    agent fetched in its own turn, or the grounding check drops it."""
+    sources, answers = numbered(matter)
+
+    def leads(text: str) -> str:
+        def one(m: re.Match) -> str:
+            n = int(m.group(1))
+            return f" (see {sources[n - 1].decision_id})" if 0 < n <= len(sources) else ""
+        return re.sub(r"\s*\[(\d+)\]", one, text).strip()
+
+    out = [f"CASE PREP — the matter the user is asking about: {matter.title}",
+           "This is the lawyer's own preparation of the case, so you know what it is about. It is background, "
+           "not a source: to state what a decision, a statute or the case file says, read it with your tools in "
+           "this turn and cite that. The decision ids below are where the earlier research found each point.",
+           f"\nFACTS:\n{matter.intake.summary if matter.intake else matter.facts[:2000]}"]
+    if matter.intake and matter.intake.parties:
+        out.append("PARTIES: " + "; ".join(matter.intake.parties))
+    if matter.intake and matter.intake.timeline:
+        out.append("TIMELINE:\n" + "\n".join(f"- {t}" for t in matter.intake.timeline))
+    for issue, answer in zip(matter.issues, answers, strict=True):
+        found = leads(answer)[:2500] or "Not researched yet."
+        out.append(f"\nISSUE {issue.n}: {issue.question}\nWhy it matters: {issue.why}\nRESEARCH:\n{found}")
+    if matter.assessment:
+        out.append(f"\nASSESSMENT:\n{leads(matter.assessment)[:3000]}")
+    return "\n".join(out)
 
 
 def memo(matter: Matter) -> str:
@@ -368,8 +400,10 @@ def create_matter(store: MatterStore, facts: str, source_name: str | None, sourc
 class Pipeline:
     """Runs a matter through the four stages, saving after each one and streaming what it does."""
 
-    def __init__(self, agent: Agent, store: MatterStore, decisions: Any = None, max_issues: int = MAX_ISSUES):
+    def __init__(self, agent: Agent, store: MatterStore, decisions: Any = None, max_issues: int = MAX_ISSUES,
+                 case_index: CaseIndex | None = None):
         self.agent, self.store, self.decisions, self.max_issues = agent, store, decisions, max_issues
+        self.case_index = case_index
         common: dict[str, Any] = dict(base_url=LLM_URL, api_key=LLM_KEY, model=served_model(),
                                       temperature=0.2, streaming=True)
         self.intake_llm = ChatOpenAI(**common, max_tokens=2048, extra_body={
@@ -409,7 +443,10 @@ class Pipeline:
         attached = list(matter.assets)
         if not attached and matter.document_id and documents and (info := documents.info(matter.document_id)):
             attached = [info]  # a matter opened before the case file was kept
-        async for ev in self.agent.answer(question, [], ask=False, attachments=attached):  # no one to ask mid-memo
+        # a long case file is searched in its collection rather than shown by its documents' beginnings
+        collection = collection_of(matter.id) if matter.indexed else None
+        async for ev in self.agent.answer(question, [], ask=False, attachments=attached,  # no one to ask mid-memo
+                                          collection=collection):
             match ev:
                 case ToolStart():
                     arg = " ".join(str(v) for v in ev.args.values() if v not in (None, "", False))
@@ -443,11 +480,28 @@ class Pipeline:
                 yield {"type": "assessment_delta", "text": text}
         matter.assessment = "".join(parts).strip()
 
+    async def _index(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
+        """Put the case file into its own collection of the case index: cut into passages and embedded, so
+        each issue's research can search all of it. Idempotent — a rerun only adds what is missing. Without
+        the embedder the research falls back to the documents' beginnings and read_document."""
+        if self.case_index is None or not matter.assets:
+            return
+        collection = collection_of(matter.id)
+        try:
+            await asyncio.to_thread(self.case_index.add, collection, matter.assets)
+        except IndexUnavailable as e:
+            log.warning("matter %s: case file not indexed (%s)", matter.id, e)
+            return
+        matter.indexed = await asyncio.to_thread(self.case_index.count, collection)
+        yield {"type": "indexed", "passages": matter.indexed}
+
     async def run(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
         """Stage by stage, saving as it goes: a browser that disconnects loses the stream, not the work."""
         try:
             matter.stage = "intake"
             yield {"type": "stage", "stage": "intake", "status": "running"}
+            async for ev in self._index(matter):
+                yield ev
             async for ev in self._intake(matter):
                 yield ev
             self.store.save(matter)

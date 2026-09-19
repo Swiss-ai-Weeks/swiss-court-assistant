@@ -317,6 +317,19 @@ textarea { font: inherit; }
 .voice-stop { flex: none; height: 24px; padding: 0 var(--space-sm); background: none; color: var(--mute); border: 1px solid var(--hairline); border-radius: var(--rounded-sm); font-size: 12px; font-weight: 700; }
 .voice-stop:hover { color: var(--ink); border-color: var(--ink); }
 
+/* A conversation asked from Case Prep: which case it carries, and the way back */
+.case-banner {
+  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-xs) var(--space-md);
+  padding: var(--space-sm) var(--space-xl); background: var(--surface-soft); border-bottom: 1px solid var(--hairline);
+  font-size: 13px; color: var(--body);
+}
+.case-banner-text { flex: 1; min-width: 0; }
+.case-banner-text b { color: var(--ink); }
+.case-banner .link-btn {
+  background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer;
+  border-bottom: 2px solid var(--primary);
+}
+
 /* Read aloud */
 .speak-btn {
   display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 var(--space-sm);
@@ -608,3 +621,4 @@ mark.hl.active { background: #fbdc6a; }
   background: none; border: 0; padding: 0 var(--space-sm) 0 0; margin-right: var(--space-xs);
   font: inherit; color: var(--ink); cursor: pointer; border-right: 1px solid var(--hairline);
 }
+.case-indexed { margin: calc(-1 * var(--space-xs)) 0 var(--space-sm); font-size: 12px; color: var(--mute); }
