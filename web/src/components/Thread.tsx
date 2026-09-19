@@ -117,7 +117,7 @@ function UserTurn({ text, attachments }: { text: string; attachments: DocumentIn
 
 /** What each tool looks at — the court decisions or the statutes — and what it does there. The two
  *  searches work the same way, so the label says how and the tag says where. */
-type Domain = "case" | "statute" | "document";
+type Domain = "case" | "statute" | "document" | "review";
 const TOOLS: Record<string, { domain: Domain; label: string }> = {
   semantic_search: { domain: "case", label: "Search by meaning" },
   keyword_search: { domain: "case", label: "Search exact words" },
@@ -131,8 +131,13 @@ const TOOLS: Record<string, { domain: Domain; label: string }> = {
   read_document: { domain: "document", label: "Read document" },
   search_document: { domain: "document", label: "Find in document" },
   search_case_file: { domain: "document", label: "Search the case file" },
+  // write_answer only shows up as a step when it did not end the research: the agent's notes named
+  // something still missing, or the checks rejected most of the draft, and it went back to search
+  write_answer: { domain: "review", label: "Sent back to research" },
 };
-const DOMAIN_NAME: Record<Domain, string> = { case: "Case law", statute: "Statutes", document: "Your document" };
+const DOMAIN_NAME: Record<Domain, string> = {
+  case: "Case law", statute: "Statutes", document: "Your document", review: "Review",
+};
 
 export const TOOL_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(TOOLS).map(([name, t]) => [name, t.label]),
@@ -155,7 +160,7 @@ function researchSummary(calls: ToolCall[]): string {
   const cases = count("case");
   const statutes = count("statute");
   const documents = count("document");
-  const other = calls.length - cases - statutes - documents;
+  const other = calls.length - cases - statutes - documents - count("review");
   const steps = (n: number) => `${n} step${n === 1 ? "" : "s"}`;
   const parts = [];
   if (cases) parts.push(`${steps(cases)} in case law`);
@@ -172,7 +177,7 @@ function toolArg(c: ToolCall): string {
   const perLanguage = ["de", "fr", "it"].filter((l) => a[`query_${l}`]).map((l) => `${l.toUpperCase()} ${a[`query_${l}`]}`);
   const main = perLanguage.length
     ? perLanguage.join(" · ")
-    : c.name === "list_decisions" || c.name === "read_document"
+    : c.name === "list_decisions" || c.name === "read_document" || c.name === "write_answer"
       ? ""
       : c.name === "search_document"
       ? (a.words ?? "")

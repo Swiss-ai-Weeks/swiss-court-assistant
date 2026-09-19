@@ -58,15 +58,61 @@ NO_ANSWER = {
     "it": "La ricerca è conclusa, ma non è stato possibile formulare una risposta. La preghiamo di riformulare la domanda.",
     "en": "The research finished, but no answer could be written. Please ask the question again.",
 }
-# Every statement rested on citations that did not hold up, so nothing is left to show. Said without
-# naming the machinery: what the user needs to know is that nothing here is sourced, and what to try.
+# Nothing of the answer held up, even after researching again with other tool calls (see
+# RESEARCH_AGAIN). Said politely and without naming the machinery: nothing here is sourced, a
+# specialist can answer what the corpus did not, and a narrower question may still work.
 NO_SUPPORT = {
-    "de": "Keine der gefundenen Passagen belegt eine Antwort auf diese Frage — die Stellen, auf die sich die Antwort stützen sollte, sagen etwas anderes. Bitte formulieren Sie die Frage enger oder mit anderen Begriffen.",
-    "fr": "Aucun des passages trouvés n'étaye une réponse à cette question : les extraits sur lesquels la réponse devait s'appuyer disent autre chose. Veuillez préciser la question ou la reformuler avec d'autres termes.",
-    "it": "Nessuno dei passaggi trovati sostiene una risposta a questa domanda: i brani su cui la risposta avrebbe dovuto fondarsi dicono altro. La preghiamo di precisare la domanda o di riformularla con altri termini.",
-    "en": "None of the passages found supports an answer to this question: the ones the answer would have rested on say something else. Please narrow the question or put it in different terms.",
+    "de": "Es tut mir leid – auch nach mehreren Recherchen mit unterschiedlichen Suchen habe ich keine Entscheide oder Gesetzesstellen gefunden, die eine verlässliche Antwort auf diese Frage belegen. Statt Ihnen eine Antwort ohne Beleg zu geben, empfehle ich Ihnen, die Frage mit einer Fachanwältin oder einem Fachanwalt für dieses Rechtsgebiet zu besprechen. Wenn Sie möchten, können Sie die Frage auch enger fassen oder mit anderen Begriffen stellen, dann suche ich gerne noch einmal.",
+    "fr": "Je suis désolé : même après plusieurs recherches menées différemment, je n'ai trouvé aucune décision ni disposition légale qui étaye une réponse fiable à cette question. Plutôt que de vous donner une réponse sans fondement, je vous recommande d'en parler à une avocate ou un avocat spécialisé dans ce domaine du droit. Si vous le souhaitez, vous pouvez aussi préciser la question ou la formuler avec d'autres termes, et je chercherai volontiers à nouveau.",
+    "it": "Mi dispiace: anche dopo diverse ricerche condotte in modi diversi, non ho trovato decisioni né disposizioni di legge che sostengano una risposta affidabile a questa domanda. Piuttosto che darle una risposta senza fondamento, le consiglio di rivolgersi a un'avvocata o a un avvocato specializzato in questo ambito del diritto. Se lo desidera, può anche precisare la domanda o formularla con altri termini, e cercherò volentieri di nuovo.",
+    "en": "I'm sorry — even after searching several times in different ways, I could not find decisions or statutory provisions that support a reliable answer to this question. Rather than give you an answer without a source, I recommend discussing it with a lawyer who specialises in this area of law. If you like, you can also narrow the question or put it in different terms, and I will gladly search again.",
 }
-RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
+# When it gives up, the user has waited through several rounds of research: an apology alone leaves them
+# with nothing. So the answer is SORRY, then a brief of what was searched, what came up and why it does not
+# fit (BRIEF_PROMPT, checked like any answer), then SPECIALIST.
+SORRY = {
+    "de": "Es tut mir leid – ich konnte in diesem Korpus keine belegte Antwort auf Ihre Frage finden, auch nicht nach mehreren Recherchen mit unterschiedlichen Suchen. Hier ist, was ich gesucht und gefunden habe:",
+    "fr": "Je suis désolé : je n'ai pas pu trouver dans ce corpus de réponse étayée à votre question, même après plusieurs recherches menées différemment. Voici ce que j'ai cherché et trouvé :",
+    "it": "Mi dispiace: non ho trovato in questo corpus una risposta fondata alla sua domanda, nemmeno dopo diverse ricerche condotte in modi diversi. Ecco che cosa ho cercato e trovato:",
+    "en": "I'm sorry — I could not find a sourced answer to your question in this corpus, even after searching several times in different ways. Here is what I looked for and what came up:",
+}
+SPECIALIST = {
+    "de": "Da ich Ihnen keine Antwort ohne Beleg geben möchte, empfehle ich Ihnen, die Frage mit einer Fachanwältin oder einem Fachanwalt für dieses Rechtsgebiet zu besprechen. Wenn Sie möchten, können Sie die Frage auch enger fassen oder weitere Angaben zu Ihrem Fall machen, dann suche ich gerne noch einmal.",
+    "fr": "Comme je ne souhaite pas vous donner une réponse sans fondement, je vous recommande d'en parler à une avocate ou un avocat spécialisé dans ce domaine du droit. Si vous le souhaitez, vous pouvez aussi préciser la question ou me donner plus de détails sur votre situation, et je chercherai volontiers à nouveau.",
+    "it": "Poiché non desidero darle una risposta senza fondamento, le consiglio di parlarne con un'avvocata o un avvocato specializzato in questo ambito del diritto. Se lo desidera, può anche precisare la domanda o darmi più dettagli sul suo caso, e cercherò volentieri di nuovo.",
+    "en": "Since I don't want to give you an answer without a source, I recommend discussing the question with a lawyer who specialises in this area of law. If you like, you can also narrow the question or tell me more about your situation, and I will gladly search again.",
+}
+BRIEF_PROMPT = """The research for the user's question above is over, and no answer could be supported by the passages found.{rejected} These are all the searches and reads that were made, and nothing else was searched:
+{calls}
+Write a short brief for the user, in {language}, as {{"answer": [...]}} with text parts only and no citations:
+1. What you searched for — the angles, legal terms and provisions of the list above, in plain words, not tool names; never a search that is not in it.
+2. What the searches did find — the decisions (by docket number) or statute articles that came up, and what each is about.
+3. Why these do not answer the question or may not fit the user's case: they concern another issue, another area of law, other facts or another procedural situation, or the point the question turns on is not decided in them.
+Report only what the tool results show. Do not state any rule of law, deadline, amount or outcome as the answer, and do not guess one. Do not apologise and do not recommend anyone: that is added around your brief. At most five sentences in one or two paragraphs, each point said once."""
+# Part of the answer held up but much of it did not, even after researching again: what held is shown,
+# followed by this.
+PARTLY_SUPPORTED = {
+    "de": "Hinweis: Ein Teil dessen, was diese Frage verlangt, liess sich mit den gefundenen Entscheiden und Gesetzesstellen nicht belegen und ist deshalb nicht in der Antwort enthalten. Für eine verlässliche Beurteilung Ihres Falls empfehle ich Ihnen, eine Fachanwältin oder einen Fachanwalt beizuziehen.",
+    "fr": "Remarque : une partie de ce que demande cette question n'a pas pu être étayée par les décisions et dispositions trouvées et ne figure donc pas dans la réponse. Pour une appréciation fiable de votre situation, je vous recommande de consulter une avocate ou un avocat spécialisé.",
+    "it": "Nota: una parte di ciò che chiede questa domanda non ha potuto essere sostenuta dalle decisioni e dalle disposizioni trovate e non figura quindi nella risposta. Per una valutazione affidabile del suo caso, le consiglio di rivolgersi a un'avvocata o a un avvocato specializzato.",
+    "en": "Note: part of what this question asks could not be supported by the decisions and provisions found, so it is left out of the answer. For a reliable assessment of your situation, I recommend consulting a lawyer who specialises in this area.",
+}
+# When the checks reject all of a draft's citations, or at least this share of its cited statements,
+# revising cannot help: the passages found do not say it. The agent then researches again with other
+# tool calls, up to MAX_RESEARCH_AGAIN times with RESEARCH_AGAIN_CALLS more calls each, before it
+# gives up (NO_SUPPORT, PARTLY_SUPPORTED).
+REJECTED_SHARE = 0.5
+MAX_RESEARCH_AGAIN = 2
+RESEARCH_AGAIN_CALLS = 3
+RESEARCH_AGAIN_MIN_CALLS = 2  # new calls before write_answer is offered again
+RESEARCH_AGAIN = """Your answer was checked against the passages, and {how} did not hold up:
+{problems}
+
+The passages found so far do not support these statements, so writing again from them will not help. Research again ({attempt} of {max_attempts}) and find the passages that do — with different tool calls from the ones already made:
+{calls}
+Change the approach, not only the wording: another tool (search_laws or read_law for the provision the question turns on, keyword_search for an exact legal term or a docket number, read_decision to read the reasoning of a decision found, citing_decisions for the later case law), other terms in German, French and Italian, or fewer or other filters. You have {left} tool calls, then call write_answer. If the passages still do not state something, the answer says it was not found instead of stating it."""
+# every tool call is two graph steps (model, tools); researching again adds its calls and its write_answer
+RECURSION_LIMIT = 2 * (MAX_TOOL_CALLS + MAX_RESEARCH_AGAIN * (RESEARCH_AGAIN_CALLS + 1)) + 6
 # The answer is drafted, checked against the tool results and, while the check finds problems, revised
 # this many times before what passed is shown. Two revisions fix most drafts; a third mostly repeats.
 MAX_REVISIONS = 2
@@ -122,6 +168,10 @@ class Turn:
     reads: set[tuple[str, int]] = field(default_factory=set)  # (document_id, offset) already read this turn
     collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
     pushed_back: bool = False    # only once per turn
+    researched_again: int = 0    # times the checks rejected the draft and the agent researched again
+    resumed_at: int = 0          # tool calls made when it last went back to research
+    # statements whose citations failed in an earlier draft: one that comes back without a citation is dropped
+    rejected: list[str] = field(default_factory=list)
     result: VerifiedAnswer | None = None
 
 
@@ -189,7 +239,7 @@ ANSWER_FORMAT = {"type": "json_schema",
 SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision, a statute or a document the user attached, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
-COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
+COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found, or what the decisions and articles found are about instead and why they do not answer the question, is covered."""
 COVERED_FORMAT = {"type": "json_schema", "json_schema": {"name": "covered", "schema": {
     "type": "object", "properties": {"covered": {"type": "boolean"}}, "required": ["covered"]}}}
 ANSWERS_PROMPT = """You review whether a legal answer responds to the question it was written for. Reply {"answers": true} if the answer addresses what the question asks — its subject and the point it turns on — including when it says that the sources do not cover the question, or corrects a premise of the question. Reply {"answers": false} if it answers a neighbouring question instead, states a general rule without reaching the point asked, or talks past the question."""
@@ -727,6 +777,14 @@ def _writer() -> Callable[[Any], None]:
         return lambda _: None
 
 
+def _calls_made(messages: list[BaseMessage]) -> str:
+    """The research calls of this turn, one per line, with their arguments."""
+    calls = [f"- {tc['name']} {json.dumps(tc['args'], ensure_ascii=False)[:240]}"
+             for m in messages if isinstance(m, AIMessage)
+             for tc in m.tool_calls if tc["name"] not in ("write_answer", "ask_user")]
+    return "\n".join(calls) or "- (none)"
+
+
 class ResearchThenAnswer(AgentMiddleware):
     """Every research step must be a tool call (constrained decoding), so the model cannot answer
     from memory or in free text. When it calls write_answer, the answer is drafted instead,
@@ -766,13 +824,18 @@ class ResearchThenAnswer(AgentMiddleware):
         turn = _turn.get()
         may_ask = turn.may_ask if turn else False
         used = sum(isinstance(m, ToolMessage) for m in request.messages)
+        again = turn.researched_again if turn else 0
+        # each time the checks sent it back to research, it got more calls (and one went to write_answer)
+        budget = self.max_tool_calls + again * (RESEARCH_AGAIN_CALLS + 1)
         choice = ({"type": "function", "function": {"name": "write_answer"}}
-                  if used >= self.max_tool_calls else "required")
+                  if used >= budget else "required")
         messages = request.messages
-        if NUDGE_AFTER <= used < self.max_tool_calls:
+        # not after researching again: the nudge tells it to give up, the instructions it got to look again
+        if NUDGE_AFTER <= used < self.max_tool_calls and not again:
             messages = [*messages, HumanMessage(NUDGE.format(used=used, max_calls=self.max_tool_calls))]
         tools = request.tools
-        if used < MIN_TOOL_CALLS:  # not yet: see MIN_TOOL_CALLS
+        # not yet: see MIN_TOOL_CALLS; and after researching again, not before it has made new calls
+        if used < (turn.resumed_at + RESEARCH_AGAIN_MIN_CALLS if again and turn else MIN_TOOL_CALLS):
             tools = [t for t in tools if _tool_name(t) != "write_answer"]
         if used < 1 or not may_ask:  # asking back needs a search to say why it matters
             tools = [t for t in tools if _tool_name(t) != "ask_user"]
@@ -813,7 +876,13 @@ class ResearchThenAnswer(AgentMiddleware):
             turn.pushback = PUSHBACK.format(gap=gap, left=self.max_tool_calls - used - 1)
             log.info("sent back to research once for: %s", gap)
             return response
-        return await self._write(request, args)
+        # Researching again needs the write_answer call to run as a tool, as above; a stalled step has none.
+        may_research = write is not None and turn is not None and turn.researched_again < MAX_RESEARCH_AGAIN
+        written = await self._write(request, args, may_research)
+        if isinstance(written, str):
+            turn.pushback = written  # type: ignore[union-attr]
+            return response
+        return written
 
     async def _generate(self, prompt: list[BaseMessage]) -> str:
         """One constrained answer call, streamed so that the whitespace padding loop can be cut off."""
@@ -834,9 +903,13 @@ class ResearchThenAnswer(AgentMiddleware):
             await stream.aclose()
         return "".join(pieces)
 
-    async def _write(self, request: ModelRequest, args: dict[str, Any]) -> AIMessage:
+    async def _write(self, request: ModelRequest, args: dict[str, Any], may_research: bool = False) -> AIMessage | str:
         """Draft the answer, check it against the tool results, revise while the check finds problems,
-        and hand answer() what survived."""
+        and hand answer() what survived.
+
+        When the checks rejected all or most of the draft even after the revisions, the passages found
+        do not say it, and rewording will not change that: with `may_research`, this returns instead what
+        write_answer tells the agent, which then researches again with other tool calls."""
         turn = _turn.get()
         status = _writer()
         # Passages and searches in three languages pull the answer away from the question's language
@@ -882,7 +955,8 @@ class ResearchThenAnswer(AgentMiddleware):
             answer = VerifiedAnswer([TextPart(type="text", text=NO_ANSWER.get(code, NO_ANSWER["en"]))], [], [])
             return self._finish(turn, answer, [])
         seen = _seen(request.messages) | set(turn.documents if turn else [])
-        failed: list[str] = []  # statements whose citations did not hold, across the rounds
+        # statements whose citations did not hold, across the rounds and the earlier research
+        failed: list[str] = list(turn.rejected) if turn else []
         rounds = 0
         while True:
             n = sum(isinstance(p, CitationPart) for p in parts)
@@ -905,13 +979,68 @@ class ResearchThenAnswer(AgentMiddleware):
             text, parts = revised, new_parts
         answer = report.prune(parts, failed)
         answer.rounds = rounds
-        if not any(isinstance(p, TextPart) and p.text.strip() for p in answer.parts):
-            log.warning("nothing of the draft held up against the passages")
-            answer = VerifiedAnswer([TextPart(type="text", text=NO_SUPPORT.get(code, NO_SUPPORT["en"]))], [], [],
-                                    dropped=answer.dropped, rounds=rounds)
-        elif answer.dropped:
-            log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
+        empty = not any(isinstance(p, TextPart) and p.text.strip() for p in answer.parts)
+        rejected = empty or report.rejected
+        if rejected and may_research and turn is not None:
+            turn.researched_again += 1
+            turn.resumed_at = sum(isinstance(m, ToolMessage) for m in request.messages) + 1  # + write_answer
+            turn.rejected = list(dict.fromkeys([*failed, *report.failed_statements]))
+            log.warning("the checks rejected the draft (%s); researching again, %d of %d",
+                        "nothing held" if empty else f"{len(set(report.failed_statements))} statement(s) failed",
+                        turn.researched_again, MAX_RESEARCH_AGAIN)
+            status(Status("thinking", "The passages found do not support the draft: researching again "
+                                      f"({turn.researched_again} of {MAX_RESEARCH_AGAIN})"))
+            return self._research_again(request, report, turn.researched_again)
+        if empty:
+            log.warning("nothing of the draft held up against the passages; giving up with a brief")
+            status(Status("checking", "Summarising what the research found"))
+            brief = await self._brief(request, question, code, seen, [*failed, *report.failed_statements])
+            parts_out = ([TextPart(type="text", text=SORRY.get(code, SORRY["en"])),
+                          *(TextPart(type="text", text="\n\n" + t) for t in brief),
+                          TextPart(type="text", text="\n\n" + SPECIALIST.get(code, SPECIALIST["en"]))]
+                         if brief else [TextPart(type="text", text=NO_SUPPORT.get(code, NO_SUPPORT["en"]))])
+            answer = VerifiedAnswer(parts_out, [], [], dropped=answer.dropped, rounds=rounds)
+        else:
+            if answer.dropped:
+                log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
+            if rejected:  # what held is shown, and that much did not
+                answer.parts.append(TextPart(type="text", text="\n\n" + PARTLY_SUPPORTED.get(code, PARTLY_SUPPORTED["en"])))
         return self._finish(turn, answer, report.problems)
+
+    async def _brief(self, request: ModelRequest, question: str, code: str, seen: set[str],
+                     rejected: list[str]) -> list[str]:
+        """What was searched, what came up and why it does not answer the question, for when the agent gives
+        up: paragraphs of text, checked like an answer (a sentence that states the law is removed), or []
+        when none can be written."""
+        statements = list(dict.fromkeys(" ".join(r.split()) for r in rejected if r.strip()))[:6]
+        said = ("" if not statements else " These statements from the draft were not supported by any passage: "
+                + " ".join(f"«{r}»" for r in statements))
+        prompt = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(BRIEF_PROMPT.format(
+            rejected=said, calls=_calls_made(request.messages),
+            language=LANGUAGE_NAMES.get(code, "the language of the question")))]
+        try:
+            parts = [p for p in _parse_answer(await self._generate(prompt)) if isinstance(p, TextPart) and p.text.strip()]
+            if not parts:
+                return []
+            report = await self.verifier.verify(parts, question, code, seen, check_answers=False)
+            kept = report.prune(parts, [])
+        except Exception:  # noqa: BLE001 — the fixed message is still an answer
+            log.warning("could not write the brief of the research", exc_info=True)
+            return []
+        return [p.text.strip() for p in kept.parts if isinstance(p, TextPart) and p.text.strip()]
+
+    @staticmethod
+    def _research_again(request: ModelRequest, report: Report, attempt: int) -> str:
+        """What write_answer returns when the checks sent the agent back: what did not hold, and the tool
+        calls already made, so that it tries others."""
+        statements = {c.statement for c in report.citations}
+        failed = set(report.failed_statements)
+        how = ("the whole draft" if not report.citations else
+               "none of its citations" if not any(c.ok for c in report.citations) else
+               f"{len(failed)} of its {len(statements)} cited statements")
+        problems = "\n".join(f"- {p}" for p in report.problems[:8]) or "- no statement was supported by a passage"
+        return RESEARCH_AGAIN.format(how=how, problems=problems, attempt=attempt, max_attempts=MAX_RESEARCH_AGAIN,
+                                     calls=_calls_made(request.messages), left=RESEARCH_AGAIN_CALLS)
 
     @staticmethod
     def _finish(turn: Turn | None, answer: VerifiedAnswer, problems: list[str]) -> AIMessage:
@@ -1230,6 +1359,17 @@ class Report:
         held = {c.statement for c in self.citations if c.ok}
         return [c.statement for c in self.citations if not c.ok and c.statement and c.statement not in held]
 
+    @property
+    def rejected(self) -> bool:
+        """Whether the checks rejected so much of the draft that the passages, not the wording, are at
+        fault: every citation failed, or at least REJECTED_SHARE of the cited statements."""
+        statements = {c.statement for c in self.citations}
+        if not statements:
+            return False
+        if not any(c.ok for c in self.citations):
+            return True
+        return len(set(self.failed_statements)) >= REJECTED_SHARE * len(statements)
+
     def prune(self, parts: list[TextPart | CitationPart], failed_before: list[str]) -> VerifiedAnswer:
         """What is left once citations that did not hold are removed.
 
@@ -1267,8 +1407,12 @@ class Report:
             # Sentence by sentence, because a revision may slip the claim in next to a supported one.
             # `failed_before` holds only statements that had no citation left at all (see
             # Report.failed_statements), so a statement that kept a citation that holds is not in it.
+            # A failed statement that comes back as a statement of its own, with a citation that holds
+            # (found by researching again, or a passage that states it), is sourced now and stays. Slipped
+            # in next to another sentence, under that sentence's citation, it is not.
+            resourced = bool(good) and _same_statement(" ".join(t.text for t in texts), failed_before)
             for t in texts:
-                if _same_statement(t.text, failed_before):
+                if not resourced and _same_statement(t.text, failed_before):
                     dropped += 1
                     continue
                 # A revision sometimes restates a whole passage of the draft under the next citation,

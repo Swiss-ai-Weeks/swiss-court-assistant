@@ -179,6 +179,7 @@ textarea { font: inherit; }
 .src-tag.case { border: 1px solid var(--hairline-strong); color: var(--body); }
 .src-tag.statute { border: 1px solid var(--ink); background: var(--highlight); color: var(--ink); }
 .src-tag.document { border: 1px solid var(--primary); color: var(--ink); }
+.src-tag.review { border: 1px dashed var(--hairline-strong); color: var(--body); }
 .activity .arg { color: var(--body); overflow-wrap: anywhere; }
 /* a filter the step searched within: canton, court, area, years */
 .activity .filter {
