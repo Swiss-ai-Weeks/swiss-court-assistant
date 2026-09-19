@@ -8,3 +8,4 @@ data/
 
 # Secrets (NGC_API_KEY etc.)
 .env
+server.log*
