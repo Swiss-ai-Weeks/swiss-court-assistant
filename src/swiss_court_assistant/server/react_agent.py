@@ -167,6 +167,7 @@ class Turn:
     documents: list[str] = field(default_factory=list)  # ids of the documents attached in this conversation
     reads: set[tuple[str, int]] = field(default_factory=set)  # (document_id, offset) already read this turn
     collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
+    case_prep: str | None = None  # document id of the matter's generated case prep, when asked from Case Prep
     pushed_back: bool = False    # only once per turn
     researched_again: int = 0    # times the checks rejected the draft and the agent researched again
     resumed_at: int = 0          # tool calls made when it last went back to research
@@ -454,6 +455,25 @@ def case_file_block(documents: DocumentStore, attached: list[DocumentInfo], hits
             f"{sum(d.chars for d in attached):,} characters in all — too long to show whole. They are indexed: "
             f"search_case_file finds the passages on any point by meaning, and read_document reads on around "
             f"one.\n{catalogue}\n\nPassages of the case file most relevant to the question:\n\n{found}")
+
+
+CASE_PREP_CHARS = 24_000  # the case prep is shown whole up to this; a longer one is read on with read_document
+
+
+def case_prep_block(documents: DocumentStore, prep: DocumentInfo) -> str:
+    """A matter's case prep as the agent sees it when asked about the matter: all of it, since questions
+    about the case are often questions about what was prepared — its facts, issues, assessment, memo."""
+    text = documents.text(prep.id) or ""
+    shown = text[:CASE_PREP_CHARS]
+    more = (f"\n\n(Characters 0-{len(shown)} of {len(text)}; read on with read_document(document_id={prep.id!r}, "
+            f"offset={len(shown)}).)" if len(text) > len(shown) else "")
+    return (f"The user is asking about a matter they prepared in Case Prep. This is its case prep, "
+            f"document_id={prep.id}: the facts, parties and timeline taken in from the client, the legal issues "
+            f"with the research on each, the assessment, and the table of authorities — together, the memo the "
+            f"user sees on the case page. When the user asks about the intake, the issues, the assessment or the "
+            f"memo, answer from this document and cite it (document_id={prep.id}). Its [n] markers point to its "
+            f"table of authorities. For what a court decision or a statute itself holds, read that source and "
+            f"cite it, not the case prep.\n\n{shown}{more}")
 
 
 def attachment_note(attached: list[DocumentInfo]) -> str:
@@ -935,10 +955,19 @@ class ResearchThenAnswer(AgentMiddleware):
                    "answer in this conversation is not a source for it and is never repeated as the answer.")
         if language:
             final += f" Write its text parts and explanations in {language}."
-        if turn and turn.documents:
+        attached = [d for d in (turn.documents if turn else []) if d != (turn.case_prep if turn else None)]
+        if turn and turn.case_prep:
+            # Asked to sum up the memo, the draft cited the client's documents for what the memo says, quoting
+            # the memo's table of authorities as if it were their text; the check threw every sentence out.
+            final += (f" What the case prep says — its facts, issues, research, assessment, memo — is cited to "
+                      f"the case prep itself: decision_id {turn.case_prep}, chunk_id null, and a quote copied "
+                      "character for character from one of its sentences (not a heading and not a line of its "
+                      "table of authorities). Cite a client document or a decision only with a quote from that "
+                      "document's or decision's own text.")
+        if attached:
             # Left alone, the draft stapled the letter's dates to a sentence about the law and cited a court
             # decision for both; the check rightly found the decision did not say them, and dropped it all.
-            ids = ", ".join(turn.documents)
+            ids = ", ".join(attached)
             final += (" The user attached a document. What comes from it — its dates, the reason it gives, "
                       "amounts, clauses, who wrote to whom — goes in its own sentences, cited to the document: "
                       f"decision_id {ids}, chunk_id null, and a quote copied character for character from "
@@ -1741,7 +1770,7 @@ class ReactAgent:
 
     async def answer(self, question: str, history: list[Message], ask: bool = True,
                      attachments: list[DocumentInfo] | None = None,
-                     collection: str | None = None, context: str | None = None) -> AsyncIterator[AgentEvent]:
+                     collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
         cites = _Citations(self.corpus, self.documents)
         # one question back per question: after the user has answered one, the agent answers
         last = next((m for m in reversed(history) if m.role == "assistant"), None)
@@ -1750,7 +1779,8 @@ class ReactAgent:
         attachments = attachments or []
         # every document attached so far in the conversation stays readable, not only this message's
         earlier = [d for m in history if m.attachments for d in m.attachments]
-        turn.documents = list(dict.fromkeys(d.id for d in [*earlier, *attachments]))
+        turn.documents = list(dict.fromkeys(d.id for d in [*earlier, *attachments, *([case_prep] if case_prep else [])]))
+        turn.case_prep = case_prep.id if case_prep else None
         # a case file that fits is shown whole; a longer one is searched in its collection
         turn.collection = (collection if collection and self.case_index and self.documents
                            and sum(d.chars for d in attachments) > INLINE_DOCUMENT else None)
@@ -1775,8 +1805,9 @@ class ReactAgent:
             else:
                 attached = [HumanMessage(case_file_block(self.documents, attachments, hits))]  # type: ignore[arg-type]
 
-        # the matter a Case Prep conversation is about: background, ahead of the case file and the question
-        background = [HumanMessage(context)] if context else []
+        # the matter a Case Prep conversation is about: what was generated for it, ahead of its case file
+        background = ([HumanMessage(case_prep_block(self.documents, case_prep))]
+                      if case_prep and self.documents else [])
         events = self.graph.astream(
             {"messages": [*background, *_history(history), *attached, HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates", "custom"])

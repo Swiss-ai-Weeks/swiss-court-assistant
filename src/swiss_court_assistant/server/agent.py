@@ -98,13 +98,13 @@ class Agent(Protocol):
 
     def answer(self, question: str, history: list[Message], ask: bool = True,
                attachments: list[DocumentInfo] | None = None,
-               collection: str | None = None, context: str | None = None) -> AsyncIterator[AgentEvent]:
+               collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
         """Stream one turn (with `ask`, the agent may end it with a Clarify question instead): Status, Thought and ToolStart/ToolEnd while researching, then the answer as
         Delta text with a Cite right after each statement a source supports. `attachments`: documents the
         user attached to this message (earlier ones are on the history's messages). `collection`: the
         case-index collection holding the attachments' passages (a matter's case file), searched by
-        meaning instead of reading the documents whole. `context`: background the question is asked
-        against (a matter's case prep), shown to the agent before the question but not a source."""
+        meaning instead of reading the documents whole. `case_prep`: the matter's generated case prep
+        (intake, research, assessment, memo) when the question is asked about a matter: shown whole, citable."""
         ...
 
 
@@ -172,7 +172,7 @@ class StubAgent:
 
     async def answer(self, question: str, history: list[Message], ask: bool = True,
                      attachments: list[DocumentInfo] | None = None,
-                     collection: str | None = None, context: str | None = None) -> AsyncIterator[AgentEvent]:
+                     collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
         matched = next((s for s in SCENARIOS if s.match.search(question)), None)
         s = matched or TENANCY
         yield Status("thinking", "Planning the research (stub)")

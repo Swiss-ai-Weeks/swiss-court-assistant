@@ -94,7 +94,7 @@ export interface DocumentInfo {
   id: string;
   name: string;
   /** A file, a recording of the client (kept as WAV; its text is the transcript), or typed notes. */
-  kind?: "document" | "recording" | "notes";
+  kind?: "document" | "recording" | "notes" | "generated";
   pages: number;
   chars: number;
   /** "nemotron-parse", "python-docx", "text", "nemotron-asr" or "typed". */

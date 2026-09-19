@@ -227,13 +227,20 @@ class DocumentStore:
         """Facts typed in by the lawyer, kept like any other part of the case file."""
         return self._keep(name, ".txt", text.encode(), _tidy(text), 1, "typed", kind="notes")
 
+    def keep_generated(self, doc_id: str, name: str, text: str) -> DocumentInfo:
+        """Text the app wrote itself (a matter's case prep), under an id of the caller's choosing so it is
+        found again; rewritten only when the text has changed."""
+        if (info := self.info(doc_id)) is not None and self.text(doc_id) == text and info.name == name:
+            return info
+        return self._keep(name, ".md", text.encode(), text, 1, "case-prep", kind="generated", doc_id=doc_id)
+
     def _keep(self, name: str, suffix: str, data: bytes, text: str, pages: int, parser: str,
-              kind: str = "document", seconds: float | None = None) -> DocumentInfo:
-        info = DocumentInfo(id=f"doc_{new_id()}", name=name, kind=kind, pages=pages, chars=len(text),  # type: ignore[arg-type]
+              kind: str = "document", seconds: float | None = None, doc_id: str | None = None) -> DocumentInfo:
+        info = DocumentInfo(id=doc_id or f"doc_{new_id()}", name=name, kind=kind, pages=pages, chars=len(text),  # type: ignore[arg-type]
                             parser=parser, language=detect_language(text[:5000], default="") or None,
                             seconds=seconds, created_at=now())
         folder = self.root / info.id
-        folder.mkdir(parents=True)
+        folder.mkdir(parents=True, exist_ok=doc_id is not None)
         (folder / f"source{suffix}").write_bytes(data)
         (folder / "text.md").write_text(text, encoding="utf-8")
         (folder / "meta.json").write_text(info.model_dump_json(indent=1), encoding="utf-8")
@@ -292,6 +299,8 @@ class DocumentStore:
             label, what = "Client recording", f"{_duration(info.seconds or 0)}"
         elif info.kind == "notes":
             label, what = "Notes", "typed in"
+        elif info.kind == "generated":
+            label, what = "Case prep", "generated from the case file and the research"
         else:
             label, what = "Attached document", f"{info.pages} page{'s' * (info.pages != 1)}"
         return DecisionSummary(

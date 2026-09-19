@@ -23,7 +23,8 @@ from .agent import (Agent, Cite, Clarify, Delta, Status, StubAgent, Thought, Too
                     original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import MAX_CHARS, UnreadableError, transcribe
-from .matters import MatterStore, Pipeline, case_brief, create_matter, docx_memo, memo
+from .matters import (MatterStore, Pipeline, case_prep_document, create_matter, docx_memo, memo,
+                      prep_document_id)
 from .language import detect_language
 from .mentions import statute_links
 from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
@@ -373,6 +374,7 @@ async def delete_matter(matter_id: str, s: Svc) -> Response:
         raise HTTPException(404, "Matter not found")
     for asset in _with_assets(s, matter).assets:  # the case file goes with the matter
         s.documents.delete(asset.id)
+    s.documents.delete(prep_document_id(matter_id))  # and what was generated from it
     if s.case_index is not None:
         await asyncio.to_thread(s.case_index.drop, collection_of(matter_id))
     return Response(status_code=204)
@@ -463,18 +465,18 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
         return msg
 
     # a conversation asked from Case Prep answers against its matter: the case file, and the prep as background
-    case_file, collection, context = attachments or [], None, None
+    case_file, collection, prep = attachments or [], None, None
     if conv.matter_id and (matter := s.matters.get(conv.matter_id)) is not None:
         matter = _with_assets(s, matter)
         kept = {d.id for d in matter.assets}
         case_file = [*matter.assets, *(d for d in attachments or [] if d.id not in kept)]
         collection = collection_of(matter.id) if matter.indexed else None
-        context = case_brief(matter)
+        prep = await asyncio.to_thread(case_prep_document, s.documents, matter)
 
     with tracing.turn(question, conv.id, language) as trace:
         try:
             async for ev in s.agent.answer(question, history, ask=ask, attachments=case_file,
-                                           collection=collection, context=context):
+                                           collection=collection, case_prep=prep):
                 trace.event(ev)
                 match ev:
                     case Status():

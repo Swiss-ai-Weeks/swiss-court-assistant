@@ -19,6 +19,7 @@ answers with their citations kept intact.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import io
 import json
 import logging
@@ -38,6 +39,7 @@ from .agent import Agent, Cite, Delta, ToolStart, Verdict
 from .case_index import CaseIndex, IndexUnavailable, collection_of
 from .language import detect_language
 from .mentions import statute_links
+from .parsing import DocumentStore
 from .llm import LLM_KEY, LLM_URL, served_model
 from .schemas import DocumentInfo, Intake, Issue, Matter, MatterSummary, Source
 from .store import new_id, now
@@ -175,35 +177,18 @@ def numbered(matter: Matter) -> tuple[list[Source], list[str]]:
     return sources, answers
 
 
-def case_brief(matter: Matter) -> str:
-    """The matter's case prep as background for a question asked about it in the assistant.
+def prep_document_id(matter_id: str) -> str:
+    """The id of a matter's case prep in the document store: the same every time it is rewritten."""
+    return "doc_" + hashlib.sha1(f"case-prep:{matter_id}".encode()).hexdigest()[:12]
 
-    Each citation marker becomes the decision id behind it, so the agent knows which decisions to read
-    again — the brief is not a source itself: a statement the answer makes still needs a passage the
-    agent fetched in its own turn, or the grounding check drops it."""
-    sources, answers = numbered(matter)
 
-    def leads(text: str) -> str:
-        def one(m: re.Match) -> str:
-            n = int(m.group(1))
-            return f" (see {sources[n - 1].decision_id})" if 0 < n <= len(sources) else ""
-        return re.sub(r"\s*\[(\d+)\]", one, text).strip()
-
-    out = [f"CASE PREP — the matter the user is asking about: {matter.title}",
-           "This is the lawyer's own preparation of the case, so you know what it is about. It is background, "
-           "not a source: to state what a decision, a statute or the case file says, read it with your tools in "
-           "this turn and cite that. The decision ids below are where the earlier research found each point.",
-           f"\nFACTS:\n{matter.intake.summary if matter.intake else matter.facts[:2000]}"]
-    if matter.intake and matter.intake.parties:
-        out.append("PARTIES: " + "; ".join(matter.intake.parties))
-    if matter.intake and matter.intake.timeline:
-        out.append("TIMELINE:\n" + "\n".join(f"- {t}" for t in matter.intake.timeline))
-    for issue, answer in zip(matter.issues, answers, strict=True):
-        found = leads(answer)[:2500] or "Not researched yet."
-        out.append(f"\nISSUE {issue.n}: {issue.question}\nWhy it matters: {issue.why}\nRESEARCH:\n{found}")
-    if matter.assessment:
-        out.append(f"\nASSESSMENT:\n{leads(matter.assessment)[:3000]}")
-    return "\n".join(out)
+def case_prep_document(documents: DocumentStore, matter: Matter) -> DocumentInfo | None:
+    """What Case Prep generated for the matter — intake, issues with their research, assessment and table
+    of authorities, i.e. the memo — kept as a document of its case file, so the assistant asked about
+    the matter can read and cite it. None before the intake has run. Blocking."""
+    if matter.intake is None:
+        return None
+    return documents.keep_generated(prep_document_id(matter.id), f"Case prep — {matter.title}.md", memo(matter))
 
 
 def memo(matter: Matter) -> str:

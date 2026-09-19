@@ -83,7 +83,7 @@ class DocumentInfo(Model):
     id: str
     name: str
     # a file the user attached, a recording of the client (kept as WAV, its text the transcript), or typed notes
-    kind: Literal["document", "recording", "notes"] = "document"
+    kind: Literal["document", "recording", "notes", "generated"] = "document"  # generated: a matter's case prep
     pages: int
     chars: int
     parser: str  # "nemotron-parse", "python-docx", "text", "nemotron-asr" or "typed"
