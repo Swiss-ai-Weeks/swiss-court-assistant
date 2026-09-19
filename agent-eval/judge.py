@@ -111,6 +111,10 @@ def _expectation(case: dict[str, Any]) -> str:
         else ["The corpus can answer this question; refusing to answer it is wrong."]
     if decision := expect.get("decision"):
         lines.append(f"The answer must be based on the decision {decision}.")
+    if documents := expect.get("documents"):
+        lines.append("The user's own files are attached (they appear among the passages as documents). "
+                     "The facts of the case must be taken from them and cited to them — in particular "
+                     f"{', '.join(documents)} — and the law cited to decisions and statutes.")
     if expect.get("cites") == "optional":
         lines.append("This question is about the corpus itself, so citations are not required.")
     lines.append("The answer must be written in "

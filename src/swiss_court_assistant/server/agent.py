@@ -10,7 +10,7 @@ from typing import Any, Protocol
 import polars as pl
 
 from .decisions import DecisionStore
-from .schemas import Message, Source, Stage
+from .schemas import DocumentInfo, Message, Source, Stage
 from .store import new_id
 
 
@@ -96,9 +96,15 @@ def original_question(question: str, history: list[Message]) -> str:
 class Agent(Protocol):
     name: str
 
-    def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
+    def answer(self, question: str, history: list[Message], ask: bool = True,
+               attachments: list[DocumentInfo] | None = None,
+               collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
         """Stream one turn (with `ask`, the agent may end it with a Clarify question instead): Status, Thought and ToolStart/ToolEnd while researching, then the answer as
-        Delta text with a Cite right after each statement a source supports."""
+        Delta text with a Cite right after each statement a source supports. `attachments`: documents the
+        user attached to this message (earlier ones are on the history's messages). `collection`: the
+        case-index collection holding the attachments' passages (a matter's case file), searched by
+        meaning instead of reading the documents whole. `case_prep`: the matter's generated case prep
+        (intake, research, assessment, memo) when the question is asked about a matter: shown whole, citable."""
         ...
 
 
@@ -164,7 +170,9 @@ class StubAgent:
             ))
         return out
 
-    async def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
+    async def answer(self, question: str, history: list[Message], ask: bool = True,
+                     attachments: list[DocumentInfo] | None = None,
+                     collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
         matched = next((s for s in SCENARIOS if s.match.search(question)), None)
         s = matched or TENANCY
         yield Status("thinking", "Planning the research (stub)")

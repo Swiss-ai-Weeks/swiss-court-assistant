@@ -18,4 +18,6 @@ export function relativeTime(iso: string): string {
 }
 
 /** "E. 4.1, 4.1.1" — the Erwägungen (reasoning paragraphs) a passage covers. */
-export const erwLabel = (e: string[]) => (e.length ? `E. ${e.join(", ")}` : "");
+// a page of an attached document comes as "p. 3", a decision's Erwägungen as "2.1"
+export const erwLabel = (e: string[]) =>
+  e.length ? (e[0].startsWith("p. ") ? e.join(", ") : `E. ${e.join(", ")}`) : "";

@@ -7,13 +7,14 @@
 #   translate   50051 gRPC / 9000 HTTP  1   Translate on passages and selections
 #   tts         50052 gRPC / 9001 HTTP  1   Read aloud, voice-mode speech
 #   asr         50053 gRPC / 9002 HTTP  1   voice mode, recorded client interviews
+#   parse       8002 (OpenAI API)       1   attached documents and Case Prep uploads: PDF pages and scans to text
 #
 #   docker compose -f deploy/compose.yaml up -d        # everything
 #   docker compose -f deploy/compose.yaml ps           # health of each
 #   docker compose -f deploy/compose.yaml logs -f asr
 #
 # The NGC key is read from ~/.config/swiss-court-assistant/nim.env (NGC_API_KEY=..., mode 600), never
-# from this file. Only llm, embed and rerank get it; the speech and translation NIMs start offline.
+# from this file. Only llm, embed, rerank and parse get it; the speech and translation NIMs start offline.
 #
 # Speech and translation start from exported models. A Riva NIM compiles its TensorRT engines into the
 # container on every start whenever it finds its downloaded model package — 30 minutes for asr and for
@@ -139,6 +140,25 @@ services:
     volumes:
       - "${HOME}/.cache/nim:/opt/nim/.cache"
       - "${HOME}/.cache/nim/riva-export/asr-multi:/opt/nim/export"
+
+  parse:
+    <<: [*nim, *gpu1, *ngc]
+    image: nvcr.io/nim/nvidia/nemotron-parse:latest
+    container_name: nemotron-parse
+    ports: ["8002:8000"]   # 8000 is the embedder's
+    volumes: ["${HOME}/.cache/nim:/opt/nim/.cache"]
+    shm_size: 16gb
+    environment:
+      # defaults took 51 GB of GPU1 (KV cache 0.9 of free memory, engine built for batches of 128) and
+      # left no room for the app's 20 GB cuVS vector matrix. The app sends at most PARALLEL pages at
+      # once (server/parsing.py), each a few thousand tokens.
+      NIM_KVCACHE_PERCENT: "0.05"
+      NIM_MAX_BATCH_SIZE: "16"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/v1/health/ready"]
+      interval: 15s
+      timeout: 5s
+      start_period: 15m
 
 volumes:
   # model weights the embed and rerank NIMs downloaded, copied from their old anonymous volumes

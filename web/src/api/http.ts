@@ -1,6 +1,6 @@
 // Api over the FastAPI backend (src/swiss_court_assistant/server). In dev, Vite proxies /api.
 // Paths are relative to the page, so the app also works behind a path prefix (e.g. /coder/proxy/8090/).
-import type { Api, ChatEvent, Citations, Conversation, ConversationSummary, Decision, Health, Matter,
+import type { Api, ChatEvent, Citations, Conversation, ConversationSummary, Decision, DocumentInfo, Health, Matter,
   MatterEvent, MatterSummary } from "./types";
 
 async function json<T>(res: Response): Promise<T> {
@@ -76,24 +76,30 @@ export const httpApi: Api = {
     if (!res.ok) throw new Error(await errorText(res));
   },
 
-  async *chat(conversationId, text, signal) {
+  async *chat(conversationId, text, signal, documentIds = [], matterId = null) {
     const res = await fetch("api/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ conversationId, message: text }),
+      body: JSON.stringify({ conversationId, message: text, documentIds, matterId }),
       signal,
     });
     yield* events<ChatEvent>(res);
   },
 
+  async uploadDocument(file, signal, filename) {
+    const form = new FormData();
+    form.append("file", file, filename ?? (file instanceof File ? file.name : "upload.bin"));
+    return json<DocumentInfo>(await fetch("api/documents", { method: "POST", body: form, signal }));
+  },
+  documentFileUrl: (id) => `api/documents/${enc(id)}/file`,
+
   listMatters: () => fetch("api/matters").then((r) => json<MatterSummary[]>(r)),
   getMatter: (id) => fetch(`api/matters/${enc(id)}`).then((r) => json<Matter>(r)),
-  memoUrl: (id) => `api/matters/${enc(id)}/memo`,
+  memoUrl: (id, format = "docx") => `api/matters/${enc(id)}/memo${format === "md" ? "?format=md" : ""}`,
 
-  async createMatter({ file, filename, text, title }) {
-    // multipart either way: a document, a recording already decoded to 16 kHz PCM, or typed facts
+  async createMatter({ documentIds = [], text, title }) {
     const form = new FormData();
-    if (file) form.append("file", file, filename ?? (file instanceof File ? file.name : "upload.bin"));
+    for (const id of documentIds) form.append("document_ids", id);
     if (text) form.append("text", text);
     if (title) form.append("title", title);
     return json<Matter>(await fetch("api/matters", { method: "POST", body: form }));

@@ -13,9 +13,10 @@ bitset, so the GPU scores only the rows that pass, not a top-k that is filtered 
 
 sqlite remains the source of truth. `export` reads the float32 matrix, re-exporting it from sqlite
 first when it is older than the index, and records the index state it came from, like vecmatrix.py.
-The app uses this matrix when SCA_VECTORS=gpu and falls back to the float32 one otherwise.
+The app uses this matrix unless SCA_VECTORS=cpu, and falls back to the float32 one when cuVS is
+missing, the float16 copy is stale, or it does not fit in GPU memory.
 
-    uv sync --extra gpu
+    uv sync                                                  # cuVS is in the default `gpu` group
     uv run python -m swiss_court_assistant.gpuvec export     # after `index build` / `index update`
     uv run python -m swiss_court_assistant.gpuvec bench      # GPU vs CPU: speed and top-k overlap
     uv run python -m swiss_court_assistant.gpuvec status
@@ -126,7 +127,12 @@ class GpuVectorMatrix:
         try:
             return cls(path, meta, device)
         except ImportError:
-            log.warning("cuVS is not installed (`uv sync --extra gpu`); searching on the CPU")
+            log.warning("cuVS is not installed (`uv sync`); searching on the CPU")
+            return None
+        except Exception as e:  # typically out of GPU memory: another model took the space
+            log.warning("vectors do not fit on GPU %d (%s); searching on the CPU", device, e)
+            import cupy as cp
+            cp.get_default_memory_pool().free_all_blocks()
             return None
 
     def stats(self) -> dict:
@@ -170,8 +176,8 @@ class GpuVectorMatrix:
 
 
 def open_matrix(db: Path, model: str, con: sqlite3.Connection):
-    """The matrix the app searches: on the GPU when SCA_VECTORS=gpu and it can be, else in memory."""
-    if os.environ.get("SCA_VECTORS", "cpu").lower() == "gpu":
+    """The matrix the app searches: on the GPU unless SCA_VECTORS=cpu or it cannot be, else in memory."""
+    if os.environ.get("SCA_VECTORS", "gpu").lower() == "gpu":
         gpu = GpuVectorMatrix.open(db, model, con, int(os.environ.get("SCA_VECTORS_GPU", "1")))
         if gpu is not None:
             return gpu
@@ -184,7 +190,7 @@ def bench(db: Path, model: str, device: int, n: int = 50, k: int = 40) -> None:
     t0 = time.time()
     gpu = GpuVectorMatrix.open(db, model, con, device)
     if gpu is None:
-        raise SystemExit("no usable float16 matrix; run `gpuvec export` (and `uv sync --extra gpu`)")
+        raise SystemExit("no usable float16 matrix; run `gpuvec export` (and `uv sync`)")
     print(f"GPU matrix loaded in {time.time() - t0:.0f} s")
     cpu = M.VectorMatrix.open(db, model, con)
     rng = np.random.default_rng(0)

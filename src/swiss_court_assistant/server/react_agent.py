@@ -24,15 +24,21 @@ from swiss_court_assistant.facets import AREAS, CANTONS, COURTS, PROCEEDINGS
 
 from .agent import (AgentEvent, Cite, Clarify, Delta, Status, Thought, ToolEnd, ToolStart, Verdict,
                     original_question, with_clarification)
+from .case_index import CaseHit, CaseIndex, IndexUnavailable
 from .corpus import Corpus, FiltersUnavailable, Passage
 from .decisions import court_label
 from .language import detect_language
 from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model
-from .schemas import Message, Source
+from .parsing import DocumentStore
+from .schemas import DocumentInfo, Message, Source
 
 log = logging.getLogger(__name__)
 
 READ_WINDOW = 8000
+# An attached document this short goes into the turn whole; a longer one shows its beginning and its
+# headings, and the agent reads on with read_document.
+INLINE_DOCUMENT = 12_000
+DOCUMENT_HEAD = 4000
 MAX_TOOL_CALLS = 8  # then the agent has to write the answer
 # Offered write_answer from the first step, the agent took it after one search on 19 of 33 eval
 # questions (agent-eval/RESULTS.md) and answered from whatever came back — on exam questions those
@@ -52,15 +58,61 @@ NO_ANSWER = {
     "it": "La ricerca è conclusa, ma non è stato possibile formulare una risposta. La preghiamo di riformulare la domanda.",
     "en": "The research finished, but no answer could be written. Please ask the question again.",
 }
-# Every statement rested on citations that did not hold up, so nothing is left to show. Said without
-# naming the machinery: what the user needs to know is that nothing here is sourced, and what to try.
+# Nothing of the answer held up, even after researching again with other tool calls (see
+# RESEARCH_AGAIN). Said politely and without naming the machinery: nothing here is sourced, a
+# specialist can answer what the corpus did not, and a narrower question may still work.
 NO_SUPPORT = {
-    "de": "Keine der gefundenen Passagen belegt eine Antwort auf diese Frage — die Stellen, auf die sich die Antwort stützen sollte, sagen etwas anderes. Bitte formulieren Sie die Frage enger oder mit anderen Begriffen.",
-    "fr": "Aucun des passages trouvés n'étaye une réponse à cette question : les extraits sur lesquels la réponse devait s'appuyer disent autre chose. Veuillez préciser la question ou la reformuler avec d'autres termes.",
-    "it": "Nessuno dei passaggi trovati sostiene una risposta a questa domanda: i brani su cui la risposta avrebbe dovuto fondarsi dicono altro. La preghiamo di precisare la domanda o di riformularla con altri termini.",
-    "en": "None of the passages found supports an answer to this question: the ones the answer would have rested on say something else. Please narrow the question or put it in different terms.",
+    "de": "Es tut mir leid – auch nach mehreren Recherchen mit unterschiedlichen Suchen habe ich keine Entscheide oder Gesetzesstellen gefunden, die eine verlässliche Antwort auf diese Frage belegen. Statt Ihnen eine Antwort ohne Beleg zu geben, empfehle ich Ihnen, die Frage mit einer Fachanwältin oder einem Fachanwalt für dieses Rechtsgebiet zu besprechen. Wenn Sie möchten, können Sie die Frage auch enger fassen oder mit anderen Begriffen stellen, dann suche ich gerne noch einmal.",
+    "fr": "Je suis désolé : même après plusieurs recherches menées différemment, je n'ai trouvé aucune décision ni disposition légale qui étaye une réponse fiable à cette question. Plutôt que de vous donner une réponse sans fondement, je vous recommande d'en parler à une avocate ou un avocat spécialisé dans ce domaine du droit. Si vous le souhaitez, vous pouvez aussi préciser la question ou la formuler avec d'autres termes, et je chercherai volontiers à nouveau.",
+    "it": "Mi dispiace: anche dopo diverse ricerche condotte in modi diversi, non ho trovato decisioni né disposizioni di legge che sostengano una risposta affidabile a questa domanda. Piuttosto che darle una risposta senza fondamento, le consiglio di rivolgersi a un'avvocata o a un avvocato specializzato in questo ambito del diritto. Se lo desidera, può anche precisare la domanda o formularla con altri termini, e cercherò volentieri di nuovo.",
+    "en": "I'm sorry — even after searching several times in different ways, I could not find decisions or statutory provisions that support a reliable answer to this question. Rather than give you an answer without a source, I recommend discussing it with a lawyer who specialises in this area of law. If you like, you can also narrow the question or put it in different terms, and I will gladly search again.",
 }
-RECURSION_LIMIT = 2 * MAX_TOOL_CALLS + 6
+# When it gives up, the user has waited through several rounds of research: an apology alone leaves them
+# with nothing. So the answer is SORRY, then a brief of what was searched, what came up and why it does not
+# fit (BRIEF_PROMPT, checked like any answer), then SPECIALIST.
+SORRY = {
+    "de": "Es tut mir leid – ich konnte in diesem Korpus keine belegte Antwort auf Ihre Frage finden, auch nicht nach mehreren Recherchen mit unterschiedlichen Suchen. Hier ist, was ich gesucht und gefunden habe:",
+    "fr": "Je suis désolé : je n'ai pas pu trouver dans ce corpus de réponse étayée à votre question, même après plusieurs recherches menées différemment. Voici ce que j'ai cherché et trouvé :",
+    "it": "Mi dispiace: non ho trovato in questo corpus una risposta fondata alla sua domanda, nemmeno dopo diverse ricerche condotte in modi diversi. Ecco che cosa ho cercato e trovato:",
+    "en": "I'm sorry — I could not find a sourced answer to your question in this corpus, even after searching several times in different ways. Here is what I looked for and what came up:",
+}
+SPECIALIST = {
+    "de": "Da ich Ihnen keine Antwort ohne Beleg geben möchte, empfehle ich Ihnen, die Frage mit einer Fachanwältin oder einem Fachanwalt für dieses Rechtsgebiet zu besprechen. Wenn Sie möchten, können Sie die Frage auch enger fassen oder weitere Angaben zu Ihrem Fall machen, dann suche ich gerne noch einmal.",
+    "fr": "Comme je ne souhaite pas vous donner une réponse sans fondement, je vous recommande d'en parler à une avocate ou un avocat spécialisé dans ce domaine du droit. Si vous le souhaitez, vous pouvez aussi préciser la question ou me donner plus de détails sur votre situation, et je chercherai volontiers à nouveau.",
+    "it": "Poiché non desidero darle una risposta senza fondamento, le consiglio di parlarne con un'avvocata o un avvocato specializzato in questo ambito del diritto. Se lo desidera, può anche precisare la domanda o darmi più dettagli sul suo caso, e cercherò volentieri di nuovo.",
+    "en": "Since I don't want to give you an answer without a source, I recommend discussing the question with a lawyer who specialises in this area of law. If you like, you can also narrow the question or tell me more about your situation, and I will gladly search again.",
+}
+BRIEF_PROMPT = """The research for the user's question above is over, and no answer could be supported by the passages found.{rejected} These are all the searches and reads that were made, and nothing else was searched:
+{calls}
+Write a short brief for the user, in {language}, as {{"answer": [...]}} with text parts only and no citations:
+1. What you searched for — the angles, legal terms and provisions of the list above, in plain words, not tool names; never a search that is not in it.
+2. What the searches did find — the decisions (by docket number) or statute articles that came up, and what each is about.
+3. Why these do not answer the question or may not fit the user's case: they concern another issue, another area of law, other facts or another procedural situation, or the point the question turns on is not decided in them.
+Report only what the tool results show. Do not state any rule of law, deadline, amount or outcome as the answer, and do not guess one. Do not apologise and do not recommend anyone: that is added around your brief. At most five sentences in one or two paragraphs, each point said once."""
+# Part of the answer held up but much of it did not, even after researching again: what held is shown,
+# followed by this.
+PARTLY_SUPPORTED = {
+    "de": "Hinweis: Ein Teil dessen, was diese Frage verlangt, liess sich mit den gefundenen Entscheiden und Gesetzesstellen nicht belegen und ist deshalb nicht in der Antwort enthalten. Für eine verlässliche Beurteilung Ihres Falls empfehle ich Ihnen, eine Fachanwältin oder einen Fachanwalt beizuziehen.",
+    "fr": "Remarque : une partie de ce que demande cette question n'a pas pu être étayée par les décisions et dispositions trouvées et ne figure donc pas dans la réponse. Pour une appréciation fiable de votre situation, je vous recommande de consulter une avocate ou un avocat spécialisé.",
+    "it": "Nota: una parte di ciò che chiede questa domanda non ha potuto essere sostenuta dalle decisioni e dalle disposizioni trovate e non figura quindi nella risposta. Per una valutazione affidabile del suo caso, le consiglio di rivolgersi a un'avvocata o a un avvocato specializzato.",
+    "en": "Note: part of what this question asks could not be supported by the decisions and provisions found, so it is left out of the answer. For a reliable assessment of your situation, I recommend consulting a lawyer who specialises in this area.",
+}
+# When the checks reject all of a draft's citations, or at least this share of its cited statements,
+# revising cannot help: the passages found do not say it. The agent then researches again with other
+# tool calls, up to MAX_RESEARCH_AGAIN times with RESEARCH_AGAIN_CALLS more calls each, before it
+# gives up (NO_SUPPORT, PARTLY_SUPPORTED).
+REJECTED_SHARE = 0.5
+MAX_RESEARCH_AGAIN = 2
+RESEARCH_AGAIN_CALLS = 3
+RESEARCH_AGAIN_MIN_CALLS = 2  # new calls before write_answer is offered again
+RESEARCH_AGAIN = """Your answer was checked against the passages, and {how} did not hold up:
+{problems}
+
+The passages found so far do not support these statements, so writing again from them will not help. Research again ({attempt} of {max_attempts}) and find the passages that do — with different tool calls from the ones already made:
+{calls}
+Change the approach, not only the wording: another tool (search_laws or read_law for the provision the question turns on, keyword_search for an exact legal term or a docket number, read_decision to read the reasoning of a decision found, citing_decisions for the later case law), other terms in German, French and Italian, or fewer or other filters. You have {left} tool calls, then call write_answer. If the passages still do not state something, the answer says it was not found instead of stating it."""
+# every tool call is two graph steps (model, tools); researching again adds its calls and its write_answer
+RECURSION_LIMIT = 2 * (MAX_TOOL_CALLS + MAX_RESEARCH_AGAIN * (RESEARCH_AGAIN_CALLS + 1)) + 6
 # The answer is drafted, checked against the tool results and, while the check finds problems, revised
 # this many times before what passed is shown. Two revisions fix most drafts; a third mostly repeats.
 MAX_REVISIONS = 2
@@ -112,7 +164,15 @@ class Turn:
     # from it, and a reply to a question asked back mixes languages (see `original_question`)
     language: str | None = None
     pushback: str | None = None  # what write_answer returns when the agent is sent back to research
+    documents: list[str] = field(default_factory=list)  # ids of the documents attached in this conversation
+    reads: set[tuple[str, int]] = field(default_factory=set)  # (document_id, offset) already read this turn
+    collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
+    case_prep: str | None = None  # document id of the matter's generated case prep, when asked from Case Prep
     pushed_back: bool = False    # only once per turn
+    researched_again: int = 0    # times the checks rejected the draft and the agent researched again
+    resumed_at: int = 0          # tool calls made when it last went back to research
+    # statements whose citations failed in an earlier draft: one that comes back without a citation is dropped
+    rejected: list[str] = field(default_factory=list)
     result: VerifiedAnswer | None = None
 
 
@@ -177,10 +237,14 @@ ANSWER_FORMAT = {"type": "json_schema",
 
 # The checks are yes/no questions on purpose: asked to quote or describe what is wrong, this model always
 # finds something (see agent-eval/); asked to confirm one thing, it is a usable judge.
-SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision or a statute, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
+SUPPORT_PROMPT = """You check a legal answer against its sources. You are given a passage from a Swiss court decision, a statute or a document the user attached, in which the sentences the answer quotes are marked between ⟦ and ⟧, and one statement from the answer that cites them. Reply {"supported": true} if the quoted sentences, read in their context, state or directly imply the statement, and {"supported": false} if they do not: they are about something else, say less than the statement claims, or contradict it. Judge only against this passage, not your own legal knowledge. The statement and the passage may be in different languages."""
 SUPPORT_FORMAT = {"type": "json_schema", "json_schema": {"name": "support", "schema": {
     "type": "object", "properties": {"supported": {"type": "boolean"}}, "required": ["supported"]}}}
 COVERED_PROMPT = """You review a legal answer. You are given the sentences of the answer that are backed by a cited source, and one further sentence of the same answer that has no source. Reply {"covered": true} if that sentence only restates, summarises, introduces or frames what the backed sentences say, or reports what was searched for and not found, or what the passages found are about instead. Reply {"covered": false} if it adds something the backed sentences do not state — a rule, a holding, what a statute or a court says, a decision or article it names, a fact of a case, a deadline, an amount. When there are no backed sentences, only a sentence that reports what was searched for and not found is covered."""
+# The give-up brief (BRIEF_PROMPT) has no sources by design, and saying what the decisions found are about is
+# its point; stating the law is still not allowed. Kept apart from COVERED_PROMPT: allowing "what the passages
+# are about" in answers let an uncited "void under Art. 336c para. 2 OR" through as a description of a passage.
+BRIEF_COVERED_PROMPT = """You review a short report to a user on legal research that found no answer to their question. You are given one sentence of it. Reply {"covered": true} if the sentence only reports what was searched for, which decisions or statute articles came up and what their subject or facts are, or that and why they do not answer the question. Reply {"covered": false} if it states what the law is or what a court or a statute holds on the point — a rule, a holding, a deadline, an amount, a legal consequence, an outcome for the user — or guesses one."""
 COVERED_FORMAT = {"type": "json_schema", "json_schema": {"name": "covered", "schema": {
     "type": "object", "properties": {"covered": {"type": "boolean"}}, "required": ["covered"]}}}
 ANSWERS_PROMPT = """You review whether a legal answer responds to the question it was written for. Reply {"answers": true} if the answer addresses what the question asks — its subject and the point it turns on — including when it says that the sources do not cover the question, or corrects a premise of the question. Reply {"answers": false} if it answers a neighbouring question instead, states a general rule without reaching the point asked, or talks past the question."""
@@ -203,6 +267,10 @@ FILTER_TOOLS = """- Filters, for semantic_search, keyword_search and list_decisi
 - list_decisions(filters, oldest=false): how many decisions match the filters, how they split by court, area and decade, and the newest ten (oldest=true: the oldest). For questions about the corpus itself or the latest decisions of a court — not to find what the law is.
 """
 
+DOCUMENT_TOOLS = """- read_document(document_id, offset): reads a document the user attached to the conversation, 8,000 characters per call, with a "[Page n]" line where each page starts. search_document(document_id, words): the passages of that document containing the words, with the offset to read them at. The user's message names the attached documents and shows their text or its beginning. When the question is about an attached document, first find in it what the question turns on — the clause, the dates, the amounts, what a party wrote — and then research the law and the decisions that apply to it. What the document says is a fact of the user's case, not a statement of the law.
+- search_case_file(query): only when a matter's case file is attached (several documents, recordings and notes too long to show whole). Finds by meaning, in any language, the passages of all of them that answer the query — "date the termination was served", "rent amount", "what the client said about the defects" — each with its document_id, page and the offset to read on at. Search the case file for the facts an issue turns on before researching the law, and again whenever you need a fact you have not seen.
+"""
+
 ASK_TOOL = """- ask_user(question, options, found_so_far): ask the user one short question instead of answering. Two things call for it.
   (a) The answer turns on a fact the question leaves open and the passages found go different ways on it — a residential or a commercial lease, which canton, whether a deadline has passed, employee or self-employed.
   (b) You found the article or the decisions that would govern, but they apply only if something the question does not say is true — Art. 337 OR only if the contract was ended immediately rather than with notice, Art. 271a OR only for a residential lease, a cantonal rule only for a case in that canton. Do not answer on the assumption that it holds: name what you found and let the user confirm it against their own facts, e.g. \"The passages point to Art. 337 OR, termination for good cause with immediate effect. Was the contract ended from one day to the next, or with the ordinary notice period?\" A confirmed premise is what makes the answer the user's answer rather than a plausible one, so it is worth the question whenever the premise is doing real work.
@@ -216,7 +284,7 @@ Research the user's question with the tools, then call write_answer.
 - keyword_search(keyword): exact words, e.g. a statute "Art. 271a OR", a docket number "4A_705/2016", a rare term. Put exact phrases in double quotes.
 - read_decision(decision_id, offset): reads a decision's full text, 8,000 characters per call, to check the context or find the decisive reasoning.
 - citing_decisions(decision_id): how many later decisions cite it, and the most recent ones. Search results already show "cited by N" — prefer decisions later courts still rely on, and check a leading case before resting the answer on it.
-{law_tools}{filter_tools}{ask_tool}- write_answer(established, not_found): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls. Its two arguments are your own stock-taking before the answer is written. established: what the passages actually say that answers the question, point by point, each with the decision_id or law_id it comes from — what they say, not what you know. not_found: what the question asks that no passage answers, or "nothing". Be exact there: the answer reports what was not found instead of filling it in, and early in the research you are sent back once to look for it. Before you call it, read the answer you are about to write: if it only holds under a fact the user never stated, and you are about to cover that by hedging — "that depends on the circumstances", "if the termination was immediate", "provided the lease is residential", "generally" — then the hedge is the question, and ask_user is the call to make instead. Hedging is not a way to stay safe about a fact you could simply have asked for.
+{law_tools}{filter_tools}{document_tools}{ask_tool}- write_answer(established, not_found): call it as soon as the passages you found answer the question, or when more searching is unlikely to help. It becomes available after your first {min_calls} research calls: use the second to read the most relevant decision, or to search for what the first results left open. You have at most {max_calls} tool calls. Its two arguments are your own stock-taking before the answer is written. established: what the passages actually say that answers the question, point by point, each with the decision_id or law_id it comes from — what they say, not what you know. not_found: what the question asks that no passage answers, or "nothing". Be exact there: the answer reports what was not found instead of filling it in, and early in the research you are sent back once to look for it. Before you call it, read the answer you are about to write: if it only holds under a fact the user never stated, and you are about to cover that by hedging — "that depends on the circumstances", "if the termination was immediate", "provided the lease is residential", "generally" — then the hedge is the question, and ask_user is the call to make instead. Hedging is not a way to stay safe about a fact you could simply have asked for.
 Prefer passages where a court states the rule and its reasoning over passages that only mention it.
 Never repeat a search you have already made: near-identical wording returns the same passages. If two searches with clearly different wording bring back nothing on point, stop and call write_answer. This corpus is a subset of Swiss case law, so many questions — foreign law such as the EU GDPR, statutes no court here applied, recent events — have no answer in it at all. Reporting that is a correct answer; assembling one out of loosely related passages is not.
 Lines starting with ">" quote text the user selected (from a decision, named on the "> —" line, or from an earlier answer); the question below them is about that text."""
@@ -226,6 +294,7 @@ ANSWER_PROMPT = """You are a legal research assistant for Swiss case law. Using 
 - A "citation" part follows the text it supports. It gives the decision_id of a passage from the tool results, its chunk_id (only for search results; null for text read with read_decision), a "quote" copied character for character from that passage in the decision's own language (never translated or shortened; one to three consecutive sentences, at most about 300 characters), and an "explanation": one sentence in the user's language on why the passage supports the text.
 - Every legal statement needs a citation. Do not add holdings, facts or statutes that are not in the tool results — neither from your own legal knowledge nor from an earlier answer in this conversation. Earlier turns tell you what is being asked; they are never a source, and an earlier answer is never repeated as the new one.
 - A statute article from search_laws or read_law is cited the same way: its law_id goes in decision_id, with its chunk_id and a quote copied from the article's text. Name it as it is cited ("Art. 271a OR"). Cite the article for what the statute says and a decision for how courts apply it.
+- A document the user attached (from read_document or search_document, or shown in the user's message) is cited the same way: its document_id in decision_id, chunk_id null, and a quote copied character for character from the document's text. Cite the document for what it says — its clauses, dates, amounts, what a party wrote — and decisions and statutes for what the law is.
 - What list_decisions reports about the corpus itself — how many decisions match, which ones, their dates and subjects — needs no citation: name each decision by court, docket number and date. What a decision holds still does.
 - If the tool results do not answer the question, say so plainly in one or two text parts with no citations at all: name what was searched for and what those passages are actually about. Do not stretch a loosely related passage into an answer.
 - The answer is checked before it is shown: every quote is looked up character for character in the cited text, and every cited passage is checked for whether it states the sentence in front of it. What fails is removed from the answer, sentence and citation together. So rest each sentence on a passage that says it, and quote the sentences that say it.
@@ -343,7 +412,77 @@ def _decision_filter(corpus: Corpus, canton: str | None, court: str | None, area
     return where, label, None
 
 
-def make_tools(corpus: Corpus) -> list:
+_KIND = {"document": "", "recording": "transcript of a recording of the client · ", "notes": "notes typed by the lawyer · "}
+
+
+def _document_head(documents: DocumentStore, d: DocumentInfo) -> str:
+    return (f"document_id={d.id} · {_KIND.get(d.kind, '')}{d.name} · {d.pages} page{'s' * (d.pages != 1)}, "
+            f"{d.chars:,} characters" + (f" · {LANGUAGE_NAMES.get(d.language, d.language)}" if d.language else ""))
+
+
+def attachment_block(documents: DocumentStore, attached: list[DocumentInfo]) -> str:
+    """The documents attached to this message as the agent sees them: whole when they are short together,
+    otherwise each one's beginning and headings, to read on with read_document."""
+    blocks = []
+    whole = sum(d.chars for d in attached) <= INLINE_DOCUMENT
+    head_chars = max(1500, DOCUMENT_HEAD // len(attached)) if attached else DOCUMENT_HEAD
+    for d in attached:
+        text = documents.text(d.id) or ""
+        head = _document_head(documents, d)
+        if whole or len(text) <= head_chars:
+            blocks.append(f"{head}\nFull text:\n{text}")
+            continue
+        headings = [line for line in text.splitlines() if line.startswith("#")][:40]
+        outline = ("\nHeadings: " + " | ".join(h.lstrip("# ").strip() for h in headings)) if headings else ""
+        blocks.append(f"{head}{outline}\nCharacters 0-{head_chars} of {len(text)} (read on with "
+                      f"read_document(document_id={d.id!r}, offset={head_chars}), or find a passage with "
+                      f"search_document):\n{text[:head_chars]}")
+    return ("The user attached " + ("this document" if len(attached) == 1 else f"{len(attached)} documents")
+            + " to their message:\n\n" + "\n\n---\n\n".join(blocks))
+
+
+def _case_passage(h: CaseHit) -> str:
+    return (f"document_id={h.document_id} · {h.name} · page {h.page or '?'} · offset {h.char_start}\n"
+            f"{h.text.strip()}")
+
+
+def case_file_block(documents: DocumentStore, attached: list[DocumentInfo], hits: list[CaseHit]) -> str:
+    """A case file too long to show whole: what is in it, and the passages most relevant to the question,
+    found in its collection. The rest is found with search_case_file and read with read_document."""
+    catalogue = "\n".join(f"- {_document_head(documents, d)}" for d in attached)
+    found = "\n\n".join(_case_passage(h) for h in hits) or "(none found)"
+    return (f"The case file of this matter holds {len(attached)} item{'s' * (len(attached) != 1)}, "
+            f"{sum(d.chars for d in attached):,} characters in all — too long to show whole. They are indexed: "
+            f"search_case_file finds the passages on any point by meaning, and read_document reads on around "
+            f"one.\n{catalogue}\n\nPassages of the case file most relevant to the question:\n\n{found}")
+
+
+CASE_PREP_CHARS = 24_000  # the case prep is shown whole up to this; a longer one is read on with read_document
+
+
+def case_prep_block(documents: DocumentStore, prep: DocumentInfo) -> str:
+    """A matter's case prep as the agent sees it when asked about the matter: all of it, since questions
+    about the case are often questions about what was prepared — its facts, issues, assessment, memo."""
+    text = documents.text(prep.id) or ""
+    shown = text[:CASE_PREP_CHARS]
+    more = (f"\n\n(Characters 0-{len(shown)} of {len(text)}; read on with read_document(document_id={prep.id!r}, "
+            f"offset={len(shown)}).)" if len(text) > len(shown) else "")
+    return (f"The user is asking about a matter they prepared in Case Prep. This is its case prep, "
+            f"document_id={prep.id}: the facts, parties and timeline taken in from the client, the legal issues "
+            f"with the research on each, the assessment, and the table of authorities — together, the memo the "
+            f"user sees on the case page. When the user asks about the intake, the issues, the assessment or the "
+            f"memo, answer from this document and cite it (document_id={prep.id}). Its [n] markers point to its "
+            f"table of authorities. For what a court decision or a statute itself holds, read that source and "
+            f"cite it, not the case prep.\n\n{shown}{more}")
+
+
+def attachment_note(attached: list[DocumentInfo]) -> str:
+    """How an earlier message's attachments appear in the history: named, to read again if needed."""
+    return "\n".join(f"[Attached: {d.name}, document_id={d.id}, {d.pages} page{'s' * (d.pages != 1)} — "
+                     f"read it with read_document]" for d in attached)
+
+
+def make_tools(corpus: Corpus, documents: DocumentStore | None = None, case_index: CaseIndex | None = None) -> list:
     @tool(response_format="content_and_artifact")
     async def semantic_search(query_de: str, query_fr: str, query_it: str, canton: str | None = None,
                               court: Court | None = None, area: Area | None = None,
@@ -558,10 +697,91 @@ def make_tools(corpus: Corpus) -> list:
             return text
         return ""  # otherwise never runs: ResearchThenAnswer writes the answer instead
 
+    def _document(document_id: str) -> tuple[str | None, str | None]:
+        turn = _turn.get()
+        if documents is None or (turn is not None and document_id not in turn.documents):
+            return None, (f"No document {document_id!r} is attached to this conversation."
+                          + (f" Attached: {', '.join(turn.documents)}." if turn and turn.documents else ""))
+        return documents.text(document_id), None
+
+    @tool(response_format="content_and_artifact")
+    async def read_document(document_id: str, offset: int = 0) -> tuple[str, dict]:
+        """Read a document the user attached, 8,000 characters per call, from offset. Pages start with
+        a "[Page n]" line. Takes the document_id given with the user's message."""
+        text, error = _document(document_id)
+        if text is None:
+            return error or "Not found.", {"summary": "not found", "error": True}
+        start = max(0, min(offset, len(text)))
+        end = min(len(text), start + READ_WINDOW)
+        turn = _turn.get()
+        if turn is not None:
+            if (document_id, start) in turn.reads:  # the text is still above: reading it again adds nothing
+                return (f"You already read characters {start}-{end} of {document_id} in this turn; they are in "
+                        f"the tool result above." + (f" Continue at offset={end}." if end < len(text) else
+                                                     " That is the whole document."),
+                        {"summary": "already read", "decisions": [document_id]})
+            turn.reads.add((document_id, start))
+        info = documents.info(document_id)  # type: ignore[union-attr]
+        more = f" Call read_document(document_id={document_id!r}, offset={end}) to continue." \
+            if end < len(text) else ""
+        return (f"document_id: {document_id} · {info.name if info else ''}\n"
+                f"Characters {start}-{end} of {len(text)}.{more}\n\n{text[start:end]}",
+                {"summary": f"{info.name if info else document_id}, characters {start:,}–{end:,} of {len(text):,}",
+                 "decisions": [document_id]})
+
+    @tool(response_format="content_and_artifact")
+    async def search_document(document_id: str, words: str) -> tuple[str, dict]:
+        """Find where an attached document mentions something: the passages containing all the words
+        (or any of them, if none has all), each with its page and the offset to read_document it at."""
+        text, error = _document(document_id)
+        if text is None:
+            return error or "Not found.", {"summary": "not found", "error": True}
+        terms = [t for t in re.findall(r"\w+", words.lower()) if len(t) >= 3] or [words.lower().strip()]
+        paragraphs = [(m.start(), m.group()) for m in re.finditer(r"[^\n]+(?:\n(?!\n)[^\n]+)*", text)]
+        scored = [(sum(t in p.lower() for t in terms), start, p) for start, p in paragraphs]
+        best = max((n for n, _, _ in scored), default=0)
+        hits = [(start, p) for n, start, p in scored if n and n == best][:8]
+        if not hits:
+            return (f"No passage of {document_id} mentions {words!r}. Read it with read_document instead.",
+                    {"summary": "no match", "decisions": [document_id]})
+        blocks = [f"[offset {start}, page {DocumentStore.page_at(text, start) or '?'}]\n{p[:1500]}"
+                  for start, p in hits]
+        return (f"document_id: {document_id} — {len(hits)} passage{'s' * (len(hits) != 1)}"
+                + ("" if best == len(terms) else f" with {best} of the {len(terms)} words") + ":\n\n"
+                + "\n\n".join(blocks),
+                {"summary": f"{len(hits)} passage{'s' * (len(hits) != 1)}", "decisions": [document_id]})
+
+    @tool(response_format="content_and_artifact")
+    async def search_case_file(query: str) -> tuple[str, dict]:
+        """Find what the matter's case file says about something: the passages of all its documents,
+        recordings and notes that answer the query, by meaning and in any language, each with its
+        document_id, page and the offset to read_document on at."""
+        turn = _turn.get()
+        if case_index is None or turn is None or not turn.collection:
+            return "No case file is attached to this question.", {"summary": "no case file", "error": True}
+        try:
+            hits = await asyncio.to_thread(case_index.search, turn.collection, query, 6)
+        except IndexUnavailable as e:
+            return (f"The case file cannot be searched right now ({e}). Use search_document or read_document "
+                    f"on its documents instead.", {"summary": "index unavailable", "error": True})
+        if not hits:
+            return f"Nothing in the case file answers {query!r}.", {"summary": "nothing found"}
+        ids = list(dict.fromkeys(h.document_id for h in hits))
+        return (f"{len(hits)} passage{'s' * (len(hits) != 1)} of the case file:\n\n"
+                + "\n\n---\n\n".join(_case_passage(h) for h in hits),
+                {"summary": f"{len(hits)} passage{'s' * (len(hits) != 1)} in {len(ids)} "
+                            f"document{'s' * (len(ids) != 1)}", "decisions": ids})
+
     laws = [read_law, search_laws] if corpus.has_laws else []
     listing = [list_decisions] if corpus.facets else []
-    return [semantic_search, keyword_search, read_decision, citing_decisions, *listing, *laws, ask_user,
+    reading = [read_document, search_document] if documents is not None else []
+    if case_index is not None and documents is not None:
+        reading.append(search_case_file)
+    return [semantic_search, keyword_search, read_decision, citing_decisions, *listing, *laws, *reading, ask_user,
             write_answer]
+
+
+DOCUMENT_TOOL_NAMES = {"read_document", "search_document"}
 
 
 _OTHER = re.compile(r"(?i)^(andere[sr]?|sonstiges|other|autre|altro|else|etwas anderes)\b")
@@ -579,6 +799,14 @@ def _writer() -> Callable[[Any], None]:
         return get_stream_writer()
     except Exception:  # noqa: BLE001 — called directly, e.g. from a test
         return lambda _: None
+
+
+def _calls_made(messages: list[BaseMessage]) -> str:
+    """The research calls of this turn, one per line, with their arguments."""
+    calls = [f"- {tc['name']} {json.dumps(tc['args'], ensure_ascii=False)[:240]}"
+             for m in messages if isinstance(m, AIMessage)
+             for tc in m.tool_calls if tc["name"] not in ("write_answer", "ask_user")]
+    return "\n".join(calls) or "- (none)"
 
 
 class ResearchThenAnswer(AgentMiddleware):
@@ -620,16 +848,25 @@ class ResearchThenAnswer(AgentMiddleware):
         turn = _turn.get()
         may_ask = turn.may_ask if turn else False
         used = sum(isinstance(m, ToolMessage) for m in request.messages)
+        again = turn.researched_again if turn else 0
+        # each time the checks sent it back to research, it got more calls (and one went to write_answer)
+        budget = self.max_tool_calls + again * (RESEARCH_AGAIN_CALLS + 1)
         choice = ({"type": "function", "function": {"name": "write_answer"}}
-                  if used >= self.max_tool_calls else "required")
+                  if used >= budget else "required")
         messages = request.messages
-        if NUDGE_AFTER <= used < self.max_tool_calls:
+        # not after researching again: the nudge tells it to give up, the instructions it got to look again
+        if NUDGE_AFTER <= used < self.max_tool_calls and not again:
             messages = [*messages, HumanMessage(NUDGE.format(used=used, max_calls=self.max_tool_calls))]
         tools = request.tools
-        if used < MIN_TOOL_CALLS:  # not yet: see MIN_TOOL_CALLS
+        # not yet: see MIN_TOOL_CALLS; and after researching again, not before it has made new calls
+        if used < (turn.resumed_at + RESEARCH_AGAIN_MIN_CALLS if again and turn else MIN_TOOL_CALLS):
             tools = [t for t in tools if _tool_name(t) != "write_answer"]
         if used < 1 or not may_ask:  # asking back needs a search to say why it matters
             tools = [t for t in tools if _tool_name(t) != "ask_user"]
+        if not (turn and turn.documents):
+            tools = [t for t in tools if _tool_name(t) not in DOCUMENT_TOOL_NAMES]
+        if not (turn and turn.collection):
+            tools = [t for t in tools if _tool_name(t) != "search_case_file"]
         response = await handler(request.override(tool_choice=choice, messages=messages, tools=tools))
         result = response.result if isinstance(response, ModelResponse) else [response]
         replies = [m for m in result if isinstance(m, AIMessage)]
@@ -663,7 +900,13 @@ class ResearchThenAnswer(AgentMiddleware):
             turn.pushback = PUSHBACK.format(gap=gap, left=self.max_tool_calls - used - 1)
             log.info("sent back to research once for: %s", gap)
             return response
-        return await self._write(request, args)
+        # Researching again needs the write_answer call to run as a tool, as above; a stalled step has none.
+        may_research = write is not None and turn is not None and turn.researched_again < MAX_RESEARCH_AGAIN
+        written = await self._write(request, args, may_research)
+        if isinstance(written, str):
+            turn.pushback = written  # type: ignore[union-attr]
+            return response
+        return written
 
     async def _generate(self, prompt: list[BaseMessage]) -> str:
         """One constrained answer call, streamed so that the whitespace padding loop can be cut off."""
@@ -684,9 +927,13 @@ class ResearchThenAnswer(AgentMiddleware):
             await stream.aclose()
         return "".join(pieces)
 
-    async def _write(self, request: ModelRequest, args: dict[str, Any]) -> AIMessage:
+    async def _write(self, request: ModelRequest, args: dict[str, Any], may_research: bool = False) -> AIMessage | str:
         """Draft the answer, check it against the tool results, revise while the check finds problems,
-        and hand answer() what survived."""
+        and hand answer() what survived.
+
+        When the checks rejected all or most of the draft even after the revisions, the passages found
+        do not say it, and rewording will not change that: with `may_research`, this returns instead what
+        write_answer tells the agent, which then researches again with other tool calls."""
         turn = _turn.get()
         status = _writer()
         # Passages and searches in three languages pull the answer away from the question's language
@@ -708,7 +955,25 @@ class ResearchThenAnswer(AgentMiddleware):
                    "answer in this conversation is not a source for it and is never repeated as the answer.")
         if language:
             final += f" Write its text parts and explanations in {language}."
-        base = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
+        attached = [d for d in (turn.documents if turn else []) if d != (turn.case_prep if turn else None)]
+        if turn and turn.case_prep:
+            # Asked to sum up the memo, the draft cited the client's documents for what the memo says, quoting
+            # the memo's table of authorities as if it were their text; the check threw every sentence out.
+            final += (f" What the case prep says — its facts, issues, research, assessment, memo — is cited to "
+                      f"the case prep itself: decision_id {turn.case_prep}, chunk_id null, and a quote copied "
+                      "character for character from one of its sentences (not a heading and not a line of its "
+                      "table of authorities). Cite a client document or a decision only with a quote from that "
+                      "document's or decision's own text.")
+        if attached:
+            # Left alone, the draft stapled the letter's dates to a sentence about the law and cited a court
+            # decision for both; the check rightly found the decision did not say them, and dropped it all.
+            ids = ", ".join(attached)
+            final += (" The user attached a document. What comes from it — its dates, the reason it gives, "
+                      "amounts, clauses, who wrote to whom — goes in its own sentences, cited to the document: "
+                      f"decision_id {ids}, chunk_id null, and a quote copied character for character from "
+                      "its text. The law that applies to those facts goes in separate sentences, cited to the "
+                      "decisions and statute articles.")
+        base =[SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(final)]
         # "checking", not "thinking": the research is over and no more reasoning will stream, so the UI
         # drops the thinking line and follows these instead through the drafting and the checks.
         status(Status("checking", "Drafting the answer"))
@@ -722,8 +987,9 @@ class ResearchThenAnswer(AgentMiddleware):
         if not parts:
             answer = VerifiedAnswer([TextPart(type="text", text=NO_ANSWER.get(code, NO_ANSWER["en"]))], [], [])
             return self._finish(turn, answer, [])
-        seen = _seen(request.messages)
-        failed: list[str] = []  # statements whose citations did not hold, across the rounds
+        seen = _seen(request.messages) | set(turn.documents if turn else [])
+        # statements whose citations did not hold, across the rounds and the earlier research
+        failed: list[str] = list(turn.rejected) if turn else []
         rounds = 0
         while True:
             n = sum(isinstance(p, CitationPart) for p in parts)
@@ -746,13 +1012,68 @@ class ResearchThenAnswer(AgentMiddleware):
             text, parts = revised, new_parts
         answer = report.prune(parts, failed)
         answer.rounds = rounds
-        if not any(isinstance(p, TextPart) and p.text.strip() for p in answer.parts):
-            log.warning("nothing of the draft held up against the passages")
-            answer = VerifiedAnswer([TextPart(type="text", text=NO_SUPPORT.get(code, NO_SUPPORT["en"]))], [], [],
-                                    dropped=answer.dropped, rounds=rounds)
-        elif answer.dropped:
-            log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
+        empty = not any(isinstance(p, TextPart) and p.text.strip() for p in answer.parts)
+        rejected = empty or report.rejected
+        if rejected and may_research and turn is not None:
+            turn.researched_again += 1
+            turn.resumed_at = sum(isinstance(m, ToolMessage) for m in request.messages) + 1  # + write_answer
+            turn.rejected = list(dict.fromkeys([*failed, *report.failed_statements]))
+            log.warning("the checks rejected the draft (%s); researching again, %d of %d",
+                        "nothing held" if empty else f"{len(set(report.failed_statements))} statement(s) failed",
+                        turn.researched_again, MAX_RESEARCH_AGAIN)
+            status(Status("thinking", "The passages found do not support the draft: researching again "
+                                      f"({turn.researched_again} of {MAX_RESEARCH_AGAIN})"))
+            return self._research_again(request, report, turn.researched_again)
+        if empty or (rejected and not answer.sources):  # nothing sourced: what is left is no answer either
+            log.warning("nothing of the draft held up against the passages; giving up with a brief")
+            status(Status("checking", "Summarising what the research found"))
+            brief = await self._brief(request, question, code, seen, [*failed, *report.failed_statements])
+            parts_out = ([TextPart(type="text", text=SORRY.get(code, SORRY["en"])),
+                          *(TextPart(type="text", text="\n\n" + t) for t in brief),
+                          TextPart(type="text", text="\n\n" + SPECIALIST.get(code, SPECIALIST["en"]))]
+                         if brief else [TextPart(type="text", text=NO_SUPPORT.get(code, NO_SUPPORT["en"]))])
+            answer = VerifiedAnswer(parts_out, [], [], dropped=answer.dropped, rounds=rounds)
+        else:
+            if answer.dropped:
+                log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
+            if rejected:  # what held is shown, and that much did not
+                answer.parts.append(TextPart(type="text", text="\n\n" + PARTLY_SUPPORTED.get(code, PARTLY_SUPPORTED["en"])))
         return self._finish(turn, answer, report.problems)
+
+    async def _brief(self, request: ModelRequest, question: str, code: str, seen: set[str],
+                     rejected: list[str]) -> list[str]:
+        """What was searched, what came up and why it does not answer the question, for when the agent gives
+        up: paragraphs of text, checked like an answer (a sentence that states the law is removed), or []
+        when none can be written."""
+        statements = list(dict.fromkeys(" ".join(r.split()) for r in rejected if r.strip()))[:6]
+        said = ("" if not statements else " These statements from the draft were not supported by any passage: "
+                + " ".join(f"«{r}»" for r in statements))
+        prompt = [SystemMessage(ANSWER_PROMPT), *request.messages, HumanMessage(BRIEF_PROMPT.format(
+            rejected=said, calls=_calls_made(request.messages),
+            language=LANGUAGE_NAMES.get(code, "the language of the question")))]
+        try:
+            parts = [p for p in _parse_answer(await self._generate(prompt)) if isinstance(p, TextPart) and p.text.strip()]
+            if not parts:
+                return []
+            report = await self.verifier.verify(parts, question, code, seen, check_answers=False, brief=True)
+            kept = report.prune(parts, [])
+        except Exception:  # noqa: BLE001 — the fixed message is still an answer
+            log.warning("could not write the brief of the research", exc_info=True)
+            return []
+        return [p.text.strip() for p in kept.parts if isinstance(p, TextPart) and p.text.strip()]
+
+    @staticmethod
+    def _research_again(request: ModelRequest, report: Report, attempt: int) -> str:
+        """What write_answer returns when the checks sent the agent back: what did not hold, and the tool
+        calls already made, so that it tries others."""
+        statements = {c.statement for c in report.citations}
+        failed = set(report.failed_statements)
+        how = ("the whole draft" if not report.citations else
+               "none of its citations" if not any(c.ok for c in report.citations) else
+               f"{len(failed)} of its {len(statements)} cited statements")
+        problems = "\n".join(f"- {p}" for p in report.problems[:8]) or "- no statement was supported by a passage"
+        return RESEARCH_AGAIN.format(how=how, problems=problems, attempt=attempt, max_attempts=MAX_RESEARCH_AGAIN,
+                                     calls=_calls_made(request.messages), left=RESEARCH_AGAIN_CALLS)
 
     @staticmethod
     def _finish(turn: Turn | None, answer: VerifiedAnswer, problems: list[str]) -> AIMessage:
@@ -769,7 +1090,7 @@ def _tool_name(tool) -> str | None:
     return getattr(tool, "name", None) or (tool.get("name") if isinstance(tool, dict) else None)
 
 
-_ID_IN_RESULT = re.compile(r"\b(?:decision_id|law_id)[=:]\s*'?([\w./-]+)")
+_ID_IN_RESULT = re.compile(r"\b(?:decision_id|law_id|document_id)[=:]\s*'?([\w./-]+)")
 
 
 def _seen(messages: list[BaseMessage]) -> set[str]:
@@ -908,10 +1229,32 @@ def _locate_trimmed(text: str, quote: str) -> tuple[int, int] | None:
 class _Citations:
     """Turns CitationParts into numbered Sources; the same span keeps its number."""
 
-    def __init__(self, corpus: Corpus):
-        self.corpus = corpus
+    def __init__(self, corpus: Corpus, documents: DocumentStore | None = None):
+        self.corpus, self.documents = corpus, documents
         self.by_span: dict[tuple, Source] = {}
         self.seen: set[str] = set()  # decisions the tools returned this turn
+
+    def _document(self, c: CitationPart) -> Source | None:
+        """A citation of a document the user attached (its document_id in decision_id)."""
+        text = self.documents.text(c.decision_id) if self.documents else None
+        if text is None:
+            return None
+        span = _locate_trimmed(text, c.quote)
+        if span is None:
+            log.warning("quote not found verbatim in %s: %r", c.decision_id, c.quote[:200])
+        key = (c.decision_id, span or "document")
+        if key in self.by_span:
+            return self.by_span[key]
+        page = DocumentStore.page_at(text, span[0]) if span else None
+        source = Source(
+            n=len(self.by_span) + 1, chunk_id=f"{c.decision_id}#{page or 0}", decision_id=c.decision_id,
+            text=text[span[0]:span[1]] if span else c.quote, section="document",
+            erwaegungen=[f"p. {page}"] if page else [], char_start=span[0] if span else None,
+            char_end=span[1] if span else None, score=0.0,
+            decision=self.documents.summary(c.decision_id),  # type: ignore[union-attr, arg-type]
+            explanation=c.explanation, verified=span is not None)
+        self.by_span[key] = source
+        return source
 
     async def _law(self, c: CitationPart) -> Source | None:
         """A citation of a statute article (its law_id in decision_id), or None if it is not one."""
@@ -954,6 +1297,8 @@ class _Citations:
         return source
 
     async def resolve(self, c: CitationPart) -> Source | None:
+        if c.decision_id.startswith("doc_"):
+            return self._document(c)
         if (c.decision_id.startswith("law_") or (c.chunk_id or "").startswith("law_")) \
                 and hasattr(self.corpus, "law_chunk"):
             return await self._law(c)
@@ -1047,6 +1392,18 @@ class Report:
         held = {c.statement for c in self.citations if c.ok}
         return [c.statement for c in self.citations if not c.ok and c.statement and c.statement not in held]
 
+    @property
+    def rejected(self) -> bool:
+        """Whether the checks rejected so much of the draft that the passages, not the wording, are at
+        fault: every citation failed, or at least REJECTED_SHARE of the cited statements."""
+        statements = {c.statement for c in self.citations}
+        if not any(c.ok for c in self.citations):
+            # Nothing sourced left. A draft with no citations that only reports what was not found is an
+            # answer; one that had citations, or sentences the coverage check removed, made claims that
+            # nothing supports — shown without them, it read as an uncited statement of the law.
+            return bool(statements) or bool(self.rewritten)
+        return len(set(self.failed_statements)) >= REJECTED_SHARE * len(statements)
+
     def prune(self, parts: list[TextPart | CitationPart], failed_before: list[str]) -> VerifiedAnswer:
         """What is left once citations that did not hold are removed.
 
@@ -1084,8 +1441,12 @@ class Report:
             # Sentence by sentence, because a revision may slip the claim in next to a supported one.
             # `failed_before` holds only statements that had no citation left at all (see
             # Report.failed_statements), so a statement that kept a citation that holds is not in it.
+            # A failed statement that comes back as a statement of its own, with a citation that holds
+            # (found by researching again, or a passage that states it), is sourced now and stays. Slipped
+            # in next to another sentence, under that sentence's citation, it is not.
+            resourced = bool(good) and _same_statement(" ".join(t.text for t in texts), failed_before)
             for t in texts:
-                if _same_statement(t.text, failed_before):
+                if not resourced and _same_statement(t.text, failed_before):
                     dropped += 1
                     continue
                 # A revision sometimes restates a whole passage of the draft under the next citation,
@@ -1142,13 +1503,16 @@ def _any_language(law_id: str) -> str:
     return re.sub(r"_(de|fr|it)_(\w+)$", r"_\2", law_id)
 
 
-def _in_context(corpus: Corpus, source: Source, margin: int = 300) -> str:
+def _in_context(corpus: Corpus, source: Source, margin: int = 300, documents: DocumentStore | None = None) -> str:
     """The quoted span marked inside its surroundings, so the check can resolve what it refers to."""
     if source.char_start is None or source.char_end is None or not source.verified:
         return f"⟦{source.text[:2000]}⟧"
     store = corpus.decisions
-    doc = store.law(source.decision_id) if source.section == "law" else store.get(source.decision_id)
-    full = doc.full_text if doc else source.text
+    if source.section == "document":
+        full = (documents.text(source.decision_id) if documents else None) or source.text
+    else:
+        doc = store.law(source.decision_id) if source.section == "law" else store.get(source.decision_id)
+        full = doc.full_text if doc else source.text
     s, e = source.char_start, source.char_end
     return full[max(0, s - margin):s] + "⟦" + full[s:e] + "⟧" + full[e:e + margin]
 
@@ -1160,8 +1524,8 @@ class Verifier:
     restates what is sourced, the answer responds to the question)."""
 
     def __init__(self, corpus: Corpus, support_llm: ChatOpenAI, covered_llm: ChatOpenAI | None = None,
-                 answers_llm: ChatOpenAI | None = None):
-        self.corpus = corpus
+                 answers_llm: ChatOpenAI | None = None, documents: DocumentStore | None = None):
+        self.corpus, self.documents = corpus, documents
         self.support_llm, self.covered_llm, self.answers_llm = support_llm, covered_llm, answers_llm
 
     async def _yes_no(self, llm: ChatOpenAI | None, system: str, user: str, key: str, what: str) -> bool | None:
@@ -1178,15 +1542,15 @@ class Verifier:
 
     async def supported(self, statement: str, source: Source) -> bool | None:
         """Does the cited passage state the sentence it is attached to?"""
-        passage = _in_context(self.corpus, source)
+        passage = _in_context(self.corpus, source, documents=self.documents)
         return await self._yes_no(
             self.support_llm, SUPPORT_PROMPT,
             f"PASSAGE ({source.decision.docket}; the quoted sentences are between ⟦ and ⟧):\n{passage}\n\n"
             f"STATEMENT:\n{statement}", "supported", "grounding")
 
-    async def covered(self, backed: str, statement: str) -> bool | None:
+    async def covered(self, backed: str, statement: str, prompt: str = COVERED_PROMPT) -> bool | None:
         """Does an unsourced sentence only restate what the sourced sentences say?"""
-        return await self._yes_no(self.covered_llm, COVERED_PROMPT,
+        return await self._yes_no(self.covered_llm, prompt,
                                   f"BACKED SENTENCES:\n{backed[:4000] or '(none)'}\n\nSENTENCE WITHOUT A SOURCE:\n{statement}",
                                   "covered", "coverage")
 
@@ -1195,9 +1559,10 @@ class Verifier:
                                   f"QUESTION:\n{question[:1500]}\n\nANSWER:\n{answer[:4000]}", "answers", "answers")
 
     async def verify(self, parts: list[TextPart | CitationPart], question: str, language: str | None,
-                     seen: set[str], lenient: bool = False, check_answers: bool = True) -> Report:
-        """The problems with a draft. `lenient`: the last round, see CheckedCitation.lenient."""
-        cites = _Citations(self.corpus)
+                     seen: set[str], lenient: bool = False, check_answers: bool = True, brief: bool = False) -> Report:
+        """The problems with a draft. `lenient`: the last round, see CheckedCitation.lenient. `brief`: the
+        report written when giving up, whose sentences are checked with BRIEF_COVERED_PROMPT."""
+        cites = _Citations(self.corpus, self.documents)
         cites.seen = set(seen)
         free = {_any_language(s) for s in seen}
         checked: list[CheckedCitation] = []
@@ -1260,7 +1625,7 @@ class Verifier:
         async def coverage(index: int, sentence: str) -> tuple[int, str, bool | None]:
             if len(sentence) < 25:  # "Zusammenfassend:" — framing, not a claim
                 return index, sentence, True
-            return index, sentence, await self.covered(backed, sentence)
+            return index, sentence, await self.covered(backed, sentence, BRIEF_COVERED_PROMPT if brief else COVERED_PROMPT)
 
         verdicts: dict[tuple[int, str], bool | None] = {}
         for outcome in await asyncio.gather(*(coverage(i, s) for i, s in sentences[:2 * MAX_CHECKS]),
@@ -1339,7 +1704,8 @@ def _history(messages: list[Message], limit: int = 8) -> list[BaseMessage]:
     out: list[BaseMessage] = []
     for m in messages[-limit:]:
         if m.role == "user":
-            out.append(HumanMessage(m.content))
+            note = f"\n\n{attachment_note(m.attachments)}" if m.attachments else ""
+            out.append(HumanMessage(m.content + note))
         elif m.clarification:
             # the question asked back, with what the research had found: the user's reply comes next
             notes = f"\n\n(Research before asking: {m.clarification.notes})" if m.clarification.notes else ""
@@ -1365,8 +1731,8 @@ class ReasoningChatOpenAI(ChatOpenAI):
 class ReactAgent:
     name = "react"
 
-    def __init__(self, corpus: Corpus):
-        self.corpus = corpus
+    def __init__(self, corpus: Corpus, documents: DocumentStore | None = None, case_index: CaseIndex | None = None):
+        self.corpus, self.documents, self.case_index = corpus, documents, case_index
         self.model = served_model()
         common = dict(base_url=LLM_URL, api_key=LLM_KEY, model=self.model,
                       temperature=0.2, streaming=True)
@@ -1383,13 +1749,14 @@ class ReactAgent:
         # one short yes/no call per check: does the passage say what the sentence claims, does an unsourced
         # sentence only restate the sourced ones, does the answer respond to the question
         verifier = Verifier(corpus, self._judge(common, SUPPORT_FORMAT), self._judge(common, COVERED_FORMAT),
-                            self._judge(common, ANSWERS_FORMAT))
+                            self._judge(common, ANSWERS_FORMAT), documents)
         law_tools = LAW_TOOLS.format(n_articles=corpus.n_articles) if corpus.has_laws else ""
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS,
                                         min_calls=MIN_TOOL_CALLS, law_tools=law_tools,
                                         filter_tools=FILTER_TOOLS.format(this_year=date.today().year)
-                                        if corpus.facets else "", ask_tool=ASK_TOOL)
-        self.graph = create_agent(research_llm, make_tools(corpus), system_prompt=prompt,
+                                        if corpus.facets else "", ask_tool=ASK_TOOL,
+                                        document_tools=DOCUMENT_TOOLS if documents is not None else "")
+        self.graph = create_agent(research_llm, make_tools(corpus, documents, case_index), system_prompt=prompt,
                                   middleware=[ResearchThenAnswer(answer_llm, verifier, translate_llm)])
         log.info("react agent: %s at %s (thinking=%s, up to %d revisions)", self.model, LLM_URL, LLM_THINKING,
                  MAX_REVISIONS)
@@ -1401,18 +1768,48 @@ class ReactAgent:
                           tags=["nostream"], extra_body={"chat_template_kwargs": {"enable_thinking": False},
                                                          "response_format": response_format})
 
-    async def answer(self, question: str, history: list[Message], ask: bool = True) -> AsyncIterator[AgentEvent]:
-        cites = _Citations(self.corpus)
+    async def answer(self, question: str, history: list[Message], ask: bool = True,
+                     attachments: list[DocumentInfo] | None = None,
+                     collection: str | None = None, case_prep: DocumentInfo | None = None) -> AsyncIterator[AgentEvent]:
+        cites = _Citations(self.corpus, self.documents)
         # one question back per question: after the user has answered one, the agent answers
         last = next((m for m in reversed(history) if m.role == "assistant"), None)
         turn = Turn(may_ask=ask and not (last and last.clarification),
                     language=detect_language(original_question(question, history), default="") or None)
+        attachments = attachments or []
+        # every document attached so far in the conversation stays readable, not only this message's
+        earlier = [d for m in history if m.attachments for d in m.attachments]
+        turn.documents = list(dict.fromkeys(d.id for d in [*earlier, *attachments, *([case_prep] if case_prep else [])]))
+        turn.case_prep = case_prep.id if case_prep else None
+        # a case file that fits is shown whole; a longer one is searched in its collection
+        turn.collection = (collection if collection and self.case_index and self.documents
+                           and sum(d.chars for d in attachments) > INLINE_DOCUMENT else None)
+        cites.seen.update(turn.documents)
         _turn.set(turn)  # before the graph starts, so its tasks share this turn's state
         question = with_clarification(question, history)
-        yield Status("thinking", "Planning the research")
+        yield Status("thinking", "Searching the case file" if turn.collection else
+                     "Reading the attached document" if attachments else "Planning the research")
+        # the documents go in their own message before the question, so the question stays the last
+        # human message the answer step and the checks read
+        attached = ([HumanMessage(attachment_block(self.documents, attachments))]
+                    if attachments and self.documents and not turn.collection else [])
+        if turn.collection:
+            try:
+                # the question itself, not the matter summary Case Prep appends to it: that matches every passage
+                hits = await asyncio.to_thread(self.case_index.search, turn.collection,  # type: ignore[union-attr]
+                                               question.split("\n\n")[0], 6)
+            except IndexUnavailable as e:
+                log.warning("case file %s not searchable (%s): showing the documents' beginnings", collection, e)
+                turn.collection = None
+                attached = [HumanMessage(attachment_block(self.documents, attachments))]  # type: ignore[arg-type]
+            else:
+                attached = [HumanMessage(case_file_block(self.documents, attachments, hits))]  # type: ignore[arg-type]
 
+        # the matter a Case Prep conversation is about: what was generated for it, ahead of its case file
+        background = ([HumanMessage(case_prep_block(self.documents, case_prep))]
+                      if case_prep and self.documents else [])
         events = self.graph.astream(
-            {"messages": [*_history(history), HumanMessage(question)]},
+            {"messages": [*background, *_history(history), *attached, HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates", "custom"])
         thought: list[str] = []  # reasoning since the last tool call
         shown = False  # whether any part of an answer has been sent

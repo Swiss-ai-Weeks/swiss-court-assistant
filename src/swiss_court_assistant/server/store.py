@@ -10,12 +10,14 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
-from .schemas import Clarification, Conversation, ConversationSummary, Message, Source, StatuteRef, ToolCall
+from .schemas import (Clarification, Conversation, ConversationSummary, DocumentInfo, Message, Source, StatuteRef,
+                      ToolCall)
 
 _SOURCES = TypeAdapter(list[Source])
 _TOOL_CALLS = TypeAdapter(list[ToolCall])
 _STATUTES = TypeAdapter(list[StatuteRef])
 _CLARIFICATION = TypeAdapter(Clarification)
+_ATTACHMENTS = TypeAdapter(list[DocumentInfo])
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS conversations (
     id TEXT PRIMARY KEY,
@@ -60,20 +62,26 @@ class ConversationStore:
             self._db.execute("ALTER TABLE messages ADD COLUMN statutes TEXT")  # JSON list[StatuteRef]
         if "clarification" not in columns:
             self._db.execute("ALTER TABLE messages ADD COLUMN clarification TEXT")  # JSON Clarification
+        if "attachments" not in columns:
+            self._db.execute("ALTER TABLE messages ADD COLUMN attachments TEXT")  # JSON list[DocumentInfo]
+        if "matter_id" not in {r["name"] for r in self._db.execute("PRAGMA table_info(conversations)")}:
+            # a conversation asked from Case Prep about one matter; NULL for the general assistant
+            self._db.execute("ALTER TABLE conversations ADD COLUMN matter_id TEXT")
         self._lock = threading.Lock()
 
     def list(self) -> list[ConversationSummary]:
         with self._lock:
             rows = self._db.execute(
-                "SELECT id, title, updated_at FROM conversations ORDER BY updated_at DESC").fetchall()
+                "SELECT id, title, updated_at, matter_id FROM conversations ORDER BY updated_at DESC").fetchall()
         return [ConversationSummary(**dict(r)) for r in rows]
 
     def get(self, conversation_id: str) -> Conversation | None:
         with self._lock:
-            c = self._db.execute("SELECT id, title, updated_at FROM conversations WHERE id = ?",
+            c = self._db.execute("SELECT id, title, updated_at, matter_id FROM conversations WHERE id = ?",
                                  (conversation_id,)).fetchone()
             rows = self._db.execute(
-                "SELECT id, role, content, search_query, sources, tool_calls, statutes, clarification, created_at "
+                "SELECT id, role, content, search_query, sources, tool_calls, statutes, clarification, attachments, "
+                "created_at "
                 "FROM messages "
                 "WHERE conversation_id = ? ORDER BY seq", (conversation_id,)).fetchall()
         if c is None:
@@ -84,30 +92,34 @@ class ConversationStore:
                 "tool_calls": _TOOL_CALLS.validate_json(r["tool_calls"]) if r["tool_calls"] else None,
                 "statutes": _STATUTES.validate_json(r["statutes"]) if r["statutes"] else None,
                 "clarification": _CLARIFICATION.validate_json(r["clarification"]) if r["clarification"] else None,
+                "attachments": _ATTACHMENTS.validate_json(r["attachments"]) if r["attachments"] else None,
             }))
             for r in rows
         ]
         return Conversation(**dict(c), messages=messages)
 
-    def create(self, title: str) -> ConversationSummary:
+    def create(self, title: str, matter_id: str | None = None) -> ConversationSummary:
         cid, t = new_id(), now()
         with self._lock, self._db:
-            self._db.execute("INSERT INTO conversations VALUES (?, ?, ?, ?)", (cid, title, t, t))
-        return ConversationSummary(id=cid, title=title, updated_at=t)
+            self._db.execute("INSERT INTO conversations (id, title, created_at, updated_at, matter_id) "
+                             "VALUES (?, ?, ?, ?, ?)", (cid, title, t, t, matter_id))
+        return ConversationSummary(id=cid, title=title, updated_at=t, matter_id=matter_id)
 
     def add_message(self, conversation_id: str, msg: Message) -> None:
         sources = _SOURCES.dump_json(msg.sources).decode() if msg.sources is not None else None
         calls = _TOOL_CALLS.dump_json(msg.tool_calls).decode() if msg.tool_calls is not None else None
         statutes = _STATUTES.dump_json(msg.statutes).decode() if msg.statutes else None
         clarification = _CLARIFICATION.dump_json(msg.clarification).decode() if msg.clarification else None
+        attachments = _ATTACHMENTS.dump_json(msg.attachments).decode() if msg.attachments else None
         with self._lock, self._db:
             seq = self._db.execute("SELECT COALESCE(MAX(seq), 0) + 1 FROM messages WHERE conversation_id = ?",
                                    (conversation_id,)).fetchone()[0]
             self._db.execute(
                 "INSERT INTO messages (id, conversation_id, seq, role, content, search_query, sources, "
-                "tool_calls, statutes, clarification, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "tool_calls, statutes, clarification, attachments, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (msg.id, conversation_id, seq, msg.role, msg.content, msg.search_query, sources, calls,
-                 statutes, clarification, msg.created_at))
+                 statutes, clarification, attachments, msg.created_at))
             self._db.execute("UPDATE conversations SET updated_at = ? WHERE id = ?",
                              (msg.created_at, conversation_id))
 

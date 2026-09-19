@@ -42,8 +42,12 @@ function readSelection(): Selected | null {
   };
 }
 
-/** Floating Read aloud / Translate / Reply buttons over text selected in the answer or the decision. */
-export default function SelectionTools({ onReply }: { onReply: (q: Quote) => void }) {
+/** Floating Read aloud / Translate / Reply buttons over text selected in the answer or the decision.
+ *  `replyLabel` names what the reply does where it is shown ("Ask assistant" in Case Prep). */
+export default function SelectionTools({ onReply, replyLabel = "Reply" }: {
+  onReply: (q: Quote) => void;
+  replyLabel?: string;
+}) {
   const [sel, setSel] = useState<Selected | null>(null);
   const [translation, setTranslation] = useState<{ of: string; state: "loading" | "done" | "error"; text: string } | null>(null);
   const bar = useRef<HTMLDivElement>(null);
@@ -112,7 +116,7 @@ export default function SelectionTools({ onReply }: { onReply: (q: Quote) => voi
             Translate to {langName(sel.target)}
           </button>
         )}
-        <button onClick={reply}>Reply</button>
+        <button onClick={reply}>{replyLabel}</button>
       </div>
       {shown && sel.target && (
         <div className="sel-box">

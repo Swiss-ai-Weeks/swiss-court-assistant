@@ -178,6 +178,8 @@ textarea { font: inherit; }
 }
 .src-tag.case { border: 1px solid var(--hairline-strong); color: var(--body); }
 .src-tag.statute { border: 1px solid var(--ink); background: var(--highlight); color: var(--ink); }
+.src-tag.document { border: 1px solid var(--primary); color: var(--ink); }
+.src-tag.review { border: 1px dashed var(--hairline-strong); color: var(--body); }
 .activity .arg { color: var(--body); overflow-wrap: anywhere; }
 /* a filter the step searched within: canton, court, area, years */
 .activity .filter {
@@ -315,6 +317,19 @@ textarea { font: inherit; }
 .voice-heard { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-style: italic; }
 .voice-stop { flex: none; height: 24px; padding: 0 var(--space-sm); background: none; color: var(--mute); border: 1px solid var(--hairline); border-radius: var(--rounded-sm); font-size: 12px; font-weight: 700; }
 .voice-stop:hover { color: var(--ink); border-color: var(--ink); }
+
+/* A conversation asked from Case Prep: which case it carries, and the way back */
+.case-banner {
+  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-xs) var(--space-md);
+  padding: var(--space-sm) var(--space-xl); background: var(--surface-soft); border-bottom: 1px solid var(--hairline);
+  font-size: 13px; color: var(--body);
+}
+.case-banner-text { flex: 1; min-width: 0; }
+.case-banner-text b { color: var(--ink); }
+.case-banner .link-btn {
+  background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer;
+  border-bottom: 2px solid var(--primary);
+}
 
 /* Read aloud */
 .speak-btn {
@@ -538,3 +553,73 @@ mark.hl.active { background: #fbdc6a; }
 }
 .clarify-option:hover { background: var(--highlight); }
 .clarify-hint { font-size: 13px; color: var(--mute); }
+
+/* ── attached documents ───────────────────────────────── */
+.attachments { display: flex; flex-wrap: wrap; gap: var(--space-xs, 6px); margin: 0 0 var(--space-sm); }
+.attachment {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 30px; padding: 0 4px 0 8px;
+  border: 1px solid var(--hairline-strong); border-radius: var(--rounded-sm); background: var(--canvas);
+  font-size: 13px; color: var(--ink);
+}
+.attachment a, .attachment-name {
+  min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 700; color: var(--ink);
+}
+.attachment a { text-decoration: none; border-bottom: 2px solid var(--primary); }
+.attachment-meta { flex: none; font-size: 12px; color: var(--mute); padding-right: 4px; }
+.attachment button {
+  flex: none; width: 22px; height: 22px; border: 0; background: none; color: var(--mute); font-size: 16px; line-height: 1;
+}
+.attachment button:hover { color: var(--ink); }
+.attachment.parsing { border-style: dashed; }
+.attachment.parsing .attachment-meta::before {
+  content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; vertical-align: middle;
+  background: var(--primary); animation: pulse 1s ease-in-out infinite;
+}
+.attachment.failed { border-color: var(--error); }
+.attachment.failed .attachment-meta { color: var(--error); }
+.msg-user .attachments { justify-content: flex-end; }
+.composer.over .composer-inner { outline: 2px dashed var(--primary); outline-offset: -6px; }
+.composer-error { margin: var(--space-sm) 0 0; }
+.mic-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── case file: what a matter was opened on, and what it produced ── */
+.case-items, .case-file ul { list-style: none; margin: var(--space-lg) 0 0; padding: 0; border-top: 1px solid var(--hairline); }
+.case-file ul { margin: 0; }
+.case-item, .case-asset-head {
+  display: flex; align-items: center; gap: var(--space-md); min-height: 44px; font-size: 14px;
+}
+.case-item, .case-asset { border-bottom: 1px solid var(--hairline); padding: 0 var(--space-xs); }
+.case-kind {
+  flex: none; width: 88px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mute);
+}
+.case-name { flex: 1 1 140px; min-width: 80px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 700; color: var(--ink); }
+.case-meta { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; color: var(--mute); }
+.case-item.converting .case-meta::before, .case-item.reading .case-meta::before {
+  content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; vertical-align: middle;
+  background: var(--primary); animation: pulse 1s ease-in-out infinite;
+}
+.case-item.failed .case-meta { color: var(--error); }
+.case-remove { flex: none; width: 28px; height: 28px; border: 0; background: none; color: var(--mute); font-size: 18px; }
+.case-remove:hover { color: var(--ink); }
+.case-actions { flex: none; display: flex; gap: var(--space-md); font-size: 13px; font-weight: 700; }
+.case-actions a, .case-actions .link-btn {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--ink); cursor: pointer;
+  text-decoration: none; border-bottom: 2px solid var(--primary);
+}
+.case-asset audio { display: block; width: 100%; height: 36px; margin: 0 0 var(--space-sm); }
+.case-asset.generated .case-kind { color: var(--primary); }
+.intake .working-hint { font-size: 13px; color: var(--mute); margin: var(--space-sm) 0 0; }
+@media (max-width: 720px) {
+  .case-asset-head { flex-wrap: wrap; padding: var(--space-sm) 0; }
+  .case-meta { width: 100%; order: 3; }
+}
+.cited-by-graph .graph-link {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--ink); cursor: pointer;
+  text-decoration: none; border-bottom: 1px solid var(--primary);
+}
+.cited-by-graph .graph-link:hover { border-bottom-width: 2px; }
+.preview-bar .back-btn {
+  background: none; border: 0; padding: 0 var(--space-sm) 0 0; margin-right: var(--space-xs);
+  font: inherit; color: var(--ink); cursor: pointer; border-right: 1px solid var(--hairline);
+}
+.case-indexed { margin: calc(-1 * var(--space-xs)) 0 var(--space-sm); font-size: 12px; color: var(--mute); }

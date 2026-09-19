@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type ChatEvent, type ConversationSummary, type Health, type MatterSummary, type Message,
+import { api, type ChatEvent, type ConversationSummary, type DocumentInfo, type Health, type MatterSummary, type Message,
   type Source } from "./api";
 import { startVoice, type VoiceEvent, type VoiceSession } from "./voice";
 import Composer from "./components/Composer";
@@ -14,7 +14,8 @@ import Welcome from "./components/Welcome";
 type Page = "chat" | "matters";
 
 export default function App() {
-  const [page, setPage] = useState<Page>("chat");
+  // Case Prep is where the work starts; the assistant is opened from a case, or on its own for general questions
+  const [page, setPage] = useState<Page>("matters");
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [matters, setMatters] = useState<MatterSummary[]>([]);
   const [matterId, setMatterId] = useState<string | null>(null);
@@ -23,6 +24,8 @@ export default function App() {
   // an article named in a chat answer's text, opened in the same panel as a citation
   const [statutePreview, setStatutePreview] = useState<Source | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // the matter the open conversation is about (asked from Case Prep); null: the general assistant
+  const [caseId, setCaseId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [pending, setPending] = useState<PendingTurn | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -72,7 +75,33 @@ export default function App() {
     setQuote(null);
     setSidebarOpen(false);
     setActiveId(id);
-    setMessages(id ? (await api.getConversation(id)).messages : []);
+    if (!id) {
+      setCaseId(null);
+      setMessages([]);
+      return;
+    }
+    const conv = await api.getConversation(id);
+    setCaseId(conv.matterId ?? null);
+    setMessages(conv.messages);
+  };
+
+  /** The assistant, opened on the matter in Case Prep: a new conversation that carries its case file and
+   *  research, optionally quoting text selected in it. */
+  const askAboutCase = (q: Quote | null = null) => {
+    if (!matterId) return;
+    voice?.stop();
+    setVoice(null);
+    openConversation(null);
+    setCaseId(matterId);
+    setQuote(q);
+    setMatterPreview(null);
+    setPage("chat");
+  };
+
+  /** The Assistant tab on its own answers in general, not about the case last asked from Case Prep. */
+  const openAssistant = () => {
+    if (caseId) openConversation(null);
+    setPage("chat");
   };
 
   const deleteConversation = async (id: string) => {
@@ -158,14 +187,16 @@ export default function App() {
     }
   };
 
-  const send = async (text: string) => {
+  const send = async (text: string, attachments: DocumentInfo[] = []) => {
     const ctrl = new AbortController();
     abort.current = ctrl;
     setSelection(null);
-    setMessages((m) => [...m, { id: `local-${Date.now()}`, role: "user", content: text, createdAt: new Date().toISOString() }]);
+    setMessages((m) => [...m, { id: `local-${Date.now()}`, role: "user", content: text, attachments,
+      createdAt: new Date().toISOString() }]);
     setPending({ status: null, tools: [], sources: [], content: "" });
     try {
-      for await (const ev of api.chat(activeId, text, ctrl.signal)) applyEvent(ev);
+      for await (const ev of api.chat(activeId, text, ctrl.signal, attachments.map((d) => d.id),
+        activeId ? null : caseId)) applyEvent(ev);
     } catch (e) {
       if ((e as Error).name !== "AbortError") setPending((p) => p && { ...p, error: (e as Error).message });
       else setPending(null);
@@ -227,7 +258,8 @@ export default function App() {
     }
     setVoiceError(null);
     try {
-      setVoice(await startVoice({ conversationId: activeId, language: voiceLanguage(), onEvent: onVoiceEvent }));
+      setVoice(await startVoice({ conversationId: activeId, matterId: activeId ? null : caseId,
+        language: voiceLanguage(), onEvent: onVoiceEvent }));
     } catch (e) {
       setVoiceError((e as Error).message || "The microphone is not available.");
     }
@@ -248,6 +280,7 @@ export default function App() {
   const voiceHint = spoken.length === 1 && spoken[0].startsWith("en")
     ? "Speak in English — talk over me to interrupt."
     : "Talk over me to interrupt.";
+  const caseTitle = caseId ? matters.find((m) => m.id === caseId)?.title ?? "this case" : null;
 
 
   return (
@@ -261,13 +294,13 @@ export default function App() {
           Swiss Court Assistant
         </div>
         <div className="tabs" role="tablist">
-          <button role="tab" aria-selected={page === "chat"} className={page === "chat" ? "active" : ""}
-            onClick={() => setPage("chat")}>
-            Assistant
-          </button>
           <button role="tab" aria-selected={page === "matters"} className={page === "matters" ? "active" : ""}
             onClick={() => setPage("matters")}>
             Case Prep
+          </button>
+          <button role="tab" aria-selected={page === "chat"} className={page === "chat" ? "active" : ""}
+            onClick={openAssistant}>
+            Assistant
           </button>
         </div>
       </nav>
@@ -302,9 +335,31 @@ export default function App() {
 
         {page === "chat" ? (
           <main className="chat">
+            {caseTitle && (
+              <div className="case-banner">
+                <span className="case-banner-text">
+                  Asking about <b>{caseTitle}</b> — its case file, facts and research go with every question.
+                </span>
+                <button className="link-btn" onClick={() => { openMatter(caseId); setPage("matters"); }}>
+                  Back to the case
+                </button>
+                <button className="link-btn" onClick={() => openConversation(null)}>Ask in general</button>
+              </div>
+            )}
             {messages.length === 0 && !pending ? (
               <div className="thread">
-                <Welcome onAsk={send} />
+                {caseTitle ? (
+                  <div className="welcome">
+                    <p className="eyebrow">Case Prep · assistant</p>
+                    <h1>{caseTitle}</h1>
+                    <p className="lead">
+                      Ask anything about this case. The assistant reads the client's documents and the research
+                      done on it, looks up further Swiss case law and statutes as needed, and cites every statement.
+                    </p>
+                  </div>
+                ) : (
+                  <Welcome onAsk={send} />
+                )}
               </div>
             ) : (
               <Thread
@@ -342,9 +397,14 @@ export default function App() {
             onOpenMatter={openMatter}
             onChanged={refreshMatters}
             onOpenSource={(sources, n) => setMatterPreview({ sources, n })}
+            onAsk={() => askAboutCase()}
           />
         )}
-        <SelectionTools onReply={setQuote} />
+        {page === "matters" ? (
+          <SelectionTools replyLabel="Ask assistant" onReply={askAboutCase} />
+        ) : (
+          <SelectionTools onReply={setQuote} />
+        )}
 
         {page === "chat" && statutePreview && (
           <Preview

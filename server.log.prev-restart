@@ -1,0 +1,1692 @@
+INFO:     Will watch for changes in these directories: ['/home/nvidia/swiss-court-assistant/src/swiss_court_assistant']
+INFO:     Uvicorn running on http://0.0.0.0:8090 (Press CTRL+C to quit)
+INFO:     Started reloader process [2724675] using WatchFiles
+INFO:     Started server process [2724677]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:35142 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/1dfc31aae731 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/2c31c3cf6bee HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/9751b173f368 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in bger_4C.261_2006: "L'art. 267 al. 1 CO dispose qu'à la fin du bail, le locataire doit restituer la chose dans l'état qui résulte d'un usage conforme au contrat. Il s'ensuit qu'au terme du contrat le locataire doit tout "
+quote not found verbatim in bger_4A_476_2015: "Le locataire ne peut en revanche pas exiger que le bailleur exécute des travaux de rénovation ou de modification, dès lors qu'il s'agirait d'une prestation supplémentaire non prévue par le contrat. D'"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in zh_verwaltungsgericht__VB.2024.00624: 'Die Ersatzpflicht ist hierbei nicht von einer vorgängigen Rekrutierung abhängig und es ist auch ersatzpflichtig, wer sich bei Einbürgerung nicht mehr in einem zu rekrutierenden Alter befand (BGr, 13. '
+quote not found verbatim in bvger_B-2047_2016: 'Auch stellungs- und militärdienstpflichtig sind schweizerische Doppelbürger, welche in der Schweiz ihren Wohnsitz haben (Art. 5 Abs. 1 und 3 e contrario MG; Art. 1 Bst. b und Art. 2 der Verordnung übe'
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_271_de_0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_271_fr_0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/f8d4a2381918 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_476_2016/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_476_2016 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/3657c1588094 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/3657c1588094 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_40_2017_PHC HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/vd_findinfo_40_2017_PHC/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_321a_de_0 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_26041_2019 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_220_321a_de_0/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_26041_2019/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/91d2cb4a649a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/22333dbd68c7 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/143412c5db5f HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/1dfc31aae731 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/2c31c3cf6bee HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/ac2625043b95 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_6B_83_2010 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_6B_83_2010/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_6B_83_2010 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_6B_83_2010/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/translate HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/91d2cb4a649a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/22333dbd68c7 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations/143412c5db5f HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in vd_omni_GE.2004.0041: "la Municipalité de Prangins a informé la succession qu'elle avait décidé de retirer l'autorisation d'amarrage délivrée à feu Jean Niederer en se fondant sur l'art. 26 du Règlement du Port des Abériaux"
+quote not found verbatim in vd_gerichte_FA22.037784: "il ressort du Règlement communal des ports et tarifs d'amarrage des bateaux édicté par la Commune de [...] que l'attribution d'une place d'amarrage est liée à l'autorisation de naviguer. Or, l'autoris"
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/d9a38ae3d307 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_26041_2019/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_C_26041_2019 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters/77e1a8618f5a HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "POST /api/matters/77e1a8618f5a/run HTTP/1.1" 200 OK
+quote not found verbatim in bvger_B-831_2011: 'Voraussetzung für die Anerkennung von Computerprogrammen als urheberrechtliches Werk bildet gemäss Art. 2 Abs. 1 URG das Vorhandensein einer geistigen Schöpfung mit individuellem Charakter. Ein Comput'
+INFO:     31.10.154.208:0 - "GET /api/decisions/law_CH_231.1_2_fr_0 HTTP/1.1" 200 OK
+quote not found verbatim in bstger_SK.2017.52: 'Der Beschuldigte ist der mehrfachen Verletzung von Art. 162 Abs. 1 und Art. 273 Abs. 2 StGB schuldig befunden worden, da er Geschäftsgeheimnisse der B. AG verriet. Der Beschuldigte hat dadurch gesetzl'
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011/citations?limit=8 HTTP/1.1" 200 OK
+quote not found verbatim in bge_133 III 153: 'Entgangener Gewinn liegt vor, wenn sich das Vermögen der geschädigten Person ohne die schädigende Handlung in Zukunft vergrössert hätte. Er entspricht der Differenz zwischen den nach dem schädigenden '
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bvger_B-831_2011/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_31_2010 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_31_2010/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/ge_gerichte_A_2499_2004/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_obergericht_LK110002 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/zh_obergericht_LK110002/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_283_2010 HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/decisions/bger_4A_283_2010/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     31.10.154.208:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     31.10.154.208:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/666660ecdebd HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/e9cd55731289 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+Task exception was never retrieved
+future: <Task finished name='Task-43971' coro=<_voice_turn() done, defined at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:477> exception=IntegrityError('FOREIGN KEY constraint failed')>
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 492, in _voice_turn
+    async for event in _events(s, summary, question, history, language):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 388, in _events
+    msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in save
+    s.store.add_message(conv.id, msg)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/store.py", line 106, in add_message
+    self._db.execute(
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/3dc1a77f0973 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/fdfa07cdeb41 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/fdfa07cdeb41 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/871352ede5a2 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/871352ede5a2 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/bc9e5964629c HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/e60a3a5e8e09 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+quote not found verbatim in ge_gerichte_CAPH_35_2009: 'Le comportement du travailleur, bien que fautif, n’était pas grave au point de justifier un licenciement immédiat sans avertissement préalable et le collègue du travailleur, qui avait commis la même f'
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_35_2009 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_35_2009/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_165_2010 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_165_2010/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_111_2006 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/decisions/ge_gerichte_CAPH_111_2006/citations?limit=8 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/658ddebec588 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/9093bb366ba5 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/9093bb366ba5 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+Task exception was never retrieved
+future: <Task finished name='Task-62375' coro=<_voice_turn() done, defined at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:477> exception=IntegrityError('FOREIGN KEY constraint failed')>
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 492, in _voice_turn
+    async for event in _events(s, summary, question, history, language):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 388, in _events
+    msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in save
+    s.store.add_message(conv.id, msg)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/store.py", line 106, in add_message
+    self._db.execute(
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2724677]
+INFO:     Started server process [2867332]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2867332]
+INFO:     Started server process [2868383]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2868383]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2869572]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2869572]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2870398]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2870398]
+INFO:     Started server process [2871103]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 200 OK
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2871103]
+INFO:     Started server process [2872280]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2872280]
+INFO:     Started server process [2873612]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2873612]
+INFO:     Started server process [2875160]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/ec66481b16b2 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+agent failed on "Un licenciement notifié pendant la grossesse peut-il être qualifié d'abusif ?"
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 344, in _events
+    async for ev in s.agent.answer(question, history, ask=ask):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1277, in answer
+    async for mode, data in events:
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3440, in astream
+    async for _ in runner.atick(
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 557, in atick
+    _panic_or_proceed(
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 687, in _panic_or_proceed
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 744, in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 756, in ainvoke
+    input = await asyncio.create_task(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 522, in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langchain/agents/factory.py", line 1537, in amodel_node
+    result = await awrap_model_call_handler(request, _execute_model_async)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langchain/agents/factory.py", line 400, in normalized_single
+    return _to_composed_result(await single_handler(request, handler))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 663, in awrap_model_call
+    return await self._write(request, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 727, in _write
+    report = await self.verifier.verify(parts, question, code, seen)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1135, in verify
+    src = await cites.resolve(part)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 945, in resolve
+    if sp := locate_quote(store.get(other).full_text, c.quote):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'full_text'
+During task with name 'model' and id 'b345b4cb-563f-24b6-7448-2bda06fb24c4'
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+Task exception was never retrieved
+future: <Task finished name='Task-3194' coro=<_voice_turn() done, defined at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:477> exception=IntegrityError('FOREIGN KEY constraint failed')>
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 492, in _voice_turn
+    async for event in _events(s, summary, question, history, language):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 388, in _events
+    msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 339, in save
+    s.store.add_message(conv.id, msg)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/store.py", line 106, in add_message
+    self._db.execute(
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2875160]
+INFO:     Started server process [2879383]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2879383]
+INFO:     Started server process [2880436]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1001, '')
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2880436]
+INFO:     Started server process [2881990]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2881990]
+INFO:     Started server process [2882862]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+INFO:     127.0.0.1:48134 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48150 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48668 - "POST /api/chat HTTP/1.1" 200 OK
+agent failed on 'Wann ist die Kündigung eines Wohnungsmietvertrags durch den Vermieter missbräuchlich?'
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 344, in _events
+    async for ev in s.agent.answer(question, history, ask=ask):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1289, in answer
+    async for mode, data in events:
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3440, in astream
+    async for _ in runner.atick(
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 557, in atick
+    _panic_or_proceed(
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 687, in _panic_or_proceed
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 744, in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 756, in ainvoke
+    input = await asyncio.create_task(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 522, in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langchain/agents/factory.py", line 1537, in amodel_node
+    result = await awrap_model_call_handler(request, _execute_model_async)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langchain/agents/factory.py", line 400, in normalized_single
+    return _to_composed_result(await single_handler(request, handler))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 663, in awrap_model_call
+    return await self._write(request, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 727, in _write
+    report = await self.verifier.verify(parts, question, code, seen)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1147, in verify
+    src = await cites.resolve(part)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 945, in resolve
+    if sp := locate_quote(store.get(other).full_text, c.quote):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'full_text'
+During task with name 'model' and id '8a931cd2-d66b-b292-f9d7-955647eb5422'
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2882862]
+INFO:     Started server process [2885777]
+INFO:     Waiting for application startup.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2885777]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2886746]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2886746]
+INFO:     Started server process [2887355]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py", line 409, in run_asgi
+    result = await self.app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 354, in handle
+    await self.app(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 184, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 181, in app
+    await func(session)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 796, in app
+    await dependant.call(**solved_result.values)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 507, in voice
+    start = await ws.receive_json()
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 136, in receive_json
+    self._raise_on_disconnect(message)
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/websockets.py", line 114, in _raise_on_disconnect
+    raise WebSocketDisconnect(message["code"], message.get("reason"))
+starlette.websockets.WebSocketDisconnect: (1005, None)
+INFO:     127.0.0.1:57042 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57058 - "POST /api/chat HTTP/1.1" 200 OK
+quote not found verbatim in ti_gerichte_12.2007.151: "Ciò significa che qualora la disdetta intervenga durante i tre anni successivi alla fine di un procedimento giudiziario il conduttore kann opporvisi senza dover dimostrare l'esistenza di un nesso di c"
+quote not found verbatim in ti_gerichte_12.2007.151: "Ciò significa che qualora la disdetta intervenga durante i tre anni successivi alla fine di un procedimento giudiziario il conduttore kann opporvisi senza dover dimostrare l'esistenza di un nesso di c"
+removed 4 statement(s) whose citations did not hold
+INFO:     127.0.0.1:42148 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42148 - "GET /api/conversations/e7733d8ec016 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/app.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2887355]
+INFO:     Started server process [2892947]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     127.0.0.1:41530 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_mietgericht_MB160031-L: 'Missbräuchlich ist auch die reine schikanöse Kündigung, deren Begründung offensichtlich bloss vorgeschoben ist, oder deren Begründung lückenhaft oder falsch ist (BGE 140 III 496 E. 4.1.; BGE 136 III 1'
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 2 problem(s): Citation [3] after "Typische Fälle missbräuchlicher Kündigungen sind Kündigungen ohne echtes Interesse, um zu schädigen oder aus Rache, sow…": the quote was not found in MB160031-L: "Missbräuchlich ist auch die reine schikanöse Kündigung, deren Begründung offensichtlich bloss vorgeschoben ist, oder deren Begründung lückenhaft oder…". Copy the exact characters from the tool result. | "Die Beweislast liegt beim Empfänger der Kündigung; der Kündigende muss bei Aufforderung jedoch motivieren (Art. 271 al. 2 CO). Eine lückenhafte oder falsche Mo…" states law or facts about a case with no citation. Cite a passage from the tool results that says it, or remove it.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_mietgericht_MB160031-L: 'Indes verstossst eine Kündigung nicht bereits deshalb gegen den Grundsatz von Treu und Glauben, weil sie für den Mieter eine Härte darstellt (BGE 140 III 496 E. 4.1) oder weil die Interessen des Miete'
+WARNING swiss_court_assistant.server.react_agent: quote cited from ge_gerichte_ACJC_1353_2016 found in ge_gerichte_ACJC_658_2013 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 2 problem(s): Citation [2] after "Eine Kündigung ist nicht bereits deshalb missbräuchlich, weil sie für den Mieter eine Härte darstellt oder weil die Int…": the quote was not found in MB160031-L: "Indes verstossst eine Kündigung nicht bereits deshalb gegen den Grundsatz von Treu und Glauben, weil sie für den Mieter eine Härte darstellt (BGE 140…". Copy the exact characters from the tool result. | Citation [4] after "Die Beweislast liegt beim Empfänger der Kündigung; der Kündigende muss bei Aufforderung motivieren (Art. 271 al. 2 CO).…": the quoted passage from ACJC/658/2013 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: removed 4 statement(s) whose citations did not hold
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2892947]
+INFO:     Started server process [2896309]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2896309]
+INFO:     Started server process [2897251]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:37874 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37890 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: sent back to research once for: The research did not find a specific decision that sets a bright-line rule (e.g., a fixed percentage or quantitative threshold) for what exactly constitutes a "krasse Missverhältnis" of interests; the case law leaves this to be decided on a case-by-case basis, focusing on the qualitative assessment of whether the landlord's interest outweighs the tenant's hardship in the specific circumstances.
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): The statement «egitimes, objektives Interesse des Vermieters betrifft, reine Schikane darstellt oder auf einem bloß vorgeschobenen Motiv beruht. Auch ein krasses Missverhältnis der Interessen kann eine Kündigung ungültig machen, sofern die Schwelle eines erheblichen Interessengefälles zum Nachteil des Mieters erreicht ist. Allein die Tatsache, dass die Kündigung für den Mieter eine Härte darstellt, genügt nicht.» states law or facts about a case with no citation. Cite a passage from the tool results that says it, or remove it.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): The statement «egitimes, objektives Interesse des Vermieters betrifft, reine Schikane darstellt oder auf einem bloß vorgeschobenen Motiv beruht. Auch ein krasses Missverhältnis der Interessen kann eine Kündigung ungültig machen, sofern die Schwelle eines erheblichen Interessengefälles zum Nachteil des Mieters erreicht ist. Allein die Tatsache, dass die Kündigung für den Mieter eine Härte darstellt, genügt nicht.» states law or facts about a case with no citation. Cite a passage from the tool results that says it, or remove it.
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/fe5abfd89f10 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+Task exception was never retrieved
+future: <Task finished name='Task-5220' coro=<_voice_turn() done, defined at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:487> exception=IntegrityError('FOREIGN KEY constraint failed')>
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 502, in _voice_turn
+    async for event in _events(s, summary, question, history, language):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 398, in _events
+    msg = save(await asyncio.to_thread(statute_links, s.decisions, "".join(parts), language))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 349, in save
+    s.store.add_message(conv.id, msg)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/store.py", line 106, in add_message
+    self._db.execute(
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2897251]
+INFO:     Started server process [2900785]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 86, in lifespan
+    agent = _make_agent(decisions, citations)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 106, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1289, in __init__
+    # "nostream": drafts are checked before anything is shown, so no call inside the graph streams to
+                                                                                         ^^^^^^^^^^^^^
+NameError: name 'NEEDS_SOURCE_FORMAT' is not defined
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2902072]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+ERROR:    Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/starlette/routing.py", line 648, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 86, in lifespan
+    agent = _make_agent(decisions, citations)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 106, in _make_agent
+    return ReactAgent(corpus)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1296, in __init__
+    self.model = served_model()
+                                
+NameError: name 'NEEDS_SOURCE_FORMAT' is not defined
+
+ERROR:    Application startup failed. Exiting.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2903108]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2903108]
+INFO:     Started server process [2903874]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     213.55.247.159:0 - "GET /api/conversations/91f6c506a984 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/91f6c506a984 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/91f6c506a984 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/fe22cb7ef26d HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/91f6c506a984 HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/91f6c506a984 HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:54106 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54114 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "WebSocket /api/voice" [accepted]
+INFO:     connection open
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): Citation [4], attached to the statement «er Wohnung zu veranlassen; d) während eines laufenden Schlichtungs- oder Gerichtsverfahrens (sofern der Mieter das Verfahren nicht missbräuchlich eingeleitet hat); e) innerhalb von drei Jahren nach Abschluss eines solchen Verfahrens, in dem der Vermieter überwiegend unterlegen war; f) wegen Änderungen in der familiären Situation des Mieters, ohne dass dem Vermieter wesentliche Nachteile entstehen.»: the quoted passage from ACJC/504/2013 does not state that. Cite a passage that says it, or remove the statement.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [4], attached to the statement «Nach Art. 271a OR ist die Kündigung des Vermieters insbesondere dann anfechtbar, wenn sie ausgesprochen wird wegen Änderungen in der familiären Situation des Mieters, ohne dass dem Vermieter wesentliche Nachteile entstehen.»: the quoted passage from C/415/2015 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_29718_2010: "A côté d'une liste d'exemples dans laquelle une résiliation émanant du bailleur est annulable (art. 271a al. 1 CO), la loi prévoit, de manière générale, que le congé, donné par l'une ou l'autre des pa"
+WARNING swiss_court_assistant.server.react_agent: removed 2 statement(s) whose citations did not hold
+INFO:     127.0.0.1:33098 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33108 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "DELETE /api/conversations/cf2a718b4cb5 HTTP/1.1" 204 No Content
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58108 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58124 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 2 problem(s): The statement «La recherche n'a trouvé aucune décision traitant spéciquement du licenciement d'un employé après avoir signalé des problèmes de sécurité au travail. Les passages trouvés sur l'art. 337 OR/CO définissent les motifs valables de licenciement immédiat, mais ne relient pas ces critères au scénario du licenciement consécutif à une déclaration de sécurité. Aucune décision ne précise si le fait de rapporter des problèmes de sécurité constitue un motif de licenciement valable ou si un tel licenciement serait considéré comme injustifié. Les décisions recherchées traitent des conditions générales de validité d'un licenciement selon l'art. 337 OR/CO (motifs importants, destruction du lien de confiance, gravité de la violation), mais aucune ne mentionne le cas particulier d'un licenciement après avoir signalé des problèmes de sécurité. La question de savoir si le fait de rapporter des soucis de sécurité peut justifier un licenciement, ou si un tel licenciement serait contraire à l'art. 337 OR/CO, reste sans réponse dans ce corpus.» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it. | The answer does not respond to the question asked: "גוד خفيدون لكونت<unk> 9, j parlé amoun employeur du problème de sécurité au travail, peu après, il m'a licencié. Est-ce que ces licenciements pour être un juste selon le des décisions de Justice? Tro…". Answer that question directly, from the tool results; if they do not cover it, say so.
+Task exception was never retrieved
+future: <Task finished name='Task-3313' coro=<_voice_turn() done, defined at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:487> exception=IntegrityError('FOREIGN KEY constraint failed')>
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 354, in _events
+    async for ev in s.agent.answer(question, history, ask=ask):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/react_agent.py", line 1346, in answer
+    async for mode, data in events:
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3440, in astream
+    async for _ in runner.atick(
+  File "/home/nvidia/swiss-court-assistant/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 482, in atick
+    done, inflight = await asyncio.wait(
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 464, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 550, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 502, in _voice_turn
+    async for event in _events(s, summary, question, history, language):
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 390, in _events
+    save()
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py", line 349, in save
+    s.store.add_message(conv.id, msg)
+  File "/home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/store.py", line 106, in add_message
+    self._db.execute(
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in bger_4A_347_2009: 'Art. 336 Abs. 3 OR erachtete. 2 Eine Kündigung kann grundsätzlich auch während der Probezeit missbräuchlich sein. ... An die Formulierung der Einsprache werden keine allzu hohen Anforderungen gestellt'
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_5672_2018: 'Der Arbeitgeber, der das Vertragsverhältnis auflöst, muss jedoch die Regeln gemäss Art. 336ss CO beachten (ATF 136 III 513 berücksichtigen 2.3; ATF 132 III 115 berücksichtigen 2.1; ATF 131 III 535 ber'
+WARNING swiss_court_assistant.server.react_agent: quote cited from None found in vd_gerichte_P311.040356 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 3 problem(s): Citation [1], attached to the statement «: Nach Art. 336b Abs. 2 OR verjährt der Anspruch auf Missbrauchsentschädigung, wenn nicht innert 180 Tagen nach Beendigung des Arbeitsverhältnisses Klage erhoben wird (bger_4A_347_2009; vd_gerichte_P311_040356). Diese Frist betrifft jedoch nur den Anspruch auf Entschädigung bei einer missbräuchlichen Kündigung und ändert nicht die Unwirksamkeit einer Kündigung während des Schwangerschaftsschutzes.»: its quote «Art. 336 Abs. 3 OR erachtete. 2 Eine Kündigung kann grundsätzlich auch während der Probezeit missbräuchlich sein. ... An die Formulierung der Einsprache werden keine allzu hohen Anforderungen gestellt. Es genügt, wenn die betroffene Partei gegenüber der kündigenden Person schriftlich zum Ausdruck bringt, mit der Kündigung nicht einverstanden zu sein (BGE 123 III 246 E. 4c S. 253). Ist die Einsprache gültig erfolgt und einigen sich die Parteien nicht über die Fortsetzung des Arbeitsverhältnisses, kann die Partei, der gekündigt worden ist, ihren Anspruch auf Entschädigung geltend machen. Wird nicht innert 180 Tagen nach Beendigung des Arbeitsverhältnisses eine Klage anhängig gemacht, ist der Anspruch verwirkt (Art. 336b Abs. 2 OR).» was not found in 4A_347/2009. Copy the exact characters of the tool result, including its wording and spelling. | Citation [2], attached to the statement «Eine Kündigung während der Schwangerschaft wird in der Rechtsprechung nicht als bloss missbräuchlich, sondern als nichtig (nichtig) nach Art. 336c Abs. 1 lit. c OR beurteilt. Die 180‑tägige Frist betrifft nur den Anspruch auf Entschädigung bei einer missbräuchlichen Kündigung, nicht die Gültigkeit der Kündigung selbst.»: its quote «Der Arbeitgeber, der das Vertragsverhältnis auflöst, muss jedoch die Regeln gemäss Art. 336ss CO beachten (ATF 136 III 513 berücksichtigen 2.3; ATF 132 III 115 berücksichtigen 2.1; ATF 131 III 535 berücksichtigen 4.1). Somit kann der Arbeitgeber das Vertragsverhältnis während der Schwangerschaft und in den sechzehn Wochen nach der Niederkunft nicht kündigen (Art. 336c al. 1 lit. c CO). Die Schutzfrist gegen unzeitgemässe Kündigung während der Mutterschaft tritt mit Beginn der Schwangerschaft ein und endet sechzehn Wochen nach der Niederkunft.» was not found in C/5672/2018. Copy the exact characters of the tool result, including its wording and spelling. | Citation [3], attached to the statement «Eine Kündigung während der Schwangerschaft wird in der Rechtsprechung nicht als bloss missbräuchlich, sondern als nichtig (nichtig) nach Art. 336c Abs. 1 lit. c OR beurteilt. Die 180‑tägige Frist betrifft nur den Anspruch auf Entschädigung bei einer missbräuchlichen Kündigung, nicht die Gültigkeit der Kündigung selbst.»: the quoted passage from P311.040356 does not state that. Cite a passage that says it, or remove the statement.
+Task was destroyed but it is pending!
+task: <Task pending name='Task-3314' coro=<_Voice._run() running at /home/nvidia/swiss-court-assistant/src/swiss_court_assistant/server/app.py:445> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_5672_2018: "Der Arbeitgeber, der das Vertragsverhältnis auflöst, muss jedoch die Regeln énoncées aux art. 336ss CO (ATF 136 III 513 consid. 2.3; ATF 132 III 115 consid 2.1; ATF 131 III 535 consid. 4.1). Ainsi, l'"
+WARNING swiss_court_assistant.server.react_agent: quote cited from None found in vd_gerichte_P311.040356 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [1], attached to the statement «rt. 336c Abs. 1 lit. c OR, also nicht bloss missbräuchlich, sondern rechtlich ungültig. Der Schutz nach Art. 336c CO erstreckt sich über die gesamte Schwangerschaft und die 16 Wochen nach der Niederkunft, unabhängig davon, ob der Arbeitgeber von der Schwangerschaft wusste (BGE 135 III 349; ge_gerichte_C_5672_2018; ge_gerichte_CAPH_135_2018). Eine Kündigung in dieser Zeit ist von Anfang an nichtig.»: its quote «Der Arbeitgeber, der das Vertragsverhältnis auflöst, muss jedoch die Regeln énoncées aux art. 336ss CO (ATF 136 III 513 consid. 2.3; ATF 132 III 115 consid 2.1; ATF 131 III 535 consid. 4.1). Ainsi, l'employeur ne peut pas résilier le contrat pendant la grossesse et au cours des seize semaines qui suivent l'accouchement (art. 336c al. 1 let. c CO). La période de protection contre le licenciement en temps inopportun pendant la maternité prend effet avec le début de la grossesse et se termine seize semaines après l'accouchement.» was not found in C/5672/2018. Copy the exact characters of the tool result, including its wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: quote cited from None found in vd_gerichte_P311.040356 instead
+WARNING swiss_court_assistant.server.react_agent: nothing of the draft held up against the passages
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2903874]
+INFO:     Started server process [2909912]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2909912]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2910859]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2910859]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2912286]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2912286]
+INFO:     Started server process [2913351]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:49730 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49736 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): The sentence «Die EU-Datenschutz-Grundverordnung (DSGVO) sieht für die unrechtmässige Bearbeitung von Personendaten Geldbußen vor.» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [1], attached to the statement «Die EU-Datenschutz-Grundverordnung (DSGVO) sieht für die unrechtmässige Bearbeitung von Personendaten Geldbußen vor.»: the quoted passage from 52.2019.373 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: removed 1 statement(s) whose citations did not hold
+INFO:     127.0.0.1:40658 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40662 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in bger_4C.414_2005: 'Endlich, la défenderesse a résilié le contrat de travail de la demanderesse le 10 janvier 2003, au terme de la période de protection liée à la grossesse, avec effet au 31 mars 2003. Seul ce second lic'
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 3 problem(s): Citation [1], attached to the statement «Die Recherche in der Fallrechtssammlung konnte keine Bestätigung für die genannte 180‑tägige Klagefrist nach einer Kündigung während der Schwangerschaft finden. Die gefundenen Entscheidungen beschäftigen sich mit der Frage, ob eine solche Kündigung missbräuchlich ist und unter welchen Bedingungen sie gültig bleibt, nennen aber keine Frist von 180 Tagen für die Klageerhebung.»: the quoted passage from 601 2023 150 does not state that. Cite a passage that says it, or remove the statement. | Citation [2], attached to the statement «Auch der Bundesgerichtsentscheid 4C.414/2005 (vom 29. März 2006) bestätigt, dass ein nach Ablauf des Schwangerschaftsschutzes ausgesprochener Kündigung wirksam sein kann, erwähnt jedoch ebenfalls keine 180‑tägige Klagefrist.»: its quote «Endlich, la défenderesse a résilié le contrat de travail de la demanderesse le 10 janvier 2003, au terme de la période de protection liée à la grossesse, avec effet au 31 mars 2003. Seul ce second licenciement est donc déterminant sous l'angle de l'art. 336 CO.» was not found in 4C.414/2005. Copy the exact characters of the tool result, in its language, wording and spelling. | The answer does not respond to the question asked: "Ich habe gelesen, dass eine Kündigung während der Schwangerschaft nach der Rechtsprechung bloss missbräuchlich, aber gültig ist und die Arbeitnehmerin innert 180 Tagen klagen muss. Können Sie mir das…". Answer that question directly, from the tool results; if they do not cover it, say so.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 2 problem(s): Citation [1], attached to the statement «Die Recherche in der Fallrechtssammlung konnte keine Bestätigung für die genannte 180‑tägige Klagefrist nach einer Kündigung während der Schwangerschaft finden. Die gefundenen Entscheidungen beschäftigen sich mit der Frage, ob eine solche Kündigung missbräuchlich ist und unter welchen Bedingungen sie gültig bleibt, nennen aber keine Frist von 180 Tagen für die Klageerhebung.»: the quoted passage from 601 2023 150 does not state that. Cite a passage that says it, or remove the statement. | The answer does not respond to the question asked: "Ich habe gelesen, dass eine Kündigung während der Schwangerschaft nach der Rechtsprechung bloss missbräuchlich, aber gültig ist und die Arbeitnehmerin innert 180 Tagen klagen muss. Können Sie mir das…". Answer that question directly, from the tool results; if they do not cover it, say so.
+WARNING swiss_court_assistant.server.react_agent: nothing of the draft held up against the passages
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2913351]
+INFO:     Started server process [2918085]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2918085]
+INFO:     Started server process [2919264]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2919264]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2920339]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2920339]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2921122]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2921122]
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Started server process [2922156]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2922156]
+INFO:     Started server process [2922918]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:39834 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39838 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): Citation [2], attached to the statement «rage geht davon aus, dass eine Kündigung während der Schwangerschaft bloss "missbräuchlich, aber gültig" sei und die Arbeitnehmerin innert 180 Tagen klagen müsse. Das corpus bestätigt nicht, dass eine Kündigung während des gesetzlichen Schwangerschaftsschutzes (Schwangerschaft + 16 Wochen nach Geburt) bloss missbräuchlich, aber gültig ist – sie ist vielmehr nach Art. 336c CO grundsätzlich nichtig.»: the quoted passage from AH220047 does not state that. Cite a passage that says it, or remove the statement.
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [2], attached to the statement «rage geht davon aus, dass eine Kündigung während der Schwangerschaft bloss "missbräuchlich, aber gültig" sei und die Arbeitnehmerin innert 180 Tagen klagen müsse. Das corpus bestätigt nicht, dass eine Kündigung während des gesetzlichen Schwangerschaftsschutzes (Schwangerschaft + 16 Wochen nach Geburt) bloss missbräuchlich, aber gültig ist – sie ist vielmehr nach Art. 336c CO grundsätzlich nichtig.»: the quoted passage from AH220047 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: removed 2 statement(s) whose citations did not hold
+INFO:     127.0.0.1:39370 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 2 problem(s): The sentence «Weitere Entscheidungen thematisieren die unrechtmässige Bearbeitung von Personendaten unter dem schweizerischen Datenschutzgesetz (DSG/LPD), etwa Art. 12, 25–31 LPD, und wie kantonale Gerichte diese Bestimmungen anwenden (z.» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it. | The sentence «B. BGE-Äquivalente, Entscheidungen des EDÖB).» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it.
+INFO:     127.0.0.1:37136 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33028 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /?tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6&tenantId=cf57bc41-18ec-a7a8-198c-c47ecd3481c6 HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-DXpR0WRJ.js HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /assets/index-CO0e-khj.css HTTP/1.1" 304 Not Modified
+INFO:     213.55.247.159:0 - "GET /api/matters HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33028 - "DELETE /api/conversations/6ccb3c787dac HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/92998de742c3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33028 - "DELETE /api/conversations/1cf9113e6135 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33028 - "DELETE /api/conversations/f9450a75edda HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/6ccb3c787dac HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:33028 - "DELETE /api/conversations/5fb36d5c81cc HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     213.55.247.159:0 - "GET /api/conversations/6ccb3c787dac HTTP/1.1" 404 Not Found
+INFO:     213.55.247.159:0 - "GET /api/conversations/6ccb3c787dac HTTP/1.1" 404 Not Found
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in bger_4A_388_2016: 'bger_4A_388_2016 is cited by 984 later decisions and itself cites 49.'
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): Citation [1], attached to the statement «L'arrêt 4A_388/2016 du 15 mars 2017 est toujours suivi dans ce corpus. Il est cité par 984 décisions postérieures, dont les plus récentes datent de 2026, ce qui montre qu'il fait encore l'objet de références récentes par les tribunaux, principalement les cours génevoises dans le corpus.»: its quote «bger_4A_388_2016 is cited by 984 later decisions and itself cites 49.» was not found in 4A_388/2016. The decision is written in French and the quote is in English: a quote is never translated. Copy the exact characters of the tool result, in its language, wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in bger_4A_388_2016: 'bger_4A_388_2016 is cited by 984 later decisions and itself cites 49.'
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [1], attached to the statement «L'arrêt 4A_388/2016 du 15 mars 2017 est toujours suivi dans ce corpus. Il est cité par 984 décisions postérieures.»: its quote «bger_4A_388_2016 is cited by 984 later decisions and itself cites 49.» was not found in 4A_388/2016. The decision is written in French and the quote is in English: a quote is never translated. Copy the exact characters of the tool result, in its language, wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in bger_4A_388_2016: 'bger_4A_388_2016 is cited by 984 later decisions and itself cites 49.'
+WARNING swiss_court_assistant.server.react_agent: nothing of the draft held up against the passages
+INFO:     127.0.0.1:33028 - "DELETE /api/conversations/d38ba7830136 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:33028 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+WARNING swiss_court_assistant.server.react_agent: quote cited from vd_gerichte_PT13.020008 found in ti_gerichte_12.2010.230 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 3 problem(s): Citation [1], attached to the statement «Secondo l'art. 58 CO, il proprietario di un'opera risponde dei danni causati da vizi di costruzione o da difetti di manutenzione in modo oggettivo, indipendentemente dal rispetto del dovere di diligenza.»: the quoted passage from 12.2010.230 does not state that. Cite a passage that says it, or remove the statement. | Citation [3], attached to the statement «Il proprietario non può liberarsi provando di aver usato tutta la diligenza, poiché la norma impone una responsabilità oggettiva basata sullo stato dell'opera, non sulla colpa.»: the quoted passage from PT18.036801 does not state that. Cite a passage that says it, or remove the statement. | The answer does not respond to the question asked: "Quando risponde il proprietario di un'opera secondo l'art. 58 CO, e può liberarsi provando di
+aver usato tutta la diligenza?". Answer that question directly, from the tool results; if they do not cover it, say so.
+WARNING swiss_court_assistant.server.react_agent: quote cited from vd_gerichte_PT13.020008 found in ti_gerichte_12.2010.230 instead
+WARNING swiss_court_assistant.server.react_agent: quote cited from vd_gerichte_PT13.020008 found in ti_gerichte_12.2010.230 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [1], attached to the statement «Secondo l'art. 58 CO, il proprietario di un'opera risponde dei danni causati da vizi di costruzione o da difetti di manutenzione in modo oggettivo, indipendentemente dal rispetto del dovere di diligenza.»: the quoted passage from 12.2010.230 does not state that. Cite a passage that says it, or remove the statement.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2922918]
+INFO:     Started server process [2931380]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:33866 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35750 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35750 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35750 - "DELETE /api/conversations/1be995a95789 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:35750 - "POST /api/chat HTTP/1.1" 200 OK
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): The sentence «Insbesondere fehlen Angaben darüber, ob es zusätzliche Anforderungen an die Timing-, Motivations- oder Prozessaspekte der bedingten zweiten Kündigung gibt, sowie über den genauen Wechselwirkung mit Art. 266a OR bezüglich verpasster Fristen (nach Ergebnis 3 aus ge_gerichte_ACJC_1506_2013: Wenn die Frist nicht eingehalten wird, entsteht Wirkung für den nächsten relevanten Termin).» has no citation and says more than the cited sentences do. Cite a passage from the tool results that says it, or remove it.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_ACJC_1506_2013: 'Laut Art. 266a al. 1 CO kann bei Nichterhaltung des Termins oder der Frist die Resiliation für den nächsten relevanten Termin wirksam werden.'
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 1 problem(s): Citation [4], attached to the statement «Nicht in den vorliegenden Passagen gefunden: Die Forschung zeigt nicht, welche konkreten formellen Voraussetzungen oder zusätzlichen Bedingungen für die Wirksamkeit der zweiten, subsidiären Kündigung erforderlich sind.»: its quote «Laut Art. 266a al. 1 CO kann bei Nichterhaltung des Termins oder der Frist die Resiliation für den nächsten relevanten Termin wirksam werden.» was not found in ACJC/1506/2013. The decision is written in French and the quote is in German: a quote is never translated. Copy the exact characters of the tool result, in its language, wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: removed 1 statement(s) whose citations did not hold
+INFO:     127.0.0.1:35750 - "DELETE /api/conversations/4ad397b191ac HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:35750 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2931380]
+INFO:     Started server process [2934689]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2934689]
+INFO:     Started server process [2935595]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+WARNING:  WatchFiles detected changes in 'src/swiss_court_assistant/server/react_agent.py'. Reloading...
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2935595]
+INFO:     Started server process [2936626]
+INFO:     Waiting for application startup.
+INFO swiss_court_assistant.server.tracing: MLflow tracing is off; set SCA_MLFLOW_URI to record the agent loop
+INFO swiss_court_assistant.server.corpus: corpus: embeddings=nemotron-embed (cuda:1), vector matrix=VectorMatrix, keyword index=True
+INFO swiss_court_assistant.server.react_agent: react agent: nvidia/nemotron-3.5-lightning at http://localhost:9100/v1 (thinking=True, up to 2 revisions)
+INFO swiss_court_assistant.server.app: index=corpus (data/vectordb/corpus.sqlite): 254146 decisions; agent=react
+INFO:     Application startup complete.
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO swiss_court_assistant.server.voice: ASR languages: ar-AR, auto, bg-BG, cs-CZ, da-DK, de-DE, el-GR, en-GB, en-US, es-ES, es-US, et-EE, fi-FI, fr-CA, fr-FR, he-IL, hi-IN, hr-HR, hu-HU, it-IT, ja-JP, ko-KR, lt-LT, lv-LV, mt-MT, nb-NO, nl-NL, nn-NO, pl-PL, pt-BR, pt-PT, ro-RO, ru-RU, sk-SK, sl-SI, sv-SE, th-TH, tr-TR, uk-UA, vi-VN, zh-CN
+INFO:     127.0.0.1:48350 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/2ae08f677430 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/6f1bd2c6b642 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/a3fefd6dd686 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/e5bab57f76c2 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: quote cited from ge_gerichte_ACJC_1291_2026 found in ge_gerichte_ACJC_1095_2024 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 1 problem(s): Citation [2], attached to the statement «Les décisions postérieures les plus récentes le citent en 2026, ce qui montre que la jurisprudence du Tribunal fédéral est encore activement appliquée.»: the quoted passage from ACJC/804/2023 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: quote cited from ge_gerichte_ACJC_1291_2026 found in ge_gerichte_ACJC_1095_2024 instead
+WARNING swiss_court_assistant.server.react_agent: quote cited from None found in ge_gerichte_ACJC_1095_2024 instead
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 2 problem(s): Citation [2], attached to the statement «Les décisions postérieures les plus récentes le citent en 2026, ce qui montre que la jurisprudence du Tribunal fédéral est encore activement appliquée.»: the quoted passage from ACJC/1095/2024 does not state that. Cite a passage that says it, or remove the statement. | Citation [3], attached to the statement «Les décisions postérieures les plus récentes le citent en 2026, ce qui montre que la jurisprudence du Tribunal fédéral est encore activement appliquée.»: the quoted passage from ACJC/1095/2024 does not state that. Cite a passage that says it, or remove the statement.
+WARNING swiss_court_assistant.server.react_agent: quote cited from ge_gerichte_ACJC_1291_2026 found in ge_gerichte_ACJC_1095_2024 instead
+WARNING swiss_court_assistant.server.react_agent: removed 1 statement(s) whose citations did not hold
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/fd579b80d066 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48360 - "DELETE /api/conversations/6bbb3036baa5 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:48360 - "POST /api/chat HTTP/1.1" 200 OK
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_415_2015: "Selon l'art. 271 al. 1 CO, le congé est annulable lorsqu'il contrevient aux règles de la bonne foi. Le congé est contraire aux règles de la bonne foi au sens de l'art. 271 al. 1 CO, s'il ne répond à a"
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_1638_2015: "Ainsi, le congé doit être considéré comme abusif lorsqu'il ne répond à aucun intérêt objectif, sérieux et digne de protection. Tel est le cas lorsque le congé apparaît purement chicanier, lorsqu'il es"
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_obergericht_NG240009: 'Ein solcher Grund liegt namentlich vor, wenn die Kündigung ausgesprochen wurde, weil der Mieter nach Treu und Glauben Ansprüche aus dem Mietverhältnis geltend mache (Art. 271a Abs. 1 lit. a OR). Hierf'
+INFO swiss_court_assistant.server.react_agent: answer draft 1, 3 problem(s): Citation [1], attached to the statement «Under Swiss case law, a landlord's notice terminating a lease violates the rules of good faith (Art. 271 CO / Art. 271 OR) when it lacks an objective, serious and protectable interest, or when it is purely chicanery or pretextual. The core criterion is that the landlord must adduce a legitimate, non‑pretextual justification for termination.»: its quote «Selon l'art. 271 al. 1 CO, le congé est annulable lorsqu'il contrevient aux règles de la bonne foi. Le congé est contraire aux règles de la bonne foi au sens de l'art. 271 al. 1 CO, s'il ne répond à aucun intérêt objectif, sérieux et digne de protection, s'il est purement chicanier ou encore s'il repose sur un motif qui ne constitue manifestement qu'un prétexte.» was not found in C/415/2015. Copy the exact characters of the tool result, in its language, wording and spelling. | Citation [2], attached to the statement «A second circumstance triggering bad‑faith is a manifest gross disproportion between the parties' legitimate interests, due to the landlord's lack of a protectable interest.»: its quote «Ainsi, le congé doit être considéré comme abusif lorsqu'il ne répond à aucun intérêt objectif, sérieux et digne de protection. Tel est le cas lorsque le congé apparaît purement chicanier, lorsqu'il est fondé sur un motif qui ne constitue manifestement qu'un prétexte ou lorsque sa motivation est lacunaire ou fausse.» was not found in C/1638/2015. Copy the exact characters of the tool result, in its language, wording and spelling. | Citation [3], attached to the statement «Art. 271a CO provides specific enumerated grounds rendering a notice annulable, notably when the landlord gives notice because the tenant asserts good‑faith claims arising from the lease. A causal link between the tenant's claim‑making and the notice must exist, but the notice may still be valid if the landlord has a weighty independent justification.»: its quote «Ein solcher Grund liegt namentlich vor, wenn die Kündigung ausgesprochen wurde, weil der Mieter nach Treu und Glauben Ansprüche aus dem Mietverhältnis geltend mache (Art. 271a Abs. 1 lit. a OR). Hierfür ist es erforderlich, dass die Kündigung des Vermieters aufgrund der Geltendmachung von Ansprüchen erfolgte (adäquater Kausalzusammenhang). Nebst dem zeitlichen Zusammenhang ist dabei insbesondere auch die Kündigungsbegründung von Bedeutung. So ist ein adäquater Kausalzusammenhang regelmässig dann zu verneinen, wenn der Vermieter ein gewichtiges Kündigungsmotiv zu belegen vermag, welches eine Kündigung ungeachtet allfällig geltend gemachter Ansprüche rechtfertigt.» was not found in NG240009. Copy the exact characters of the tool result, in its language, wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_415_2015: "Selon l'art. 271 al. 1 CO, le congé est annulable lorsqu'il contrevient aux règles de la bonne foi. Le congé est contraire aux règles de la bonne foi au sens de l'art. 271 al. 1 CO, s'il ne répond à a"
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_obergericht_NG240009: 'Kündigung gegen Treu und Glauben verstossst, beurteilt sich in Bezug auf den Zeitpunkt, in welchem sie ausgesprochen wird (BGE 148 III 215 E. 3.1.2 ff.; BGE 138 III 59 E. 2.1; BGE 135 III 112 E. 4.1; '
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_obergericht_NG210002: 'Massgebend für die Frage, ob eine Kündigung gegen Treu und Glauben verstossst, ist dabei die Situation im Zeitpunkt, in welchem sie ausgesprochen wird (beispielhaft: BGE 140 III 496, E. 4.1; BGE 138 I'
+INFO swiss_court_assistant.server.react_agent: answer draft 2, 3 problem(s): Citation [1], attached to the statement «Under Swiss case law, a landlord's notice terminating a lease violates the rules of good faith (Art. 271 CO / Art. 271 OR) when it lacks an objective, serious and protectable interest, or when it is purely chicanery or pretextual. The core criterion is that the landlord must adduce a legitimate, non‑pretextual justification for termination.»: its quote «Selon l'art. 271 al. 1 CO, le congé est annulable lorsqu'il contrevient aux règles de la bonne foi. Le congé est contraire aux règles de la bonne foi au sens de l'art. 271 al. 1 CO, s'il ne répond à aucun intérêt objectif, sérieux et digne de protection, s'il est purement chicanier ou encore s'il repose sur un motif qui ne constitue manifestement qu'un prétexte.» was not found in C/415/2015. Copy the exact characters of the tool result, in its language, wording and spelling. | Citation [3], attached to the statement «Art. 271a CO provides specific enumerated grounds rendering a notice annulable, notably when the landlord gives notice because the tenant asserts good‑faith claims arising from the lease. A causal link between the tenant's claim‑making and the notice must exist, but the notice may still be valid if the landlord has a weighty independent justification.»: its quote «Kündigung gegen Treu und Glauben verstossst, beurteilt sich in Bezug auf den Zeitpunkt, in welchem sie ausgesprochen wird (BGE 148 III 215 E. 3.1.2 ff.; BGE 138 III 59 E. 2.1; BGE 135 III 112 E. 4.1; BGer 4A_255/2024 vom 20. August 2024, E. 3.1; BGer 4A_183/2017 vom 24. Januar 2018, E. 2; ZK-HIGI/BÜHLMANN, OR, 5. Aufl. 2022, Art. 269-273c, Art. 271 N 165 und 167, Art. 271a N 66; vgl. Art. 271 Abs. 1 f. OR). Das Gesetz zählt beispielhaft Gründe auf, bei deren Vorliegen die Kündigung durch den Vermieter als treuwidrig gilt und folglich anfechtbar ist (vgl. Art. 271a OR). Ein solcher Grund liegt namentlich vor, wenn die Kündigung ausgesprochen wurde, weil der Mieter nach Treu und Glauben Ansprüche aus dem Mietverhältnis geltend mache (Art. 271a Abs. 1 lit. a OR). Hierfür ist es erforderlich, dass die Kündigung des Vermieters aufgrund der Geltendmachung von Ansprüchen erfolgte (adäquater Kausalzusammenhang; ZK-HIGI/BÜHLMANN, OR, a.a.O., Art. 271a N 55). Nebst dem zeitlichen Zusammenhang ist dabei insbesondere auch die Kündigungsbegründung von Bedeutung. So ist ein adäquater Kausalzusammenhang regelmässig dann zu verneinen, wenn der Vermieter ein gewichtiges Kündigungsmotiv zu belegen vermag, welches eine Kündigung ungeachtet allfällig geltend gemachter Ansprüche rechtfertigt (BGE 148 III 215 E. 3.2.1; BGE 143 III 344 E. 5.3.4; BGer 4A_183/2017 vom 24. Januar 2018, E. 2; OGer ZH NG170019 vom 9. März 2018, E. 7.1; ZK-HIGI/BÜHLMANN, OR, a.a.O., Art. 271a N 60 f.). Das Geltendmachen von Ansprüchen geringfügiger Art spricht ferner eher gegen eine Vergeltungskündigung (ZK-HIGI/BÜHLMANN, OR, a.a.O., Art. 271a N 63).» was not found in NG240009. Copy the exact characters of the tool result, in its language, wording and spelling. | Citation [4], attached to the statement «The assessment of whether the notice violates good faith is made at the time it is given; if the reason for the notice ceases to exist afterwards, the notice is not retroactively bad‑faith.»: its quote «Massgebend für die Frage, ob eine Kündigung gegen Treu und Glauben verstossst, ist dabei die Situation im Zeitpunkt, in welchem sie ausgesprochen wird (beispielhaft: BGE 140 III 496, E. 4.1; BGE 138 III 59, E. 2.1).» was not found in NG210002. Copy the exact characters of the tool result, in its language, wording and spelling.
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in ge_gerichte_C_415_2015: "Selon l'art. 271 al. 1 CO, le congé est annulable lorsqu'il contrevient aux règles de la bonne foi. Le congé est contraire aux règles de la bonne foi au sens de l'art. 271 al. 1 CO, s'il ne répond à a"
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_obergericht_NG240009: 'Kündigung gegen Treu und Glauben verstossst, beurteilt sich in Bezug auf den Zeitpunkt, in welchem sie ausgesprochen wird (BGE 148 III 215 E. 3.1.2 ff.; BGE 138 III 59 E. 2.1; BGE 135 III 112 E. 4.1; '
+WARNING swiss_court_assistant.server.react_agent: quote not found verbatim in zh_obergericht_NG210002: 'Massgebend für die Frage, ob eine Kündigung gegen Treu und Glauben verstossst, ist dabei die Situation im Zeitpunkt, in welchem sie ausgesprochen wird (beispielhaft: BGE 140 III 496, E. 4.1; BGE 138 I'
+WARNING swiss_court_assistant.server.react_agent: removed 4 statement(s) whose citations did not hold
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2936626]
+INFO:     Stopping reloader process [2724675]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 35 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

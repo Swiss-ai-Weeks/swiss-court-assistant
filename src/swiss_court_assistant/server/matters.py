@@ -19,6 +19,7 @@ answers with their citations kept intact.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import io
 import json
 import logging
@@ -35,10 +36,12 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, ValidationError
 
 from .agent import Agent, Cite, Delta, ToolStart, Verdict
+from .case_index import CaseIndex, IndexUnavailable, collection_of
 from .language import detect_language
 from .mentions import statute_links
+from .parsing import DocumentStore
 from .llm import LLM_KEY, LLM_URL, served_model
-from .schemas import Intake, Issue, Matter, MatterSummary, Source
+from .schemas import DocumentInfo, Intake, Issue, Matter, MatterSummary, Source
 from .store import new_id, now
 
 log = logging.getLogger(__name__)
@@ -174,6 +177,20 @@ def numbered(matter: Matter) -> tuple[list[Source], list[str]]:
     return sources, answers
 
 
+def prep_document_id(matter_id: str) -> str:
+    """The id of a matter's case prep in the document store: the same every time it is rewritten."""
+    return "doc_" + hashlib.sha1(f"case-prep:{matter_id}".encode()).hexdigest()[:12]
+
+
+def case_prep_document(documents: DocumentStore, matter: Matter) -> DocumentInfo | None:
+    """What Case Prep generated for the matter — intake, issues with their research, assessment and table
+    of authorities, i.e. the memo — kept as a document of its case file, so the assistant asked about
+    the matter can read and cite it. None before the intake has run. Blocking."""
+    if matter.intake is None:
+        return None
+    return documents.keep_generated(prep_document_id(matter.id), f"Case prep — {matter.title}.md", memo(matter))
+
+
 def memo(matter: Matter) -> str:
     """The matter as one Markdown memo, assembled from the researched answers — not rewritten by a
     model, so the citations stay attached to the sentences the research put them on."""
@@ -198,7 +215,8 @@ def memo(matter: Matter) -> str:
             d = s.decision
             # one entry per cited passage, not per decision, so the considerandum tells two passages
             # of the same decision apart
-            erw = f"E. {', '.join(s.erwaegungen)}" if s.erwaegungen else None
+            erw = (", ".join(s.erwaegungen) if s.section == "document" else f"E. {', '.join(s.erwaegungen)}") \
+                if s.erwaegungen else None  # a page of the client's document: "p. 2"
             where = " · ".join(x for x in (d.court_label, d.docket, erw, d.date) if x)
             link = f" — {d.source_url}" if d.source_url else ""
             mark = "" if s.supported is not False else "  ⚠ check: the passage may not state this"
@@ -353,10 +371,12 @@ class MatterStore:
 
 
 def create_matter(store: MatterStore, facts: str, source_name: str | None, source_kind: str,
-           title: str | None = None) -> Matter:
+           title: str | None = None, assets: list[DocumentInfo] | None = None) -> Matter:
+    assets = assets or []
     stamp = datetime.now(UTC).isoformat(timespec="milliseconds")
     matter = Matter(id=new_id(), title=title or (source_name or facts[:60].strip() or "New matter"),
                     stage="new", source_name=source_name, source_kind=source_kind,  # type: ignore[arg-type]
+                    document_id=assets[0].id if assets else None, assets=assets,
                     language=detect_language(facts), facts=facts, created_at=stamp, updated_at=stamp)
     return store.save(matter)
 
@@ -365,8 +385,10 @@ def create_matter(store: MatterStore, facts: str, source_name: str | None, sourc
 class Pipeline:
     """Runs a matter through the four stages, saving after each one and streaming what it does."""
 
-    def __init__(self, agent: Agent, store: MatterStore, decisions: Any = None, max_issues: int = MAX_ISSUES):
+    def __init__(self, agent: Agent, store: MatterStore, decisions: Any = None, max_issues: int = MAX_ISSUES,
+                 case_index: CaseIndex | None = None):
         self.agent, self.store, self.decisions, self.max_issues = agent, store, decisions, max_issues
+        self.case_index = case_index
         common: dict[str, Any] = dict(base_url=LLM_URL, api_key=LLM_KEY, model=served_model(),
                                       temperature=0.2, streaming=True)
         self.intake_llm = ChatOpenAI(**common, max_tokens=2048, extra_body={
@@ -399,7 +421,17 @@ class Pipeline:
         parts: list[str] = []
         sources: list[Source] = []
         yield {"type": "issue_start", "n": issue.n}
-        async for ev in self.agent.answer(question, [], ask=False):  # no one to ask mid-memo
+        # The client's own document, so the research can quote it for the facts. Without it the answer
+        # stated the facts in a sentence cited to a court decision, the check found the decision did not
+        # say them, and dropped the sentence together with the law in it.
+        documents = getattr(self.agent, "documents", None)
+        attached = list(matter.assets)
+        if not attached and matter.document_id and documents and (info := documents.info(matter.document_id)):
+            attached = [info]  # a matter opened before the case file was kept
+        # a long case file is searched in its collection rather than shown by its documents' beginnings
+        collection = collection_of(matter.id) if matter.indexed else None
+        async for ev in self.agent.answer(question, [], ask=False, attachments=attached,  # no one to ask mid-memo
+                                          collection=collection):
             match ev:
                 case ToolStart():
                     arg = " ".join(str(v) for v in ev.args.values() if v not in (None, "", False))
@@ -433,11 +465,29 @@ class Pipeline:
                 yield {"type": "assessment_delta", "text": text}
         matter.assessment = "".join(parts).strip()
 
+    async def _index(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
+        """Put the case file into its own collection of the case index: cut into passages and embedded, so
+        each issue's research can search all of it. Idempotent — a rerun only adds what is missing. Without
+        the embedder the research falls back to the documents' beginnings and read_document."""
+        if self.case_index is None or not matter.assets:
+            return
+        collection = collection_of(matter.id)
+        try:
+            await asyncio.to_thread(self.case_index.add, collection, matter.assets)
+        except IndexUnavailable as e:
+            log.warning("matter %s: case file not indexed (%s)", matter.id, e)
+            return
+        matter.indexed = await asyncio.to_thread(self.case_index.count, collection)
+        yield {"type": "indexed", "passages": matter.indexed}
+
     async def run(self, matter: Matter) -> AsyncIterator[dict[str, Any]]:
         """Stage by stage, saving as it goes: a browser that disconnects loses the stream, not the work."""
         try:
-            matter.stage = "intake"
+            # a rerun starts over: the last run's assessment and memo belong to research it replaces
+            matter.stage, matter.assessment, matter.memo = "intake", None, None
             yield {"type": "stage", "stage": "intake", "status": "running"}
+            async for ev in self._index(matter):
+                yield ev
             async for ev in self._intake(matter):
                 yield ev
             self.store.save(matter)

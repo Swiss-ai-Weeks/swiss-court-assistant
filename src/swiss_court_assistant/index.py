@@ -31,6 +31,7 @@ the app searches instead of scanning sqlite-vec.
 Usage:
     uv run python -m swiss_court_assistant.index build --laws --since 1980 --fraction 0.25
     uv run python -m swiss_court_assistant.index build --courts bger,bge      # start small
+    uv run python -m swiss_court_assistant.index grow --fraction 0.43         # more of the same sample
     uv run python -m swiss_court_assistant.index update                       # apply new deltas
     uv run python -m swiss_court_assistant.index citations                    # rebuild the citation graph
     uv run python -m swiss_court_assistant.index status
@@ -246,8 +247,10 @@ def index_keywords(con: sqlite3.Connection, fts: sqlite3.Connection, ids: list[i
             fts.executemany("INSERT INTO passages(rowid, text) VALUES (?, ?)", rows)
 
 
-def ingest(con: sqlite3.Connection, fts: sqlite3.Connection, path: Path, label: str) -> tuple[int, int]:
-    """Index one upstream parquet (a shard or a delta). Returns (decisions, chunks)."""
+def ingest(con: sqlite3.Connection, fts: sqlite3.Connection, path: Path, label: str,
+           skip: set[str] | None = None) -> tuple[int, int]:
+    """Index one upstream parquet (a shard or a delta), leaving out the decision ids in `skip`.
+    Returns (decisions, chunks)."""
     df = prepare(pl.read_parquet(path))
     if "decision_id" not in df.columns or "full_text" not in df.columns:
         print(f"  skipping {label}: not a decision shard ({len(df.columns)} columns, no decision_id/full_text)")
@@ -255,6 +258,8 @@ def ingest(con: sqlite3.Connection, fts: sqlite3.Connection, path: Path, label: 
     selected = [r[0] for r in con.execute("SELECT decision_id FROM selected_decisions")]
     if selected:  # only the chosen sample; a delta may bring decisions outside it, which are skipped
         df = df.filter(pl.col("decision_id").is_in(selected))
+    if skip:
+        df = df.filter(~pl.col("decision_id").is_in(list(skip)))
     if df.is_empty():
         return 0, 0
     _decisions_table(con, df)
@@ -493,6 +498,45 @@ def build(courts: list[str] | None, model: str, device: str, batch: int, limit: 
     print(f"done: {DB} ({DB.stat().st_size / 1e9:.1f} GB), {FTS_DB} ({FTS_DB.stat().st_size / 1e9:.1f} GB)")
 
 
+def grow(fraction: float, model: str, device: str, batch: int, skip_embed: bool) -> None:
+    """Enlarge the sample to `fraction` of the pool and index only the decisions that are new.
+    The sample ranks decisions inside each stratum by a seeded hash, so with the same `since` and seed
+    a larger fraction contains the smaller one: nothing already indexed is chunked or embedded again.
+    Resumable: a decision counts as done once its passages are in, and embedding drains the queue."""
+    con, fts = open_db(), open_fts()
+    params = json.loads(state(con, "selection") or "null") or {}
+    if not params or fraction <= (params.get("fraction") or 1.0):
+        raise SystemExit(f"grow needs an earlier `build --fraction` below {fraction} (selection: {params})")
+    where = None
+    if params.get("since") is not None:
+        where = pl.col("decision_date").str.slice(0, 4).cast(pl.Int32, strict=False) >= params["since"]
+    subset, pool = S.sample(0, floor=3, seed=params["seed"], where=where, fraction=fraction)
+    before = con.execute("SELECT COUNT(*) FROM selected_decisions").fetchone()[0]
+    with con:
+        con.executemany("INSERT OR IGNORE INTO selected_decisions VALUES (?)",
+                        [[d] for d in subset["decision_id"]])
+    after = con.execute("SELECT COUNT(*) FROM selected_decisions").fetchone()[0]
+    state(con, "selection", json.dumps({**params, "fraction": fraction, "pool": pool.height}))
+    print(f"selection: {before:,} -> {after:,} decisions ({fraction:.0%} of {pool.height:,})")
+
+    done = {r[0] for r in con.execute("SELECT DISTINCT decision_id FROM chunks WHERE section != 'law'")}
+    shards = shard_files(None)
+    added = 0
+    for i, repo_path in enumerate(shards, 1):
+        t0 = time.time()
+        n_dec, n_chunks = ingest(con, fts, fetch(repo_path), Path(repo_path).stem, skip=done)
+        added += n_dec
+        print(f"[{i}/{len(shards)}] {repo_path}: {n_dec:,} new decisions, {n_chunks:,} passages "
+              f"({time.time() - t0:.0f}s)")
+    if added:
+        state(con, "delta_date", "")  # the new decisions come from the snapshot: let `update` replay deltas
+    if not skip_embed:
+        embed(con, model, device, batch)
+    con.close()
+    fts.close()
+    print(f"done: {added:,} decisions added; {DB} ({DB.stat().st_size / 1e9:.1f} GB)")
+
+
 def update(model: str, device: str, batch: int, skip_embed: bool) -> None:
     con, fts = open_db(), open_fts()
     m = manifest()
@@ -587,6 +631,9 @@ def main() -> None:
     b.add_argument("--laws", action="store_true", help="also index every statute article")
     b.add_argument("--only-laws", action="store_true", help="statute articles, no decisions")
     common(b)
+    g = sub.add_parser("grow", help="enlarge the stratified sample and index only the new decisions")
+    g.add_argument("--fraction", type=float, required=True, help="new share of the pool, e.g. 0.43")
+    common(g)
     u = sub.add_parser("update", help="apply the dataset's dated deltas since the watermark")
     common(u)
     sub.add_parser("citations", help="rebuild the citation graph over the indexed decisions")
@@ -600,6 +647,11 @@ def main() -> None:
               args.laws or args.only_laws, args.only_laws)
         if not args.skip_embed:
             vectors(args.model)
+    elif args.cmd == "grow":
+        grow(args.fraction, args.model, args.device, args.batch, args.skip_embed)
+        if not args.skip_embed:
+            vectors(args.model)  # restart the app afterwards: it opens the matrix at startup
+            citations()
     elif args.cmd == "update":
         update(args.model, args.device, args.batch, args.skip_embed)
         if not args.skip_embed:

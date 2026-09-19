@@ -46,10 +46,12 @@ interface Props {
   streaming: boolean;
   activeN: number | null;
   onCite: (n: number) => void;
+  /** What a quote of selected text says it comes from. */
+  selectSource?: string;
 }
 
 export default function Answer({ id, text, sources, statutes = [], onStatute, language, streaming, activeN,
-  onCite }: Props) {
+  onCite, selectSource = "the answer" }: Props) {
   const components = useMemo<Components>(
     () => ({
       a({ href, children }) {
@@ -90,7 +92,7 @@ export default function Answer({ id, text, sources, statutes = [], onStatute, la
 
   return (
     <div className="answer">
-      <div className="md" data-select-lang={language ?? "en"} data-select-source="the answer">
+      <div className="md" data-select-lang={language ?? "en"} data-select-source={selectSource}>
         <Markdown remarkPlugins={[remarkGfm]} components={components}>
           {linkStatutes(linkCitations(text, sources.length), streaming ? [] : statutes)}
         </Markdown>

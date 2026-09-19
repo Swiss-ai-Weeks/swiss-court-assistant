@@ -26,8 +26,9 @@ export interface Source {
   chunkId: string;
   decisionId: string;
   text: string;
-  /** "law": a statute article — its law_id is in decisionId, and `decision` describes the article. */
-  section: "regeste" | "erwaegung" | "body" | "law";
+  /** "law": a statute article — its law_id is in decisionId, and `decision` describes the article.
+   *  "document": a document the user attached — its id (doc_…) is in decisionId. */
+  section: "regeste" | "erwaegung" | "body" | "law" | "document";
   erwaegungen: string[];
   /** Offsets into Decision.fullText; null for Regeste passages. */
   charStart: number | null;
@@ -88,6 +89,22 @@ export interface Clarification {
   notes: string;
 }
 
+/** A document the user attached, parsed (Nemotron Parse for PDFs and scans) and stored on the server. */
+export interface DocumentInfo {
+  id: string;
+  name: string;
+  /** A file, a recording of the client (kept as WAV; its text is the transcript), or typed notes. */
+  kind?: "document" | "recording" | "notes" | "generated";
+  pages: number;
+  chars: number;
+  /** "nemotron-parse", "python-docx", "text", "nemotron-asr" or "typed". */
+  parser: string;
+  language: string | null;
+  /** Length of a recording. */
+  seconds?: number | null;
+  createdAt: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -102,6 +119,8 @@ export interface Message {
   statutes?: StatuteRef[] | null;
   /** Set when the assistant asked back instead of answering. */
   clarification?: Clarification | null;
+  /** Documents attached to a user message. */
+  attachments?: DocumentInfo[] | null;
   createdAt: string;
 }
 
@@ -118,6 +137,8 @@ export interface ConversationSummary {
   id: string;
   title: string;
   updatedAt: string;
+  /** Asked from Case Prep about this matter: answered against its case file and research. */
+  matterId?: string | null;
 }
 
 export interface Conversation extends ConversationSummary {
@@ -175,7 +196,10 @@ export interface MatterSummary {
   title: string;
   stage: MatterStage;
   sourceName: string | null;
-  sourceKind: "document" | "recording" | "text";
+  /** "bundle": several files, recordings and notes. */
+  sourceKind: "document" | "recording" | "text" | "bundle";
+  /** The uploaded document, kept on the server (its original opens at documentFileUrl). */
+  documentId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -184,6 +208,10 @@ export interface Matter extends MatterSummary {
   language: string;
   /** The client's story as text, however it arrived. */
   facts: string;
+  /** The case file: every document, recording and note the matter was opened on. */
+  assets?: DocumentInfo[];
+  /** Passages of the case file in its search index (0: not indexed, so not searchable by meaning). */
+  indexed?: number;
   intake: Intake | null;
   issues: Issue[];
   assessment: string | null;
@@ -193,6 +221,7 @@ export interface Matter extends MatterSummary {
 export type MatterEvent =
   | { type: "stage"; stage: MatterStage; status: "running" | "done" }
   | { type: "intake"; title: string; intake: Intake; issues: Issue[] }
+  | { type: "indexed"; passages: number }
   | { type: "issue_start"; n: number }
   | { type: "issue_tool"; n: number; name: string; arg: string }
   | { type: "issue_delta"; n: number; text: string }
@@ -203,10 +232,10 @@ export type MatterEvent =
   | { type: "done"; matter: Matter }
   | { type: "error"; stage: MatterStage; message: string };
 
-/** What the client handed over: a file (document or audio), or the facts typed in. */
+/** What the client handed over: documents and recordings already uploaded with uploadDocument, and the
+ *  facts typed in. */
 export interface MatterInput {
-  file?: File | Blob;
-  filename?: string;
+  documentIds?: string[];
   text?: string;
   title?: string;
 }
@@ -223,8 +252,16 @@ export interface Api {
   translate(text: string, source: string, target: string): Promise<string>;
   /** Speech for `text` read in `language`: a stream of 16-bit little-endian mono PCM at `sampleRate`. */
   speech(text: string, language: string, signal?: AbortSignal): Promise<{ sampleRate: number; stream: ReadableStream<Uint8Array> }>;
-  /** Streams one assistant turn. A null conversationId starts a new conversation. */
-  chat(conversationId: string | null, text: string, signal?: AbortSignal): AsyncIterable<ChatEvent>;
+  /** Streams one assistant turn. A null conversationId starts a new conversation. `documentIds`: documents
+   *  uploaded with uploadDocument, attached to this message. `matterId`: a new conversation about this matter
+   *  (an existing conversation keeps the matter it was started on). */
+  chat(conversationId: string | null, text: string, signal?: AbortSignal, documentIds?: string[],
+    matterId?: string | null): AsyncIterable<ChatEvent>;
+  /** Parses and stores a document to attach to a message or a matter. A recording goes as 16 kHz PCM with
+   *  a name ending in ".pcm"; it is transcribed and kept as audio. */
+  uploadDocument(file: Blob, signal?: AbortSignal, filename?: string): Promise<DocumentInfo>;
+  /** The document as it was uploaded. */
+  documentFileUrl(id: string): string;
   listMatters(): Promise<MatterSummary[]>;
   getMatter(id: string): Promise<Matter>;
   /** Reads the document or recording and opens a matter on it; nothing is researched yet. */
@@ -232,6 +269,6 @@ export interface Api {
   deleteMatter(id: string): Promise<void>;
   /** Runs the matter through intake, research, assessment and drafting. */
   runMatter(id: string, signal?: AbortSignal): AsyncIterable<MatterEvent>;
-  /** Where the drafted memo can be downloaded as Markdown. */
-  memoUrl(id: string): string;
+  /** Where the drafted memo can be downloaded: Word by default, or Markdown. */
+  memoUrl(id: string, format?: "docx" | "md"): string;
 }

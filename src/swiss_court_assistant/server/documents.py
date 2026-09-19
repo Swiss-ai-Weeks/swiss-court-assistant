@@ -1,9 +1,10 @@
 """What a client hands over, turned into text the assistant can work on.
 
-A matter starts either from a document (PDF, Word, plain text) or from a recording of the client
-telling their story. Recordings arrive as 16 kHz mono PCM because the browser decodes and resamples
-them: every format the browser can play then works without ffmpeg on the server, and the bytes are
-already exactly what the ASR NIM expects.
+A matter starts either from a document or from a recording of the client telling their story.
+Documents are parsed and stored by parsing.py (Nemotron Parse for PDFs and scans); this module keeps
+the Word reader it uses and the transcription of recordings. Recordings arrive as 16 kHz mono PCM
+because the browser decodes and resamples them: every format the browser can play then works without
+ffmpeg on the server, and the bytes are already exactly what the ASR NIM expects.
 """
 
 from __future__ import annotations
@@ -12,13 +13,13 @@ import asyncio
 import io
 import logging
 import re
-from pathlib import PurePosixPath
 
 from .voice import SAMPLE_RATE, Listener
 
 log = logging.getLogger(__name__)
 
-# About twenty pages. Intake only needs the story, and the whole text goes into one prompt.
+# About twenty pages of a matter's document. Intake only needs the story, and the whole text goes
+# into one prompt.
 MAX_CHARS = 40_000
 CHUNK = SAMPLE_RATE * 2 // 5  # 200 ms of 16-bit mono audio
 _BLANK_LINES = re.compile(r"\n{3,}")
@@ -26,13 +27,7 @@ _TRAILING = re.compile(r"[ \t]+$", re.M)
 
 
 class UnreadableError(Exception):
-    """The file holds no text we can use — an empty file, or a scan with no text layer."""
-
-
-def _pdf(data: bytes) -> str:
-    from pypdf import PdfReader
-
-    return "\n\n".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(data)).pages)
+    """The file holds no text we can use — an empty or damaged file, or a format we do not read."""
 
 
 def _docx(data: bytes) -> str:
@@ -47,29 +42,6 @@ def _docx(data: bytes) -> str:
 
 def _tidy(text: str) -> str:
     return _BLANK_LINES.sub("\n\n", _TRAILING.sub("", text.replace("\f", "\n"))).strip()
-
-
-def extract(filename: str, data: bytes) -> str:
-    """The text of an uploaded document, trimmed to `MAX_CHARS`."""
-    suffix = PurePosixPath(filename).suffix.lower()
-    if suffix == ".doc":
-        raise UnreadableError("Old .doc files are not supported — save it as .docx or PDF first.")
-    try:
-        if suffix == ".pdf":
-            text = _pdf(data)
-        elif suffix in (".docx", ".dotx"):
-            text = _docx(data)
-        else:
-            text = data.decode("utf-8", errors="replace")
-    except Exception as e:
-        log.exception("could not read %s", filename)
-        raise UnreadableError(f"{filename} could not be read as a document.") from e
-    text = _tidy(text)
-    if len(text) < 20:
-        raise UnreadableError(
-            f"No text found in {filename}. A scanned PDF has to be run through OCR first — "
-            "this assistant does not read images.")
-    return text[:MAX_CHARS]
 
 
 async def transcribe(listener: Listener, pcm: bytes, language: str = "en") -> str:

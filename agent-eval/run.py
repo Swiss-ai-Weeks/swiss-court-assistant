@@ -31,11 +31,12 @@ import yaml
 from openai import AsyncOpenAI
 
 import report
-from client import ask, delete_conversation, health
+from client import ask, delete_conversation, delete_document, delete_matter, health, prepare_matter, upload
 from judge import Judge
 from metrics import WEIGHTS, ACCURACY_PASS, RUBRIC_PASS, failure, mechanical, score
 
 HERE = Path(__file__).resolve().parent
+FIXTURES = HERE / "fixtures"
 UNJUDGED = {"rubric": [], "legal_accuracy": None, "grounding": None, "usefulness": None,
             "abstained": None, "comment": ""}  # a turn that failed, or a run with --no-judge
 SERVER = os.environ.get("SCA_SERVER", "http://localhost:8090")
@@ -62,14 +63,27 @@ def load_cases(paths: list[Path], suite: str | None, only: list[str] | None) -> 
 
 async def run_case(case: dict[str, Any], client: httpx.AsyncClient, judge: Judge | None,
                    keep: bool) -> tuple[dict[str, Any], dict[str, Any]]:
-    """One case: the setup turns, the judged turn, the judgment, the scores."""
-    conversation: str | None = None
-    for question in case.get("setup") or []:       # earlier turns, asked but not graded
-        setup_turn = await ask(client, question, conversation)
-        conversation = setup_turn.conversation_id
-    turn = await ask(client, case["question"].strip(), conversation)
-    if turn.conversation_id and not keep:
-        await delete_conversation(client, turn.conversation_id)
+    """One case: the setup turns, the judged turn, the judgment, the scores.
+
+    A case with `attachments` uploads those files from fixtures/<fixtures>/ first. With `mode: matter`
+    it runs them through Case Prep instead of asking a question, and the researched issues are graded
+    as one answer."""
+    documents = [await upload(client, FIXTURES / case["fixtures"] / name) for name in case.get("attachments") or []]
+    if case.get("mode") == "matter":
+        turn, matter_id = await prepare_matter(client, documents)
+        if matter_id and not keep:
+            await delete_matter(client, matter_id)  # its case file and index collection go with it
+    else:
+        conversation: str | None = None
+        for question in case.get("setup") or []:       # earlier turns, asked but not graded
+            setup_turn = await ask(client, question, conversation)
+            conversation = setup_turn.conversation_id
+        turn = await ask(client, case["question"].strip(), conversation, documents)
+        if turn.conversation_id and not keep:
+            await delete_conversation(client, turn.conversation_id)
+        if not keep:
+            for document_id in documents:
+                await delete_document(client, document_id)
 
     mech = mechanical(case, turn)
     if turn.error:
@@ -121,7 +135,7 @@ async def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cases", type=Path, nargs="+", default=[HERE / "cases"],
                     help="case files or directories (default: agent-eval/cases)")
-    ap.add_argument("--suite", help="only this suite (exam | behaviour)")
+    ap.add_argument("--suite", help="only this suite (exam | behaviour | casefile)")
     ap.add_argument("--only", nargs="+", help="only cases whose id contains one of these fragments")
     ap.add_argument("--server", default=SERVER, help=f"the running assistant (default: {SERVER})")
     ap.add_argument("--judge-url", default=JUDGE_URL, help=f"OpenAI-compatible judge (default: {JUDGE_URL})")
