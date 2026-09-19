@@ -9,3 +9,7 @@ data/
 # Secrets (NGC_API_KEY etc.)
 .env
 server.log*
+node_modules
+runs/
+dist/
+asr-finetune/manifests
