@@ -33,7 +33,7 @@ from openai import AsyncOpenAI
 import report
 from client import ask, delete_conversation, delete_document, delete_matter, health, prepare_matter, upload
 from judge import Judge
-from metrics import WEIGHTS, ACCURACY_PASS, RUBRIC_PASS, failure, mechanical, score
+from metrics import WEIGHTS, ACCURACY_PASS, RUBRIC_PASS, failure, mechanical, score, chosen_option
 
 HERE = Path(__file__).resolve().parent
 FIXTURES = HERE / "fixtures"
@@ -86,22 +86,34 @@ async def run_case(case: dict[str, Any], client: httpx.AsyncClient, judge: Judge
                 await delete_document(client, document_id)
 
     mech = mechanical(case, turn)
-    if turn.error:
-        judgment = UNJUDGED | {"error": turn.error}
-    elif judge is None:
-        judgment = UNJUDGED | {"error": "not judged"}
-    else:
-        judgment = await judge.judge(case, turn.answer, turn.sources)
+    judgment = await grade(case, turn.answer, turn.sources, turn.error, judge)
     scored = score(case, mech, judgment)
     result = {k: case[k] for k in ("id", "suite", "area", "language", "level")} | {
         "question": case["question"].strip(), "expect": case.get("expect") or {},
         "answer": turn.answer, "error": turn.error, "metrics": mech, "judgment": judgment,
         **scored, "why": "" if scored["correct"] else (turn.error or failure(case, mech, scored)),
     }
-    transcript = result | {"reference": case["reference"].strip(), "rubric": case["rubric"],
+    transcript = result | {"reference": (case.get("reference") or "").strip(), "rubric": case.get("rubric") or [],
                            "setup": case.get("setup") or [], "sources": turn.sources,
-                           "tool_calls": turn.tool_calls, "conversation_id": turn.conversation_id}
+                           "tool_calls": turn.tool_calls, "conversation_id": turn.conversation_id,
+                           **{k: case[k] for k in ("choices", "gold", "source") if k in case}}
     return result, transcript
+
+
+async def grade(case: dict[str, Any], answer: str, sources: list[dict[str, Any]], error: str | None,
+                judge: Judge | None) -> dict[str, Any]:
+    """The judgment of one answer. A multiple-choice answer is read, not judged: the letter on its
+    "Answer: X" line, and the judge only for an answer that never wrote one."""
+    if error:
+        return UNJUDGED | {"error": error}
+    if "gold" in case:
+        choice, by = chosen_option(case, answer), "answer"
+        if choice is None and judge is not None:
+            choice, by = await judge.choice(case, answer), "judge"
+        return UNJUDGED | {"choice": choice, "choice_by": by if choice else None}
+    if judge is None:
+        return UNJUDGED | {"error": "not judged"}
+    return await judge.judge(case, answer, sources)
 
 
 def stored(run_dir: Path) -> list[tuple[dict[str, Any], dict[str, Any]]]:
@@ -112,6 +124,7 @@ def stored(run_dir: Path) -> list[tuple[dict[str, Any], dict[str, Any]]]:
         transcript = json.loads(path.read_text())
         case = {k: transcript[k] for k in ("id", "suite", "area", "language", "level", "question",
                                            "reference", "rubric", "setup", "expect")}
+        case |= {k: transcript[k] for k in ("choices", "gold") if k in transcript}
         pairs.append((case, transcript))
     if not pairs:
         raise SystemExit(f"no transcripts in {run_dir}")
@@ -121,8 +134,7 @@ def stored(run_dir: Path) -> list[tuple[dict[str, Any], dict[str, Any]]]:
 async def rejudge_case(case: dict[str, Any], transcript: dict[str, Any],
                        judge: Judge) -> tuple[dict[str, Any], dict[str, Any]]:
     mech = transcript["metrics"]
-    judgment = (UNJUDGED | {"error": transcript["error"]} if transcript["error"] else
-                await judge.judge(case, transcript["answer"], transcript["sources"]))
+    judgment = await grade(case, transcript["answer"], transcript["sources"], transcript["error"], judge)
     scored = score(case, mech, judgment)
     result = {k: transcript[k] for k in ("id", "suite", "area", "language", "level", "question",
                                          "expect", "answer", "error")} | {

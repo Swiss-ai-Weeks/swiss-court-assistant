@@ -105,6 +105,18 @@ export interface DocumentInfo {
   createdAt: string;
 }
 
+/** A file being read on the server, polled until it is done (see uploadDocument). */
+export interface UploadStatus {
+  id: string;
+  name: string;
+  state: "reading" | "ready" | "failed";
+  /** How long it has been read. */
+  seconds: number;
+  document?: DocumentInfo | null;
+  error?: string | null;
+  status?: number | null;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -212,6 +224,8 @@ export interface Matter extends MatterSummary {
   assets?: DocumentInfo[];
   /** Passages of the case file in its search index (0: not indexed, so not searchable by meaning). */
   indexed?: number;
+  /** Items added to the case file since the last run, which therefore has not seen them. */
+  addedSinceRun?: number;
   intake: Intake | null;
   issues: Issue[];
   assessment: string | null;
@@ -258,14 +272,22 @@ export interface Api {
   chat(conversationId: string | null, text: string, signal?: AbortSignal, documentIds?: string[],
     matterId?: string | null): AsyncIterable<ChatEvent>;
   /** Parses and stores a document to attach to a message or a matter. A recording goes as 16 kHz PCM with
-   *  a name ending in ".pcm"; it is transcribed and kept as audio. */
-  uploadDocument(file: Blob, signal?: AbortSignal, filename?: string): Promise<DocumentInfo>;
+   *  a name ending in ".pcm"; it is transcribed and kept as audio. The server reads it in the background
+   *  and this polls until it is done, so a long scan cannot time out on the way; `onReading` is called
+   *  with the seconds it has been read so far. Aborting stops the reading on the server too. */
+  uploadDocument(file: Blob, signal?: AbortSignal, filename?: string,
+    onReading?: (seconds: number) => void): Promise<DocumentInfo>;
+  /** Throws away a document the user took back before it was used. */
+  deleteDocument(id: string): Promise<void>;
   /** The document as it was uploaded. */
   documentFileUrl(id: string): string;
   listMatters(): Promise<MatterSummary[]>;
   getMatter(id: string): Promise<Matter>;
   /** Reads the document or recording and opens a matter on it; nothing is researched yet. */
   createMatter(input: MatterInput): Promise<Matter>;
+  /** Adds documents, recordings or notes to the case file of a matter that already exists. They are
+   *  indexed at once; the research is not redone (see Matter.addedSinceRun). */
+  addMatterAssets(id: string, input: MatterInput): Promise<Matter>;
   deleteMatter(id: string): Promise<void>;
   /** Runs the matter through intake, research, assessment and drafting. */
   runMatter(id: string, signal?: AbortSignal): AsyncIterable<MatterEvent>;

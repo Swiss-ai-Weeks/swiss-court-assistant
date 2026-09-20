@@ -80,37 +80,58 @@ def current(db: Path, model: str) -> bool:
 
 class GpuVectorMatrix:
     """VectorMatrix's interface (`ids`, `segments`, `meta`, `search`, `warm`) over float16 vectors in GPU
-    memory, one cuVS brute-force index per segment (kind/language)."""
+    memory, one cuVS brute-force index per segment (kind/language) — or per part of one, when the
+    matrix is spread over several GPUs."""
 
-    def __init__(self, path: Path, meta: dict, device: int):
+    RESERVE = 3 << 30  # left free on each GPU: query buffers, prefilter bitsets, cuVS workspace
+
+    def __init__(self, path: Path, meta: dict, devices: list[int]):
         import cupy as cp
         from cuvs.neighbors import brute_force
 
         self.meta = meta
-        self.device = device
+        self.devices = devices
         self.ids = np.fromfile(M._file(path, ".ids"), dtype=np.int64)
         self.segments = {k: tuple(v) for k, v in meta["segments"].items()}
         dim = meta["index"]["dim"]
         host = np.memmap(M._file(path, ".f16"), dtype=np.float16, mode="r", shape=(meta["rows"], dim))
         t0 = time.time()
-        self._index: dict[str, object] = {}
+        # Fill the GPUs in the order given; a segment that does not fit in what is left of one GPU is
+        # split, and the rest goes on the next. Each part is its own index, searched and merged.
+        room = []
+        for d in devices:
+            with cp.cuda.Device(d):
+                room.append(max(0, cp.cuda.runtime.memGetInfo()[0] - self.RESERVE) // (dim * 2))
+        if sum(room) < meta["rows"]:
+            raise MemoryError(f"{meta['rows']:,} vectors, room for {sum(room):,} on GPUs {devices}")
+        self._parts: dict[str, list[tuple[int, int, int, object]]] = {}
         self._vectors = []  # the index only views its dataset: the arrays must outlive the loop
-        with cp.cuda.Device(device):
-            for key, (a, b) in self.segments.items():
-                vectors = cp.empty((b - a, dim), dtype=cp.float16)
-                for i in range(a, b, _STEP):
-                    vectors[i - a:min(i + _STEP, b) - a].set(np.ascontiguousarray(host[i:min(i + _STEP, b)]))
-                self._vectors.append(vectors)
-                self._index[key] = brute_force.build(vectors, metric="inner_product")
-        log.info("vectors on GPU %d: %d x %d float16 (%.1f GB) in %.0f s", device, meta["rows"], dim,
-                 meta["rows"] * dim * 2 / 1e9, time.time() - t0)
+        g = 0
+        for key, (a, b) in self.segments.items():
+            self._parts[key] = []
+            while a < b:
+                while room[g] == 0:
+                    g += 1
+                e = min(b, a + room[g])
+                room[g] -= e - a
+                with cp.cuda.Device(devices[g]):
+                    vectors = cp.empty((e - a, dim), dtype=cp.float16)
+                    for i in range(a, e, _STEP):
+                        vectors[i - a:min(i + _STEP, e) - a].set(np.ascontiguousarray(host[i:min(i + _STEP, e)]))
+                    self._vectors.append(vectors)
+                    self._parts[key].append((devices[g], a, e, brute_force.build(vectors, metric="inner_product")))
+                a = e
+        used = sorted({d for parts in self._parts.values() for d, *_ in parts})
+        log.info("vectors on GPU %s: %d x %d float16 (%.1f GB) in %.0f s", "+".join(map(str, used)),
+                 meta["rows"], dim, meta["rows"] * dim * 2 / 1e9, time.time() - t0)
         # cuVS and CuPy calls hop between the knn worker threads; one at a time, each a few ms
         self._lock = threading.Lock()
-        self.backend = f"cuVS brute-force float16, GPU {device}"
+        self.backend = f"cuVS brute-force float16, GPU {'+'.join(map(str, used))}"
         self.searches, self._ms = 0, 0.0  # shown by /api/health: proof the GPU is doing the searching
 
     @classmethod
-    def open(cls, db: Path, model: str, con: sqlite3.Connection, device: int = 1) -> GpuVectorMatrix | None:
+    def open(cls, db: Path, model: str, con: sqlite3.Connection,
+             devices: list[int] = (1,)) -> GpuVectorMatrix | None:
         """The GPU matrix, or None when cuVS is not installed or the float16 copy is missing or stale."""
         path = M.base(db, model)
         if not M._file(path, ".f16.json").exists():
@@ -125,14 +146,16 @@ class GpuVectorMatrix:
             log.warning("float16 matrix %s is stale; run `python -m swiss_court_assistant.gpuvec export`", path)
             return None
         try:
-            return cls(path, meta, device)
+            return cls(path, meta, list(devices))
         except ImportError:
             log.warning("cuVS is not installed (`uv sync`); searching on the CPU")
             return None
         except Exception as e:  # typically out of GPU memory: another model took the space
-            log.warning("vectors do not fit on GPU %d (%s); searching on the CPU", device, e)
+            log.warning("vectors do not fit on GPU %s (%s); searching on the CPU", devices, e)
             import cupy as cp
-            cp.get_default_memory_pool().free_all_blocks()
+            for d in devices:
+                with cp.cuda.Device(d):
+                    cp.get_default_memory_pool().free_all_blocks()
             return None
 
     def stats(self) -> dict:
@@ -149,46 +172,55 @@ class GpuVectorMatrix:
 
         q = np.asarray(query, dtype=np.float16).reshape(1, -1)
         best: list[tuple[int, float]] = []
-        with self._lock, cp.cuda.Device(self.device):
+        with self._lock:
             t0 = time.perf_counter()
-            d_q = cp.asarray(q)
-            for key, (a, b) in self.segments.items():
+            d_q = {}
+            for key, parts in self._parts.items():
                 if not key.startswith(f"{kind}/") or (language is not None and key != f"{kind}/{language}"):
                     continue
-                keep = None if mask is None else mask[a:b]
-                n = (b - a) if keep is None else int(keep.sum())
-                if n == 0:
-                    continue
-                prefilter = None
-                if keep is not None:
-                    bits = np.packbits(keep, bitorder="little")
-                    bits = np.pad(bits, (0, -len(bits) % 4)).view(np.uint32)
-                    prefilter = filters.from_bitset(cp.asarray(bits))
-                dist, nbr = brute_force.search(self._index[key], d_q, min(k, n), prefilter=prefilter)
-                dist, nbr = dist.copy_to_host()[0], nbr.copy_to_host()[0]
-                ok = (nbr >= 0) & (nbr < b - a)
-                if keep is not None:
-                    ok[ok] &= keep[nbr[ok]]
-                best += [(int(self.ids[a + r]), float(s)) for r, s in zip(nbr[ok], dist[ok])]
+                for device, a, b, index in parts:
+                    keep = None if mask is None else mask[a:b]
+                    n = (b - a) if keep is None else int(keep.sum())
+                    if n == 0:
+                        continue
+                    with cp.cuda.Device(device):
+                        if device not in d_q:
+                            d_q[device] = cp.asarray(q)
+                        prefilter = None
+                        if keep is not None:
+                            bits = np.packbits(keep, bitorder="little")
+                            bits = np.pad(bits, (0, -len(bits) % 4)).view(np.uint32)
+                            prefilter = filters.from_bitset(cp.asarray(bits))
+                        dist, nbr = brute_force.search(index, d_q[device], min(k, n), prefilter=prefilter)
+                        dist, nbr = dist.copy_to_host()[0], nbr.copy_to_host()[0]
+                    ok = (nbr >= 0) & (nbr < b - a)
+                    if keep is not None:
+                        ok[ok] &= keep[nbr[ok]]
+                    best += [(int(self.ids[a + r]), float(s)) for r, s in zip(nbr[ok], dist[ok])]
             self.searches += 1
             self._ms += (time.perf_counter() - t0) * 1000
         return sorted(best, key=lambda x: -x[1])[:k]
 
 
+def gpus(spec: str | None = None) -> list[int]:
+    return [int(d) for d in (spec or os.environ.get("SCA_VECTORS_GPU", "1,0")).split(",") if d.strip()]
+
+
 def open_matrix(db: Path, model: str, con: sqlite3.Connection):
-    """The matrix the app searches: on the GPU unless SCA_VECTORS=cpu or it cannot be, else in memory."""
+    """The matrix the app searches: on the GPU unless SCA_VECTORS=cpu or it cannot be, else in memory.
+    SCA_VECTORS_GPU lists the GPUs to fill, in order (default "1,0")."""
     if os.environ.get("SCA_VECTORS", "gpu").lower() == "gpu":
-        gpu = GpuVectorMatrix.open(db, model, con, int(os.environ.get("SCA_VECTORS_GPU", "1")))
+        gpu = GpuVectorMatrix.open(db, model, con, gpus())
         if gpu is not None:
             return gpu
     return M.VectorMatrix.open(db, model, con)
 
 
-def bench(db: Path, model: str, device: int, n: int = 50, k: int = 40) -> None:
+def bench(db: Path, model: str, devices: list[int], n: int = 50, k: int = 40) -> None:
     """GPU (float16) against CPU (float32) on real passage vectors as queries: time and top-k overlap."""
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     t0 = time.time()
-    gpu = GpuVectorMatrix.open(db, model, con, device)
+    gpu = GpuVectorMatrix.open(db, model, con, devices)
     if gpu is None:
         raise SystemExit("no usable float16 matrix; run `gpuvec export` (and `uv sync`)")
     print(f"GPU matrix loaded in {time.time() - t0:.0f} s")
@@ -227,14 +259,14 @@ def main() -> None:
     ap.add_argument("command", choices=["export", "bench", "status"])
     ap.add_argument("--db", type=Path, default=V.DB_DIR / "corpus.sqlite")
     ap.add_argument("--model", default="nemotron-embed")
-    ap.add_argument("--gpu", type=int, default=int(os.environ.get("SCA_VECTORS_GPU", "1")))
+    ap.add_argument("--gpu", default=None, help='GPUs to fill in order, e.g. "1,0" (default SCA_VECTORS_GPU or 1,0)')
     args = ap.parse_args()
     sys.stdout.reconfigure(line_buffering=True)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.command == "export":
         export(args.db, args.model)
     elif args.command == "bench":
-        bench(args.db, args.model, args.gpu)
+        bench(args.db, args.model, gpus(args.gpu))
     else:
         status(args.db, args.model)
 

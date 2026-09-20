@@ -27,7 +27,8 @@ GROUNDING_COLUMNS = [
     ("citations/answer", lambda rows: _num(_avg(rows, lambda r: r["metrics"]["n_citations"]), 1)),
     ("quote verbatim", lambda rows: _pct(_avg(rows, lambda r: r["metrics"]["verified_rate"]))),
     ("passage supports", lambda rows: _pct(_avg(rows, lambda r: r["metrics"]["support_rate"]))),
-    ("no legal error", lambda rows: _pct(_share(rows, lambda r: r["legal_accuracy"] == 5))),
+    ("no legal error", lambda rows: _pct(_avg(rows, lambda r: None if r["legal_accuracy"] is None
+                                               else float(r["legal_accuracy"] == 5)))),
     ("language", lambda rows: _pct(_share(rows, lambda r: r["metrics"]["language_ok"]))),
     ("abstention", lambda rows: _pct(_share(rows, lambda r: r["abstain_ok"]))),
 ]
@@ -106,6 +107,9 @@ def render(run: dict[str, Any], results: Rows) -> str:
         f"and the expected behaviour), mean score {_num(_avg(results, lambda r: r['score']), 1)}/100 "
         f"(weights: {weights}).",
         "",
+        *([f"The {sum('choice' in r for r in results)} multiple-choice cases are correct when the option "
+           "chosen matches the key; they carry no rubric or judge scores, and their score is 100 or 0.", ""]
+          if any("choice" in r for r in results) else []),
         "## Scores",
         "",
         _table("suite", _suites(results), SCORE_COLUMNS),

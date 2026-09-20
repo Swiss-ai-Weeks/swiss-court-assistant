@@ -92,6 +92,19 @@ class DocumentInfo(Model):
     created_at: str
 
 
+class UploadStatus(Model):
+    """A file being read in the background (POST /api/documents/jobs), polled until it is done: reading a
+    forty-page scan with Nemotron Parse takes minutes, longer than a proxy holds a request open."""
+
+    id: str
+    name: str
+    state: Literal["reading", "ready", "failed"]
+    seconds: float  # how long it has been read
+    document: DocumentInfo | None = None  # set once it is ready
+    error: str | None = None  # why it could not be read
+    status: int | None = None  # the HTTP status the same failure would have had on POST /api/documents
+
+
 class Message(Model):
     id: str
     role: Literal["user", "assistant"]
@@ -119,7 +132,7 @@ class Conversation(ConversationSummary):
 
 class ChatRequest(Model):
     conversation_id: str | None = None
-    message: str = Field(min_length=1, max_length=4000)
+    message: str = Field(min_length=1, max_length=8000)  # a pasted fact pattern or clause reaches this
     allow_questions: bool = True  # whether the assistant may ask back instead of answering (off for evals)
     document_ids: list[str] = Field(default=[], max_length=5)  # uploaded with POST /api/documents
     # a new conversation about this matter (Case Prep's "Ask the assistant"); a conversation keeps its matter
@@ -213,6 +226,7 @@ class Matter(MatterSummary):
     facts: str  # the client's story as text, however it arrived: every asset's text, one after the other
     assets: list[DocumentInfo] = []  # the case file: documents, recordings and notes, kept in the document store
     indexed: int = 0  # passages of the case file in its collection of the case index (0: not indexed)
+    added_since_run: int = 0  # assets added to the case file since the last run, which has not seen them
     intake: Intake | None = None
     issues: list[Issue] = []
     assessment: str | None = None

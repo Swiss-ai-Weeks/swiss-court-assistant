@@ -32,6 +32,7 @@ Usage:
     uv run python -m swiss_court_assistant.index build --laws --since 1980 --fraction 0.25
     uv run python -m swiss_court_assistant.index build --courts bger,bge      # start small
     uv run python -m swiss_court_assistant.index grow --fraction 0.43         # more of the same sample
+    uv run python -m swiss_court_assistant.index grow --fraction 1.0 --all-years   # every decision
     uv run python -m swiss_court_assistant.index update                       # apply new deltas
     uv run python -m swiss_court_assistant.index citations                    # rebuild the citation graph
     uv run python -m swiss_court_assistant.index status
@@ -498,25 +499,33 @@ def build(courts: list[str] | None, model: str, device: str, batch: int, limit: 
     print(f"done: {DB} ({DB.stat().st_size / 1e9:.1f} GB), {FTS_DB} ({FTS_DB.stat().st_size / 1e9:.1f} GB)")
 
 
-def grow(fraction: float, model: str, device: str, batch: int, skip_embed: bool) -> None:
+def grow(fraction: float, model: str, device: str, batch: int, skip_embed: bool,
+         since: int | None = None, all_years: bool = False) -> None:
     """Enlarge the sample to `fraction` of the pool and index only the decisions that are new.
     The sample ranks decisions inside each stratum by a seeded hash, so with the same `since` and seed
     a larger fraction contains the smaller one: nothing already indexed is chunked or embedded again.
+    Lowering `since` (or `all_years`) widens the pool; at fraction 1.0 that is simply every decision.
     Resumable: a decision counts as done once its passages are in, and embedding drains the queue."""
     con, fts = open_db(), open_fts()
     params = json.loads(state(con, "selection") or "null") or {}
-    if not params or fraction <= (params.get("fraction") or 1.0):
-        raise SystemExit(f"grow needs an earlier `build --fraction` below {fraction} (selection: {params})")
+    old_since = params.get("since")
+    new_since = None if all_years else (since if since is not None else old_since)
+    wider = old_since is not None and (new_since is None or new_since < old_since)
+    if not params or fraction < (params.get("fraction") or 1.0) or (
+            fraction == params.get("fraction") and not wider):
+        raise SystemExit(f"grow needs a larger fraction or an earlier year than the selection {params}")
+    if wider and fraction < 1.0:
+        raise SystemExit("widening the years keeps the old sample nested only at --fraction 1.0")
     where = None
-    if params.get("since") is not None:
-        where = pl.col("decision_date").str.slice(0, 4).cast(pl.Int32, strict=False) >= params["since"]
+    if new_since is not None:
+        where = pl.col("decision_date").str.slice(0, 4).cast(pl.Int32, strict=False) >= new_since
     subset, pool = S.sample(0, floor=3, seed=params["seed"], where=where, fraction=fraction)
     before = con.execute("SELECT COUNT(*) FROM selected_decisions").fetchone()[0]
     with con:
         con.executemany("INSERT OR IGNORE INTO selected_decisions VALUES (?)",
                         [[d] for d in subset["decision_id"]])
     after = con.execute("SELECT COUNT(*) FROM selected_decisions").fetchone()[0]
-    state(con, "selection", json.dumps({**params, "fraction": fraction, "pool": pool.height}))
+    state(con, "selection", json.dumps({**params, "since": new_since, "fraction": fraction, "pool": pool.height}))
     print(f"selection: {before:,} -> {after:,} decisions ({fraction:.0%} of {pool.height:,})")
 
     done = {r[0] for r in con.execute("SELECT DISTINCT decision_id FROM chunks WHERE section != 'law'")}
@@ -633,6 +642,8 @@ def main() -> None:
     common(b)
     g = sub.add_parser("grow", help="enlarge the stratified sample and index only the new decisions")
     g.add_argument("--fraction", type=float, required=True, help="new share of the pool, e.g. 0.43")
+    g.add_argument("--since", type=int, help="widen the pool to decisions from this year on (needs 1.0)")
+    g.add_argument("--all-years", action="store_true", help="every decision, whatever its date (needs 1.0)")
     common(g)
     u = sub.add_parser("update", help="apply the dataset's dated deltas since the watermark")
     common(u)
@@ -648,7 +659,7 @@ def main() -> None:
         if not args.skip_embed:
             vectors(args.model)
     elif args.cmd == "grow":
-        grow(args.fraction, args.model, args.device, args.batch, args.skip_embed)
+        grow(args.fraction, args.model, args.device, args.batch, args.skip_embed, args.since, args.all_years)
         if not args.skip_embed:
             vectors(args.model)  # restart the app afterwards: it opens the matrix at startup
             citations()
