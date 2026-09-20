@@ -69,6 +69,9 @@ services:
     environment:
       # tool calls and streamed reasoning (see memory: nemotron-nim-agent-pitfalls)
       NIM_PASSTHROUGH_ARGS: --enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3
+      # vLLM reserves this share of GPU0 (default 0.92 = 88 GB, a 21M-token fp8 KV cache that sat at 0 %
+      # with 3 users). 0.45 still caches ~6M tokens; the rest holds part of the cuVS vector matrix.
+      NIM_KVCACHE_PERCENT: "0.45"
     ports: ["9100:8000"]
     volumes: ["${HOME}/.cache/nim/dragos:/opt/nim/.cache"]
     shm_size: 16gb
