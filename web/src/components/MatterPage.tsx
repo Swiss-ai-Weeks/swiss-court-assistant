@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, type DocumentInfo, type Matter, type MatterEvent, type MatterInput, type MatterStage,
   type Source } from "../api";
+import AddToCase from "./AddToCase";
 import Answer from "./Answer";
 import CitedMarkdown from "./CitedMarkdown";
 import MatterIntake from "./MatterIntake";
@@ -48,16 +49,31 @@ function contents(assets: DocumentInfo[]): string {
   return parts.join(" · ");
 }
 
+interface CaseFileProps {
+  matter: Matter;
+  /** The matter is being researched: its case file must not change under the run. */
+  running: boolean;
+  onOpenSource: (sources: Source[], n: number) => void;
+  onAdded: (matter: Matter) => void;
+}
+
 /** Everything the matter holds: what the client handed over, and what the assistant produced from it. */
-function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sources: Source[], n: number) => void }) {
+function CaseFile({ matter, running, onOpenSource, onAdded }: CaseFileProps) {
   const assets = matter.assets ?? [];
-  if (!assets.length && !matter.memo) return null;
+  const added = matter.addedSinceRun ?? 0;
   return (
     <section className="matter-block case-file">
       <h2>Case file · {assets.length + (matter.memo ? 1 : 0)} item{assets.length + (matter.memo ? 1 : 0) === 1 ? "" : "s"}</h2>
       {!!matter.indexed && (
         <p className="case-indexed" title="Cut into passages and embedded, so the research searches all of it by meaning">
           Indexed for the research · {matter.indexed.toLocaleString("en")} passage{matter.indexed === 1 ? "" : "s"}
+        </p>
+      )}
+      {added > 0 && !running && (
+        <p className="case-stale">
+          {added} item{added === 1 ? "" : "s"} added since the research ran. The assistant can be asked about
+          {added === 1 ? " it" : " them"} now; Rerun to work {added === 1 ? "it" : "them"} into the issues,
+          the assessment and the memo.
         </p>
       )}
       <ul>
@@ -71,7 +87,7 @@ function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sou
               </span>
               <span className="case-actions">
                 <button className="link-btn" onClick={() => onOpenSource([assetSource(d)], 0)}>
-                  {d.kind === "recording" ? "Transcript" : "Text"}
+                  {d.kind === "recording" ? "Play · transcript" : "Text"}
                 </button>
                 {d.kind !== "notes" && (
                   <a href={api.documentFileUrl(d.id)} target="_blank" rel="noreferrer" download={d.kind === "recording" || undefined}>
@@ -80,7 +96,6 @@ function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sou
                 )}
               </span>
             </div>
-            {d.kind === "recording" && <audio controls preload="none" src={api.documentFileUrl(d.id)} />}
           </li>
         ))}
         {matter.memo && (
@@ -97,6 +112,7 @@ function CaseFile({ matter, onOpenSource }: { matter: Matter; onOpenSource: (sou
           </li>
         )}
       </ul>
+      <AddToCase matterId={matter.id} disabled={running} onAdded={onAdded} />
     </section>
   );
 }
@@ -268,6 +284,12 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
     run(m.id);
   };
 
+  /** The case file grew: keep the matter shown in step with it, and the list entry with its new name. */
+  const addAssets = useCallback((m: Matter) => {
+    setMatter(m);
+    onChanged();
+  }, [onChanged]);
+
   const authorities = useMemo(() => (matter ? citationSources(matter) : []), [matter]);
 
   if (!matter) return <div className="matter"><MatterIntake busy={busy} error={error} onStart={start} /></div>;
@@ -312,7 +334,7 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
           </div>
         </header>
 
-        <CaseFile matter={matter} onOpenSource={onOpenSource} />
+        <CaseFile matter={matter} running={running} onOpenSource={onOpenSource} onAdded={addAssets} />
 
         <ol className="stage-rail">
           {STAGES.map((s) => (

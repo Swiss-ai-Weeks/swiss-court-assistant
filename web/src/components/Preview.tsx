@@ -280,6 +280,8 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
   const d = doc ?? active.decision;
   const isLaw = !browsing && active.section === "law"; // a statute article, described in the decision's fields
   const isDocument = !browsing && active.section === "document"; // a document the user attached
+  // a recording of the client: played here, beside its transcript, rather than in the case file list
+  const isRecording = isDocument && d.courtLabel === "Client recording";
   const regesteActive = !browsing && active.section === "regeste";
   // rendered as Markdown (tables, headings), so the Explain/Translate buttons go above it, not inline
   const asMarkdown = !!doc && doc.decisionId.startsWith("doc_");
@@ -336,11 +338,12 @@ export default function Preview({ sources, activeN, language, onSelect, onClose 
               </a>
             )}
             {d.pdfUrl && (
-              <a href={d.pdfUrl} target="_blank" rel="noreferrer">
-                {isDocument ? "Original file ↗" : "PDF ↗"}
+              <a href={d.pdfUrl} target="_blank" rel="noreferrer" download={isRecording || undefined}>
+                {isRecording ? "Download audio" : isDocument ? "Original file ↗" : "PDF ↗"}
               </a>
             )}
           </div>
+          {isRecording && d.pdfUrl && <audio className="preview-audio" controls preload="none" src={d.pdfUrl} />}
           {!isLaw && !isDocument && <CitedBy decisionId={d.decisionId} onOpen={open} />}
         </header>
 

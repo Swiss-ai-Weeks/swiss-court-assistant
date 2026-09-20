@@ -20,6 +20,16 @@ WEIGHTS = {"rubric": 0.40, "accuracy": 0.20, "grounding": 0.20, "usefulness": 0.
 RUBRIC_PASS = 0.6      # a correct answer makes at least this share of the rubric points
 ACCURACY_PASS = 4      # ... and carries no legal objection the judge could make stick (5 = none)
 _MARKER = re.compile(r"\[\d+\]")
+# "Antwort: B", "**Answer: (C)**", "Antwort: «D»": the line a multiple-choice question asks to end on
+_CHOICE = re.compile(r"(?:Antwort|Answer|Réponse|Risposta)\s*\**\s*[:：]\s*\**\s*[(«\"„]?\s*([A-H])\b")
+
+
+def chosen_option(case: dict[str, Any], answer: str) -> str | None:
+    """The option a multiple-choice answer settles on. The last "Answer: X" counts: an answer may
+    weigh the other options first."""
+    letters = "ABCDEFGH"[:len(case["choices"])]
+    found = [letter for letter in _CHOICE.findall(answer) if letter in letters]
+    return found[-1] if found else None
 
 
 def mechanical(case: dict[str, Any], turn: Turn) -> dict[str, Any]:
@@ -67,6 +77,8 @@ def score(case: dict[str, Any], mech: dict[str, Any], judgment: dict[str, Any]) 
     """Per-case scores. `correct` is the strict bar the headline pass rate counts; `score` is the
     partial-credit blend, so an answer that is right but thin and one that is wrong do not land in
     the same place."""
+    if "gold" in case:
+        return _score_choice(case, judgment)
     expect = case.get("expect") or {}
     verdicts = [item.get("verdict") for item in judgment.get("rubric", [])]
     n = len(case["rubric"])
@@ -100,8 +112,22 @@ def score(case: dict[str, Any], mech: dict[str, Any], judgment: dict[str, Any]) 
     }
 
 
+def _score_choice(case: dict[str, Any], judgment: dict[str, Any]) -> dict[str, Any]:
+    """A multiple-choice case is right or wrong, and nothing else: the key decides, not a judge, so
+    the answer's language, citations and prose do not enter into it."""
+    choice = judgment.get("choice")
+    right = choice == case["gold"]
+    return {"rubric_coverage": None, "legal_accuracy": None, "legal_error": None, "grounding": None,
+            "usefulness": None, "abstain_ok": True, "behaviour_ok": True, "choice": choice,
+            "score": None if judgment.get("error") else 100.0 * right, "correct": right}
+
+
 def failure(case: dict[str, Any], mech: dict[str, Any], scored: dict[str, Any]) -> str:
     """Why a case did not count as correct, in a few words - the column that makes the table useful."""
+    if "gold" in case:
+        chosen = scored.get("choice")
+        return (f"chose {chosen}, the key is {case['gold']}" if chosen
+                else f"chose no option (the key is {case['gold']})")
     expect = case.get("expect") or {}
     reasons = []
     if not mech["language_ok"]:

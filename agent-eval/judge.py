@@ -59,6 +59,10 @@ Reply {"abstained": true} if the answer's substance is that this corpus does not
 
 Reply {"abstained": false} if the answer actually answers the question, even partially. An answer that answers and merely adds a caveat about incomplete coverage has not refused."""
 
+CHOICE_TASK = """TASK - which option does the answer settle on?
+
+The question above is multiple choice. Reply {{"choice": "<letter>"}} with the letter of the one option the answer under review commits to in the end. If it commits to none, or leaves several open, reply {{"choice": "none"}}. Do not judge whether the option is right."""
+
 COMMENT_TASK = """TASK - write two or three sentences, in English, on what this answer gets right and what it gets wrong, for a reader who will not see the answer itself. No preamble, no score, no bullet points."""
 
 
@@ -191,6 +195,19 @@ class Judge:
                                     FORMATS["severity"], 16)).get("severity")
         return {"legal_accuracy": 2 if severity == "central" else 3, "legal_error": statement,
                 "accuracy_note": f"{severity} error, contradicted by the reference answer"}
+
+    async def choice(self, case: dict[str, Any], answer: str) -> str | None:
+        """The option a multiple-choice answer commits to, for an answer that never wrote the
+        "Answer: X" line it was asked for. None if it commits to none, or the judge fails."""
+        letters = "ABCDEFGH"[:len(case["choices"])]
+        fmt = _schema("choice", {"choice": {"type": "string", "enum": [*letters, "none"]}})
+        prefix = (f"QUESTION:\n{case['question'].strip()}\n\n"
+                  f"ANSWER UNDER REVIEW:\n{answer.strip() or '(the assistant produced no answer)'}")
+        try:
+            picked = (await self._ask(prefix, CHOICE_TASK.format(), fmt, 16)).get("choice")
+        except Exception:
+            return None
+        return picked if picked in letters else None
 
     async def judge(self, case: dict[str, Any], answer: str,
                     sources: list[dict[str, Any]]) -> dict[str, Any]:

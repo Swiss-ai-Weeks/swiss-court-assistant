@@ -490,6 +490,7 @@ class Pipeline:
         try:
             # a rerun starts over: the last run's assessment and memo belong to research it replaces
             matter.stage, matter.assessment, matter.memo = "intake", None, None
+            matter.added_since_run = 0  # this run reads the whole case file, whatever was added to it
             yield {"type": "stage", "stage": "intake", "status": "running"}
             async for ev in self._index(matter):
                 yield ev

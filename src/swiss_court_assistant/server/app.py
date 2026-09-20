@@ -7,9 +7,10 @@ import json
 import logging
 import os
 import re
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -28,11 +29,11 @@ from .matters import (MatterStore, Pipeline, case_prep_document, create_matter, 
 from .language import detect_language
 from .mentions import statute_links
 from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
-from .case_index import CaseIndex, collection_of
+from .case_index import CaseIndex, IndexUnavailable, collection_of
 from .citations import CitationIndex, open_index
 from .schemas import (ChatRequest, Citations, CitingDecision, Clarification, Conversation, ConversationSummary,
                       Decision, DocumentInfo, Health, Matter, MatterRequest, MatterSummary, Message, Source, SpeechRequest, StatuteRef, ToolCall,
-                      TranslateRequest, TranslateResponse)
+                      TranslateRequest, TranslateResponse, UploadStatus)
 from .speech import SAMPLE_RATE, Speaker, UnspeakableError
 from .store import ConversationStore, new_id, now
 from .translate import Translator, UntranslatableError
@@ -80,6 +81,7 @@ class Services:
     pipeline: Pipeline
     documents: DocumentStore
     case_index: CaseIndex | None
+    uploads: dict[str, "UploadJob"] = field(default_factory=dict)  # files being read in the background
 
 
 @asynccontextmanager
@@ -239,13 +241,16 @@ def _sse(event: dict[str, Any]) -> str:
 
 
 # ── attached documents: parsed by Nemotron Parse and kept on disk ─────────
-async def _ingest(s: Services, file: UploadFile) -> DocumentInfo:
-    """Keep an upload in the document store: a document parsed to text, or a recording (16 kHz PCM, which
-    the browser decoded for us, named *.pcm) transcribed by the ASR NIM."""
+async def _read_upload(file: UploadFile) -> tuple[str, bytes]:
     data = await file.read()
-    name = file.filename or "document"
     if len(data) > MAX_UPLOAD:
         raise HTTPException(413, "That file is larger than 25 MB.")
+    return file.filename or "document", data
+
+
+async def _ingest(s: Services, name: str, data: bytes) -> DocumentInfo:
+    """Keep an upload in the document store: a document parsed to text, or a recording (16 kHz PCM, which
+    the browser decoded for us, named *.pcm) transcribed by the ASR NIM."""
     try:
         if name.endswith(".pcm"):
             transcript = await transcribe(s.listener, data)
@@ -263,8 +268,75 @@ async def _ingest(s: Services, file: UploadFile) -> DocumentInfo:
 @app.post("/api/documents", response_model=DocumentInfo)
 async def upload_document(s: Svc, file: UploadFile = File(...)) -> DocumentInfo:
     """Parse and store a document the user attaches to a question or a matter; they are sent with its id.
-    A recording (*.pcm) is transcribed and kept as audio."""
-    return await _ingest(s, file)
+    A recording (*.pcm) is transcribed and kept as audio. The answer waits for the parser, so a long scan
+    can outlast a proxy's patience: the app itself uploads through the jobs below."""
+    return await _ingest(s, *await _read_upload(file))
+
+
+# ── the same upload as a background job, polled by the browser ───────────
+@dataclass
+class UploadJob:
+    """A file being read while the request that brought it is already answered."""
+
+    id: str
+    name: str
+    started: float
+    task: asyncio.Task[DocumentInfo]
+    finished: float | None = None  # so the reported time stops when the reading does
+
+
+JOB_TTL = 30 * 60  # a finished job is kept this long, in case the tab asks again after a sleep
+
+
+def _job_status(job: UploadJob) -> UploadStatus:
+    if job.task.done() and job.finished is None:
+        job.finished = time.monotonic()
+    seconds = round((job.finished or time.monotonic()) - job.started, 1)
+    if not job.task.done():
+        return UploadStatus(id=job.id, name=job.name, state="reading", seconds=seconds)
+    if job.task.cancelled():
+        return UploadStatus(id=job.id, name=job.name, state="failed", seconds=seconds,
+                            error="Reading that file was stopped.", status=499)
+    error = job.task.exception()
+    if error is None:
+        return UploadStatus(id=job.id, name=job.name, state="ready", seconds=seconds,
+                            document=job.task.result())
+    status, detail = ((error.status_code, str(error.detail)) if isinstance(error, HTTPException)
+                      else (502, "That file could not be read right now."))
+    return UploadStatus(id=job.id, name=job.name, state="failed", seconds=seconds, error=detail, status=status)
+
+
+@app.post("/api/documents/jobs", response_model=UploadStatus, status_code=202)
+async def start_upload(s: Svc, file: UploadFile = File(...)) -> UploadStatus:
+    """Take the file and answer at once; it is read in the background. The browser polls
+    GET /api/documents/jobs/{id} until the document is ready, and DELETEs the job to give up."""
+    name, data = await _read_upload(file)
+    for old in [j for j in s.uploads.values() if j.task.done() and time.monotonic() - j.started > JOB_TTL]:
+        s.uploads.pop(old.id, None)
+    job = UploadJob(f"job_{new_id()}", name, time.monotonic(), asyncio.create_task(_ingest(s, name, data)))
+    s.uploads[job.id] = job
+    return _job_status(job)
+
+
+@app.get("/api/documents/jobs/{job_id}", response_model=UploadStatus)
+async def upload_job(job_id: str, s: Svc) -> UploadStatus:
+    job = s.uploads.get(job_id)
+    if job is None:
+        raise HTTPException(404, "That upload is no longer known - add the file again.")
+    return _job_status(job)
+
+
+@app.delete("/api/documents/jobs/{job_id}", status_code=204)
+async def cancel_upload(job_id: str, s: Svc) -> Response:
+    """Give up on an upload: stop reading it, and throw away what was already stored."""
+    job = s.uploads.pop(job_id, None)
+    if job is None:
+        raise HTTPException(404, "That upload is no longer known.")
+    if not job.task.done():
+        job.task.cancel()
+    elif not job.task.cancelled() and job.task.exception() is None:
+        await asyncio.to_thread(s.documents.delete, job.task.result().id)
+    return Response(status_code=204)
 
 
 @app.get("/api/documents/accepted")
@@ -316,12 +388,19 @@ def _without_page_lines(text: str) -> str:
     return re.sub(r"(?m)^\[Page \d+\]\n+", "", text).strip()
 
 
+def _describe(assets: list[DocumentInfo]) -> tuple[str | None, str]:
+    """What the case file is, for the matter's list entry: one thing by name, or so many items."""
+    if len(assets) == 1:
+        one = assets[0]
+        return (None if one.kind == "notes" else one.name,
+                {"document": "document", "recording": "recording", "notes": "text"}[one.kind])
+    return f"{len(assets)} items", "bundle"
+
+
 def _open_matter(s: Services, assets: list[DocumentInfo], title: str | None) -> Matter:
     if not assets:
         raise HTTPException(422, "Add a document, a recording, or the facts as text.")
-    one = assets[0] if len(assets) == 1 else None
-    kind = ({"document": "document", "recording": "recording", "notes": "text"}[one.kind] if one else "bundle")
-    name = (None if one.kind == "notes" else one.name) if one else f"{len(assets)} items"
+    name, kind = _describe(assets)
     return create_matter(s.matters, _facts(s, assets), name, kind, title, assets)
 
 
@@ -341,7 +420,7 @@ async def new_matter(s: Svc, document_ids: list[str] = Form([]), file: UploadFil
             raise HTTPException(422, f"Document {document_id} not found - add it again.")
         assets.append(info)
     if file is not None and file.filename:
-        assets.append(await _ingest(s, file))
+        assets.append(await _ingest(s, *await _read_upload(file)))
     if text and text.strip():
         assets.append(await asyncio.to_thread(s.documents.keep_notes, text.strip()))
     return _open_matter(s, assets, title)
@@ -396,6 +475,51 @@ async def matter_memo(matter_id: str, s: Svc, format: str = "docx") -> Response:
     body = await asyncio.to_thread(docx_memo, matter)
     return Response(body, media_type=DOCX_TYPE,
                     headers={"Content-Disposition": f'attachment; filename="{name}.docx"'})
+
+
+@app.post("/api/matters/{matter_id}/assets", response_model=Matter)
+async def add_matter_assets(matter_id: str, s: Svc, document_ids: list[str] = Form([]),
+                            file: UploadFile | None = File(None), text: str | None = Form(None)) -> Matter:
+    """Add to the case file of a matter that already exists: documents and recordings already uploaded
+    (`document_ids`), a file sent along (`file`), or notes (`text`). The facts are rebuilt from the whole
+    case file and the new pieces are indexed at once, so the assistant can use them before the research
+    is run again; the matter remembers how much its last run has not seen."""
+    matter = s.matters.get(matter_id)
+    if matter is None:
+        raise HTTPException(404, "Matter not found")
+    matter = _with_assets(s, matter)
+    have = {a.id for a in matter.assets}
+    added: list[DocumentInfo] = []
+    for document_id in dict.fromkeys(document_ids):
+        if document_id in have:
+            continue  # added twice from the same page: keep the case file as it is
+        if (info := s.documents.info(document_id)) is None:
+            raise HTTPException(422, f"Document {document_id} not found - add it again.")
+        added.append(info)
+    if file is not None and file.filename:
+        added.append(await _ingest(s, *await _read_upload(file)))
+    if text and text.strip():
+        added.append(await asyncio.to_thread(s.documents.keep_notes, text.strip()))
+    if not added:
+        if document_ids:  # every one of them is already in the case file: a double click, or a retry
+            return matter
+        raise HTTPException(422, "Add a document, a recording, or notes.")
+
+    matter.assets = [*matter.assets, *added]
+    matter.facts = _facts(s, matter.assets)
+    matter.source_name, matter.source_kind = _describe(matter.assets)  # type: ignore[assignment]
+    matter.document_id = matter.assets[0].id
+    if matter.stage == "done":  # a run in progress or still to come reads the whole case file anyway
+        matter.added_since_run += len(added)
+    if s.case_index is not None:
+        collection = collection_of(matter.id)
+        try:
+            await asyncio.to_thread(s.case_index.add, collection, matter.assets)
+            matter.indexed = await asyncio.to_thread(s.case_index.count, collection)
+        except IndexUnavailable as e:  # the run indexes what is missing when the embedder is back
+            log.warning("matter %s: %s not indexed (%s)", matter.id, ", ".join(a.name for a in added), e)
+    log.info("matter %s: %d item(s) added to the case file", matter.id, len(added))
+    return s.matters.save(matter)
 
 
 @app.post("/api/matters/{matter_id}/run")

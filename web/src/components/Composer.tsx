@@ -116,7 +116,9 @@ export default function Composer({ busy, demo, quote, onClearQuote, voiceOn, onT
   };
   const remove = (key: string) =>
     setAttachments((all) => {
-      all.find((a) => a.key === key)?.abort.abort();
+      const gone = all.find((a) => a.key === key);
+      gone?.abort.abort();  // stops the reading, and the server throws away what it has of it
+      if (gone?.info) api.deleteDocument(gone.info.id).catch(() => {});  // already read: delete it
       return all.filter((a) => a.key !== key);
     });
 

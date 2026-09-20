@@ -19,6 +19,8 @@ uv run python agent-eval/run.py --no-judge            # mechanical checks only
 uv run python agent-eval/report.py                    # re-render the last run's report
 uv run python agent-eval/run.py --rejudge runs/latest # grade a finished run again, agent untouched
 uv run python agent-eval/compare.py runs/A runs/B     # did a change help? headline + flipped cases
+uv run python agent-eval/lexam.py                     # build LEXam cases (below), then:
+uv run python agent-eval/run.py --cases agent-eval/cases/lexam
 ```
 
 `--rejudge` is how the judge itself is worked on: it grades the answers already on disk, so a change
@@ -52,9 +54,10 @@ law:
 | `advice-boundary` | giving the legal framework without promising an outcome |
 
 **`cases/casefile.yaml` - 2 cases on the user's own documents.** The files are in
-`fixtures/<name>/` (see `fixtures/README.md`) and are uploaded through `POST /api/documents`, the way
-the UI attaches them, so the Nemotron Parse path, the document store and - for Case Prep - the
-matter's search index are all exercised.
+`fixtures/<name>/` (see `fixtures/README.md`) and are uploaded through `POST /api/documents`, which
+parses them in the request and answers when they are read (the UI instead hands them to a background
+job and polls it, so that a long scan cannot time out). The Nemotron Parse path, the document store
+and - for Case Prep - the matter's search index are all exercised.
 
 | | what it tests |
 |---|---|
@@ -88,6 +91,35 @@ A case is one YAML entry:
     decision: bger_…    # a decision the answer must be based on
     tool: citing_decisions   # a tool the agent must call
 ```
+
+## LEXam: law-exam questions from the benchmark
+
+`lexam.py` builds a third set of cases from [LEXam](https://huggingface.co/datasets/LEXam-Benchmark/LEXam)
+(Fan et al., ICLR 2026, CC BY 4.0): questions from 340 law exams, mostly Swiss, each with the
+examiners' own marking scheme or answer key. Where the hand-written exam suite has 21 questions and
+one lawyer's model answers, LEXam has 1,596 Swiss open questions and 1,515 Swiss four-option
+multiple-choice questions written and marked by the people who set the exams. The builder samples
+from them into `cases/lexam/` — by default 60 open and 100 multiple-choice questions, Swiss only,
+stratified by legal area and language, at most one sub-question per exam problem — and a default
+run does not pick them up; pass `--cases agent-eval/cases/lexam`.
+
+- **Open questions** are graded like the exam suite, against the marking scheme as `reference`. The
+  `rubric` is cut out of the marking scheme: after the examiners' point markers ("[0.5 Punkte]")
+  where there are any, else at bullets or numbered items, else into runs of sentences of about 350
+  characters. Only a fifth of the schemes are cleanly bulleted, so two thirds of the rubrics are
+  sentence runs; `rubric_source` says which method made each one, and the YAML is there to be read.
+- **Multiple-choice questions** are scored by the key: the options and an instruction to end on
+  "Antwort: X" / "Answer: X" are part of the question, the letter is read back from the answer, and
+  the judge is asked only when an answer commits to an option without writing that line. No rubric,
+  no judge scores, no judge noise — the one measurement in this harness that is exact. Its accuracy
+  is also the one number comparable with the LEXam leaderboard, with two caveats: the sample is
+  Swiss only, and the leaderboard measures models answering from memory, not a research agent.
+
+What LEXam does not cover is what the behavioural suite is for: nothing in it asks the assistant to
+refuse, to look a decision up, to resist a false premise or an injected instruction, or to follow
+up. And it has no French or Italian — the Swiss open questions are 99 % German — so the
+hand-written exam suite stays for those languages. Tune on `--split dev` (300 open questions),
+report on `test`.
 
 ## How a case is scored
 

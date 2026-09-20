@@ -19,6 +19,7 @@ interface Item {
   name: string;
   audio: boolean;
   state: "converting" | "reading" | "ready" | "failed";
+  seconds?: number;  // how long the server has been reading it
   info?: DocumentInfo;
   error?: string;
   abort: AbortController;
@@ -28,7 +29,9 @@ const minutes = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60
 
 function describe(item: Item): string {
   if (item.state === "converting") return "converting…";
-  if (item.state === "reading") return item.audio ? "transcribing…" : "reading…";
+  if (item.state === "reading")
+    // a scan is read page by page and a recording transcribed, both in the background: show the wait
+    return `${item.audio ? "transcribing" : "reading"}${item.seconds ? ` · ${minutes(item.seconds)}` : "…"}`;
   if (item.state === "failed") return item.error ?? "could not be read";
   const d = item.info!;
   return d.kind === "recording" ? `${minutes(d.seconds ?? 0)} min · transcribed` : `${d.pages} page${d.pages === 1 ? "" : "s"}`;
@@ -63,7 +66,8 @@ export default function MatterIntake({ busy, error, onStart }: Props) {
     }
     update(item.key, { state: "reading" });
     try {
-      const info = await api.uploadDocument(body.blob, item.abort.signal, body.filename);
+      const info = await api.uploadDocument(body.blob, item.abort.signal, body.filename,
+        (seconds) => update(item.key, { seconds }));
       update(item.key, { state: "ready", info });
     } catch (e) {
       if ((e as Error).name !== "AbortError") update(item.key, { state: "failed", error: (e as Error).message });
@@ -83,7 +87,9 @@ export default function MatterIntake({ busy, error, onStart }: Props) {
 
   const remove = (key: string) =>
     setItems((all) => {
-      all.find((x) => x.key === key)?.abort.abort();
+      const item = all.find((x) => x.key === key);
+      item?.abort.abort();  // stops the reading, and the server throws away what it has of it
+      if (item?.info) api.deleteDocument(item.info.id).catch(() => {});  // already read: delete it
       return all.filter((x) => x.key !== key);
     });
 
