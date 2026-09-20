@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 from typing import Any
 
 from openai import AsyncOpenAI
+
+log = logging.getLogger(__name__)
 
 SYSTEM = """You are a Swiss law professor grading a legal research assistant that answers questions from a corpus of Swiss court decisions. You grade strictly and you answer the one question you are asked, as a single JSON object, nothing else.
 
@@ -29,14 +32,32 @@ Copy into "wrong" the one statement in the ANSWER UNDER REVIEW that is wrong abo
 What the answer does not say is not an error. Omissions, missing rubric points, a one-sided treatment and a short answer are measured separately: an answer of two correct sentences has no error. Copy only from the answer; do not paraphrase it and do not write a statement of your own."""
 
 # Asked to *copy* the contradicting sentence, this judge finds one every time - the objection is
-# already on the table and it justifies it. Only the first objection is asked for by quotation; this
-# second step stays a yes/no, which it answers conservatively.
-CONTRADICTED_TASK = """TASK - is this statement from the answer contradicted by the reference answer?
+# already on the table and it justifies it. So this second step stays a yes/no. It is put the other
+# way round, as "can these both be true?", because the objection is what the judge has just argued
+# for and it says yes to whichever answer confirms it: asked to confirm the contradiction it confirmed
+# correct law five times in seven (Art. 58 OR is causal liability, a notice under Art. 336c II OR is
+# void, art. 429 I CPP grants three indemnities). Asked instead whether the statement can stand with
+# the reference, the same yes falls on the side of keeping a correct statement.
+CONSISTENT_TASK = """TASK - can this statement from the answer and the reference answer both be true?
 
 STATEMENT:
 {statement}
 
-Reply {{"contradicted": true}} only if the reference answer above says something that cannot both be true with this statement - it states the opposite rule, the opposite legal consequence, or a different condition where this one gives a condition. Reply {{"contradicted": false}} if the reference is merely silent on the point, says less, says more, or puts the same thing differently."""
+Reply {{"consistent": true}} if they can both be true - including when the reference answer is silent on this point, says less than the statement, says more, puts the same thing differently, or covers a neighbouring question. Silence is not disagreement. Reply {{"consistent": false}} only if the reference answer states something this statement cannot be true alongside: the opposite rule, the opposite legal consequence, or a different condition where this one gives a condition."""
+
+# The assistant closes a turn with stock sentences - it could not find a source, a specialist should
+# be asked, the question can be narrowed, part of the answer was dropped. They state nothing about
+# Swiss law, so they cannot be wrong about it, but the judge picks one as its objection when the answer
+# is otherwise short (it did, on abstain-eu-gdpr: "Wenn Sie moechten, koennen Sie die Frage auch enger
+# fassen"). Recognised by wording rather than judged, because the stock sentences are fixed text.
+BOILERPLATE = re.compile(
+    r"(?i)(es tut mir leid|je suis d.sol|mi dispiace|i.m sorry"
+    r"|fachanw|avocate? ou un avocat|avvocat\w* specializzat|lawyer who specialis"
+    r"|enger fassen|pr.ciser la question|precisare la domanda|narrow the question"
+    r"|hier ist, was ich|voici ce que j.ai|ecco che cosa ho|here is what i looked"
+    r"|keine? bele\w* antwort|r.ponse .tay.e|risposta fondata|sourced answer"
+    r"|nicht in der antwort enthalten|ne figure donc pas dans la r.ponse"
+    r"|non figura quindi nella risposta|left out of the answer)")
 
 SEVERITY_TASK = """TASK - how bad is this error?
 
@@ -75,7 +96,7 @@ SCORE = {"type": "integer", "enum": [1, 2, 3, 4, 5]}
 FORMATS = {
     "rubric": _schema("verdict", {"verdict": {"type": "string", "enum": ["covered", "partial", "missing"]}}),
     "error": _schema("error", {"wrong": {"type": "string"}}),
-    "contradicted": _schema("contradicted", {"contradicted": {"type": "boolean"}}),
+    "consistent": _schema("consistent", {"consistent": {"type": "boolean"}}),
     "severity": _schema("severity", {"severity": {"type": "string",
                                                   "enum": ["central", "secondary"]}}),
     "scores": _schema("scores", {"grounding": SCORE, "usefulness": SCORE}),
@@ -134,11 +155,21 @@ def context(case: dict[str, Any], answer: str, sources: list[dict[str, Any]]) ->
 
 
 def _parse(text: str) -> dict[str, Any]:
-    """Constrained decoding on this NIM pads its JSON with whitespace and sometimes a code fence."""
+    """Constrained decoding on this NIM pads its JSON with whitespace and sometimes a code fence.
+
+    The padding sometimes runs past max_tokens, so the object never closes and the reply is a string
+    left open: {"wrong": "... an opera. Closing it keeps the case scored - and for the one field this
+    happens to, the objection, a truncated sentence is no longer a sentence of the answer and is
+    dropped by _contains, which is the safe way to be wrong here."""
     start, end = text.find("{"), text.rfind("}")
-    if start < 0 or end < start:
-        raise ValueError(f"no JSON object in the judge's reply: {text[:200]!r}")
-    return json.loads(re.sub(r"\s+", " ", text[start:end + 1]))
+    if start >= 0 and end > start:
+        return json.loads(re.sub(r"\s+", " ", text[start:end + 1]))
+    if start >= 0 and (cut := re.sub(r"\s+$", "", text[start:])).count('"') % 2 == 1:
+        try:
+            return json.loads(re.sub(r"\s+", " ", cut) + '"}')
+        except json.JSONDecodeError:
+            pass
+    raise ValueError(f"no JSON object in the judge's reply: {text[:200]!r}")
 
 
 def _contains(answer: str, statement: str) -> bool:
@@ -155,10 +186,12 @@ class Judge:
 
     async def _ask(self, prefix: str, task: str, fmt: dict | None, max_tokens: int) -> Any:
         last: Exception | None = None
-        for _ in range(self.attempts):
+        for attempt in range(self.attempts):
             try:
                 reply = await self.client.chat.completions.create(
-                    model=self.model, temperature=0.0, max_tokens=max_tokens,
+                    # temperature 0 twice returns the same reply, so a padding loop repeats exactly;
+                    # the retries sample instead, which is what gets past it
+                    model=self.model, temperature=0.0 if attempt == 0 else 0.3, max_tokens=max_tokens,
                     messages=[{"role": "system", "content": SYSTEM},
                               {"role": "user", "content": f"{prefix}\n\n{task}"}],
                     extra_body={"chat_template_kwargs": {"enable_thinking": False},
@@ -186,9 +219,12 @@ class Judge:
         if not _contains(answer, statement):
             return {"legal_accuracy": 5, "legal_error": statement,
                     "accuracy_note": "objection dropped: not a sentence of the answer"}
-        contradicted = await self._ask(prefix, CONTRADICTED_TASK.format(statement=statement),
-                                       FORMATS["contradicted"], 16)
-        if not contradicted.get("contradicted"):
+        if BOILERPLATE.search(statement):
+            return {"legal_accuracy": 5, "legal_error": statement,
+                    "accuracy_note": "objection dropped: a stock sentence, not a statement about the law"}
+        checked = await self._ask(prefix, CONSISTENT_TASK.format(statement=statement),
+                                  FORMATS["consistent"], 16)
+        if checked.get("consistent") is not False:  # a failed call leaves the answer alone
             return {"legal_accuracy": 5, "legal_error": statement,
                     "accuracy_note": "objection dropped: the reference answer does not contradict it"}
         severity = (await self._ask(prefix, SEVERITY_TASK.format(statement=statement),
@@ -214,7 +250,7 @@ class Judge:
         """Grade one answer. Returns the judgment, or one carrying `error` if the judge failed."""
         prefix = context(case, answer, sources)
         try:
-            verdicts, accuracy, scores, abstain, comment = await asyncio.gather(
+            verdicts, accuracy, scores, abstain, comment = await asyncio.gather(  # noqa: E501
                 asyncio.gather(*(self._ask(prefix, RUBRIC_TASK.format(point=point),
                                            FORMATS["rubric"], 24) for point in case["rubric"])),
                 self._accuracy(prefix, answer),
@@ -222,13 +258,16 @@ class Judge:
                 self._ask(prefix, ABSTAIN_TASK, FORMATS["abstain"], 16),
                 self._ask(prefix, COMMENT_TASK, None, 200),
             )
-        except Exception as e:
-            return {"error": str(e), "rubric": [], "legal_accuracy": None, "grounding": None,
-                    "usefulness": None, "abstained": None, "comment": ""}
+            failed = ""
+        except Exception as e:  # noqa: BLE001 - one bad call used to null the case, rubric included
+            verdicts, accuracy, scores, abstain, comment, failed = [], {}, {}, {}, "", str(e)
+        if failed:
+            log.warning("a judge call failed (%s); grading on the calls that returned", failed)
         return {
+            **({"error": failed} if failed else {}),
             "rubric": [{"point": i, "verdict": v.get("verdict", "missing"), "text": point}
                        for i, (point, v) in enumerate(zip(case["rubric"], verdicts), 1)],
-            **accuracy,
+            "legal_accuracy": None, "legal_error": None, **accuracy,
             **{k: scores.get(k) for k in ("grounding", "usefulness")},
             "abstained": abstain.get("abstained"),
             "comment": comment,

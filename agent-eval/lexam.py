@@ -41,6 +41,9 @@ HERE = Path(__file__).resolve().parent
 REPO = "LEXam-Benchmark/LEXam"
 LETTERS = "ABCDEFGH"
 MAX_POINTS, MIN_POINT_CHARS, POINT_CHARS = 8, 20, 350  # POINT_CHARS: target size of a sentence-run point
+# POST /api/chat takes a message of this length. A handful of LEXam questions are a whole exam paper
+# (30,000 characters); they are left out of the sample rather than counted as failures of the agent.
+MAX_QUESTION_CHARS = 7000  # the options and the instruction are added to an MCQ question
 
 INSTRUCTION = {
     "de": "Wählen Sie eine der Optionen {first}–{last}. Schliessen Sie Ihre Antwort mit der Zeile "
@@ -129,7 +132,8 @@ def _meta(row: dict) -> dict:
 
 def open_cases(df: pl.DataFrame, n: int, seed: int) -> list[dict]:
     # one sub-question per exam problem: they repeat the same fact pattern
-    df = (df.with_columns(pattern=pl.col("question").str.slice(0, 200))
+    df = (df.filter(pl.col("question").str.len_chars() <= MAX_QUESTION_CHARS)
+          .with_columns(pattern=pl.col("question").str.slice(0, 200))
           .sample(fraction=1.0, shuffle=True, seed=seed).unique("pattern", keep="first", maintain_order=True))
     cases = []
     for row in _stratified(df, n, seed).iter_rows(named=True):
@@ -144,6 +148,7 @@ def open_cases(df: pl.DataFrame, n: int, seed: int) -> list[dict]:
 
 
 def mcq_cases(df: pl.DataFrame, n: int, seed: int) -> list[dict]:
+    df = df.filter(pl.col("question").str.len_chars() <= MAX_QUESTION_CHARS)
     cases = []
     for row in _stratified(df, n, seed).iter_rows(named=True):
         choices = ast.literal_eval(row["choices"])
@@ -154,7 +159,7 @@ def mcq_cases(df: pl.DataFrame, n: int, seed: int) -> list[dict]:
         cases.append({
             "id": f"lexam-mcq-{row['id'][:8]}", "suite": "lexam_mcq", "area": row["area"],
             "language": row["language"], "level": "exam",
-            "question": f"{row['question'].strip()}\n\n{options}\n\n{instruction}",
+            "question": f"{instruction}\n\n{row['question'].strip()}\n\n{options}\n\n{instruction}",
             "choices": choices, "gold": letters[row["gold"]],
             "expect": {"abstain": False, "cites": "optional"},
             "source": _meta(row) | {"n_statements": row["n_statements"],

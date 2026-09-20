@@ -132,7 +132,7 @@ class Conversation(ConversationSummary):
 
 class ChatRequest(Model):
     conversation_id: str | None = None
-    message: str = Field(min_length=1, max_length=4000)
+    message: str = Field(min_length=1, max_length=8000)  # a pasted fact pattern or clause reaches this
     allow_questions: bool = True  # whether the assistant may ask back instead of answering (off for evals)
     document_ids: list[str] = Field(default=[], max_length=5)  # uploaded with POST /api/documents
     # a new conversation about this matter (Case Prep's "Ask the assistant"); a conversation keeps its matter

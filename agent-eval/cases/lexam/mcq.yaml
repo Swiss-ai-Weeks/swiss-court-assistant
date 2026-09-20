@@ -7,6 +7,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. The “Digest” (or “Pandects”) consists of twelve books of Imperial decisions, spanning from the 2nd to the 6th century CE.
     ii. The principle of the oldest parentel means that only the members of the oldest generation alive are heirs of the deceased person: if the deceased person leaves children as well as parents, the parents are his/her legal heirs.
@@ -35,82 +37,88 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: false
-- id: lexam-mcq-d29407e2
+- id: lexam-mcq-9cef8ddf
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Wählen Sie basierend auf dem folgenden Kontext alle Aussagen aus, die nicht zutreffen.
-    Kontext: Alle Scheiben des von Roland gemieteten Personenwagens sind vereist, so dass man nicht mehr hindurchsieht. Roland kratzt auf Augenhöhe ein Guckloch 10x15 cm frei und fährt sehr vorsichtig mit den Verhältnissen angepasster Geschwindigkeit los. Die Vermieterin stellt Strafantrag gegen Roland und macht geltend, Roland nicht zu Fahrten zu so verantwortungslosen Fahrten ermächtigt zu haben.
-    i. Roland ist strafbar gemäss Art. 94 Abs. 3 SVG.
-    ii. Roland ist strafbar gemäss Art. 90 Abs. 1 SVG.
-    iii. Die Verantwortlichen Personen der Vermieterin sind gemäss Art. 93 Abs. 2 Bst. b SVG strafbar, wenn sie Roland nicht ausdrücklich auf die Pflicht zur gründlichen Enteisung der Scheiben aufmerksam gemacht haben. Eine blosse Klausel in den AGB reicht nicht.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i, ii, und iii
-    B) ii und iii
-    C) i und ii
-    D) ii
+    Bruno kann eigentlich Auto fahren, aber er ist drei Mal durch die Theorieprüfung gefallen. Der Lehrmeister sagte, er stelle Bruno unter zwei Bedingungen fest an: Bestehen der Lehrabschlussprüfung und der Führerprüfung. Bruno fälscht deshalb mit Hilfe von Freunden einen Führerausweis. Welche Aussage ist richtig?
+    i. Bruno hat sich des Missbrauchs von Ausweisen und Schildern gemäss Art. 97 Abs. 1 Bst. a SVG schuldig gemacht, u.a. da bei Ausweisen gemäss SVG diese Spezialnorm greift.
+    ii. Art. 251 StGB wird durch die Konkurrenzregel von Art. 97 Abs. 2 SVG verdrängt.
+    iii. Bruno hat sich der Urkundenfälschung gemäss Art. 251 StGB schuldig gemacht, u.a. da die durch Täuschung erlangte Festanstellung ein unrechtmässiger Vorteil ist.
+    iv. Art. 251 StGB kommt nicht in Frage, da es dort um Urkunden und eben nicht um Ausweise oder Zeugnisse geht.
+    v. Art. 252 StGB findet Anwendung, u.a. da das Ziel von Bruno, eine Festanstellung zu erlangen, der in dieser Bestimmung definierten Absicht entspricht.
+
+    A) v
+    B) i, ii, iv, und v
+    C) i, ii, iii, und v
+    D) iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i, ii, und iii
-  - ii und iii
-  - i und ii
-  - ii
-  gold: B
+  - v
+  - i, ii, iv, und v
+  - i, ii, iii, und v
+  - iv
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: d29407e2-8cc3-4db4-8d74-7be84d4db40c
+    id: 9cef8ddf-8350-4447-8f60-691dd5f68547
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 3
-    negative_question: true
-- id: lexam-mcq-7e4940e6
+    n_statements: 5
+    negative_question: false
+- id: lexam-mcq-51770c25
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Beurteilen Sie folgende Aussagen zum Sanktionensystem. Welche Aussage(n) sind korrekt?
-    i. Eine Freiheitsstrafe kann zugunsten einer gleichzeitig angeordneten Verwahrung aufgeschoben werden.
-    ii. Eine ambulante Massnahme kann gleichzeitig mit einer Freiheitsstrafe vollzogen werden, wenn Letztere nicht zugunsten der Massnahme aufgeschoben wird.
-    iii. Von richterlichem Monismus wird gesprochen, wenn sowohl eine Strafe als auch eine Massnahme angeordnet werden, jedoch die beiden Sanktionen nur alternativ zu vollstrecken sind.
-    iv. Bei freiheitsentziehenden Massnahmen, die neben einer Strafe ausgesprochen werden, kommt der dualistisch-vikariierende Vollzug zur Anwendung.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i und iv
-    B) i, ii, und iii
-    C) i, ii, und iv
-    D) ii und iv
+    Welche der folgenden Aussagen ist/sind falsch?
+    i. X. fährt mit ihrem Fahrrad mit einer Atemalkoholkonzentration von 0.41 mg/L an den Bahnhof. X. ist wegen FinZ strafbar.
+    ii. Die Strafbestimmungen des AIG finden grundsätzlich Anwendung. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
+    iii. Alle Scheiben des von Roland gemieteten Personenwagens sind vereist, so dass man nicht mehr hindurchsieht. Roland kratzt auf Augenhöhe ein Guckloch 15 Mal 25 cm frei und fährt sehr vorsichtig mit den Verhältnissen angepasster Geschwindigkeit los. Die Vermieterin stellt Strafantrag gegen Roland und macht geltend, Roland nicht zu so verantwortungslosen Fahrten ermächtigt zu haben. Roland ist strafbar gemäss Art. 93 Abs. 2 Bst. a SVG.
+
+    A) ii
+    B) i und iii
+    C) ii und iii
+    D) iii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i und iv
-  - i, ii, und iii
-  - i, ii, und iv
-  - ii und iv
+  - ii
+  - i und iii
+  - ii und iii
+  - iii
   gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 7e4940e6-2a92-4204-bef7-f30de63efd25
-    course: Jugendstrafrecht und Sanktionenrecht
+    id: 51770c25-1485-44fd-827b-488bb374f81f
+    course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 4
-    negative_question: false
+    n_statements: 3
+    negative_question: true
 - id: lexam-mcq-c4f225aa
   suite: lexam_mcq
   area: Public
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. A ist Alleinaktionär der E AG mit Sitz in Zürich. Sein Vater C war Inhaber von 100% der Aktien der F AG, ebenfalls mit Sitz in Zürich, deren Aktienkapital aus 5'000 voll liberierten Aktien à CHF 500 besteht. Am 1. Januar 2018 verkaufte C 2'500 Aktien (50% des Aktienkapitals) der F AG zum Preis von CHF 3 Mio. an die E AG. Dieser Preis entspricht dem Verkehrswert der Beteiligung. Der Kaufpreis wurde als unverzinsliches Darlehen von C gegenüber der E AG stehengelassen. Mit Schenkungsvertrag vom 20. Dezember 2018 trat C von seinem Darlehensguthaben gegenüber der E AG per 31. Dezember 2018 den Teilbetrag von CHF 1.5 Mio. an seinen Sohn A ab. Der Tatbestand der Transponierung ist vorliegend erfüllt.
     ii. Herr A ist Verwaltungsrat und Mitglied der Geschäftsleitung der Bank X AG. Er ist Hauptver antwortlicher des Bereichs «Anlagen und Investitionen». Er erleidet im Jahr 2019 einen Un fall, der einen Spitalaufenthalt und einen Erwerbsausfall zur Folge hat. Herr A ist durch sei nen Arbeitgeber gegen Berufs- und Nichtberufsunfälle versichert. Die Versicherung über nimmt die Spitalkosten, ein Taggeld für den Lohnausfall und bezahlt noch eine Genugtu ungssumme von CHF 5'000. Im Rahmen seiner Genesung hat er einige Zeit für sich und fängt an nebenbei CHF 250'000 in Anlagen der Y AG zu investieren. Diese schrieb ihm dafür monatsweise Erträge gut, welche er im System beliess und sogleich reinvestierte. Es hätte auch die Möglichkeit bestanden, sich die Erträge auszahlen zu lassen. Gegen Ende Jahr 2019 stellt sich heraus, dass dieses Anlagesystem betrügerisch ist (sog. Schneeballsystem), und der Konkurs über diese Gesellschaft wird eröffnet. Herr A ist der Meinung, dass er die im Jahr 2019 insgesamt gutgeschriebenen Erträge von CHF 80’000 nicht in seiner Steuererklä rung 2019 deklarieren muss. Vielmehr möchte er einen Verlust von CHF 250'000 geltend machen. Die Gutschriften aus den Anlagen der Y AG stellen Einkommen dar.
@@ -145,6 +153,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Das Kapitaleinlageprinzip besagt ab 1. Januar 2020, dass jeder in der Schweiz unbeschränkt steuerpflichtigen natürlichen Person, welche Aktien im Privatvermögen hält, Einlagen, Auf gelder und Zuschüsse wieder einkommenssteuerfrei zurückgezahlt werden können.
     ii. Ob ein Vermögenswert zum Geschäfts- oder zum Privatvermögen zu zählen ist, hängt davon ab, woher die Mittel stammen, mit denen der Vermögenswert erworben worden ist, und wie der Vermögenswert eingesetzt werden soll.
@@ -181,6 +191,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Leitlinien und Bekanntmachungen spielen im Lizenzkartellrecht eine wichtige Rolle. Dabei steht jeweils die Frage im Raum, ob Gerichte und Behörden an diese Rechtsquellen gebunden sind. Gemäss Lehre und Rechtsprechung ist eine Bindungswirkung zu bejahen für (Geben Sie die richtigen optionen wieder):
     i. die (Selbst-)Bindung der EU-Kommission an ihre Mitteilungen
     ii. die Bindung anderer (nicht mit dem Kartellrecht befasster) Behörden an die Mitteilungen der EU-Kommission
@@ -217,6 +229,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Die Y AG ist an der Schweizer Börse kotiert und hat CHF 300'000 Kapitalreserven und CHF 300'000 Gewinnreserven. Sie beabsichtigt am 31. Dezember 2020 CHF 200'000 Dividenden auszuschütten. Sie entnimmt diese den Kapitalreserven, da dies keine Steuerfolgen nach sich zieht. Sie entnimmt diese den Kapitalreserven, da dies keine Steuerfolgen nach sich zieht.
     ii. Verona arbeitet als Angestellte bei der "Sophara AG". Im Rahmen ihrer Forschungstätigkeit gelingt ihr die erstmalige Isolierung eines neuen Enzyms. Für die Sophara AG ist das neue Enzym "Rasonix" ein grosser wirtschaftlicher Erfolg. Verona erhält deshalb für ihre bahnbrechende Erfindung den mit CHF 25'000.- dotierten "Sophara 2023 Award», den (alljährlich vergebenen) firmeneigenen Preis für die Entwicklung des erfolgreichsten Produkts. Zugleich erhält sie von der ETH Zürich für ihre herausragende Entdeckung den "Alumni-Jahrespreis" im Umfang von CHF 5'000.-. Die Zahlungen des Sophara Awards und des Alumni-Jahrespreises stellen für Verona steuerbares Einkommen dar.
@@ -251,6 +265,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Based on the following context, please select all applicable statements.
     Context: Dr. Genius estimates the value of a real estate in the canton of Lucerne on demand of Katrina.
     i. Estimating the value of a real estate is an agreement on a measurable result that can be guaranteed.
@@ -285,6 +301,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Die Inkraftsetzung erfolgt im Bund meistens durch den Bundesrat aus Gründen der Rücksichtnahme gegenüber den Kantonen.
     ii. Legaldefinitionen sollten keine Handlungsanweisungen (Pflichten) enthalten.
@@ -313,39 +331,41 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: false
-- id: lexam-mcq-c9eb7be0
+- id: lexam-mcq-80023230
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche Aussage(n) sind richtig? Zwangsmassnahmen …
-    i. müssen gemäss StPO gesetzlich vorgesehen sein, es besteht folglich ein numerus clausus der Zwangsmassnahmen.
-    ii. stellen stets einen Eingriff in Grundrechte dar, weshalb darauf zu achten ist, dass betroffene, nicht beschuldigte Personen, von Beginn an über die Massnahmen informiert sind.
-    iii. welche vom Zwangsmassnahmengericht angeordnet wurden, können mit Beschwerde angefochten werden.
-    iv. setzen einen hinreichenden Tatverdacht voraus, welcher sich aber noch nicht gegen eine bestimmte Person richten muss.
-    v. unterliegen alle der Anordnung durch das Zwangsmassnahmengericht. Nur in Ausnahmefällen darf die Staatsanwaltschaft selbständig handeln.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i und ii
-    B) iii und iv
-    C) i, iii, und iv
-    D) i, ii, und iv
+    Martin ist 13 Jahre alt. In der Schule ist er zwar gut, auffällig ist jedoch, dass er mit niemandem redet und auch bei ganz warmen Temperaturen lange Hosen und lange Ärmel trägt. Die anderen Jugendlichen hänseln ihn deswegen. Als Martin sich eines Tages mit einem Mitschüler prügelt, so dass der Mitschüler hospitalisiert werden muss, bemerkt die einschreitende Lehrerin blaue Flecken auf Martins Arm. Sie geht dem nach, bis sich herausstellt, dass Martin zu Hause von seinem Vater regelmässig geschlagen wird. Zudem trinkt der Vater täglich Alkohol. Die Mutter ist bei der Geburt gestorben. Welche der folgenden Aussagen treffen zu?
+    i. Weil sich Schüler untereinander nicht prügeln sollen, kann Martin aus disziplinarischen Gründen in einer geschlossenen Einrichtung untergebracht werden.
+    ii. Der Vater muss der Unterbringung in eine geschlossene Einrichtung zustimmen.
+    iii. Wenn Martins notwendige Erziehung und Behandlung nicht anders sichergestellt werden kann, ordnet die urteilende Behörde die Unterbringung an.
+    iv. Sofern nicht sichergestellt werden kann, dass Martin sich bzw. andere Personen nicht gefährdet, ist er in eine geschlossene Einrichtung zu unterbringen.
+    v. Es kann keine Schutzmassnahme angeordnet werden.
+
+    A) iii und iv
+    B) ii und v
+    C) iii, iv, und v
+    D) i und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i und ii
   - iii und iv
-  - i, iii, und iv
-  - i, ii, und iv
-  gold: C
+  - ii und v
+  - iii, iv, und v
+  - i und iv
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: c9eb7be0-744b-47ef-adde-83a147475106
-    course: Strafrecht und Strafverfahrensrecht
-    year: 2021
+    id: 80023230-9a18-4a7a-bc19-4af25cafd571
+    course: Jugendstrafrecht und Sanktionenrecht
+    year: 2023
     jurisdiction: Swiss
     n_statements: 5
     negative_question: false
@@ -355,6 +375,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     When interpreting the statutes of a foundation it can be necessary to apply, inter alia, the principles of
     i. Intention and indication
     ii. Good faith and intention
@@ -391,6 +413,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Die Inkraftsetzung erfolgt im Bund meistens durch den Bundesrat aus praktischen Gründen (Organisation Vollzug).
     ii. Die Inkraftsetzung erfolgt im Bund meistens durch den Bundesrat aus praktischen Gründen (Verordnungsgebung).
@@ -426,6 +450,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Kapitalabfindungen des Arbeitsgebers werden steuerrechtlich wie Vorsorgeleistungen betrachtet, wenn durch den Austritt aus dem Unternehmen und dessen Vorsorgeeinrichtung eine Vorsorgelücke entsteht.
     ii. Kapitalgewinne aus Liegenschaftsverkäufen sind in der Schweiz steuerfrei.
@@ -461,6 +487,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Verona arbeitet als Angestellte bei der "Sophara AG". Im Rahmen ihrer Forschungstätigkeit gelingt ihr die erstmalige Isolierung eines neuen Enzyms. Für die Sophara AG ist das neue Enzym "Rasonix" ein grosser wirtschaftlicher Erfolg. Verona erhält deshalb für ihre bahnbrechende Erfindung den mit CHF 25'000.- dotierten "Sophara 2023 Award», den (alljährlich vergebenen) firmeneigenen Preis für die Entwicklung des erfolgreichsten Produkts. Zugleich erhält sie von der ETH Zürich für ihre herausragende Entdeckung den "Alumni-Jahrespreis" im Umfang von CHF 5'000.-. Die Zahlungen des Sophara Awards und des Alumni-Jahrespreises stellen für Verona steuerbares Einkommen dar.
     ii. Herr A ist Verwaltungsrat und Mitglied der Geschäftsleitung der Bank X AG. Er ist Hauptver antwortlicher des Bereichs «Anlagen und Investitionen». Er erleidet im Jahr 2019 einen Un fall, der einen Spitalaufenthalt und einen Erwerbsausfall zur Folge hat. Herr A ist durch sei nen Arbeitgeber gegen Berufs- und Nichtberufsunfälle versichert. Die Versicherung über nimmt die Spitalkosten, ein Taggeld für den Lohnausfall und bezahlt noch eine Genugtu ungssumme von CHF 5'000. Im Rahmen seiner Genesung hat er einige Zeit für sich und fängt an nebenbei CHF 250'000 in Anlagen der Y AG zu investieren. Diese schrieb ihm dafür monatsweise Erträge gut, welche er im System beliess und sogleich reinvestierte. Es hätte auch die Möglichkeit bestanden, sich die Erträge auszahlen zu lassen. Gegen Ende Jahr 2019 stellt sich heraus, dass dieses Anlagesystem betrügerisch ist (sog. Schneeballsystem), und der Konkurs über diese Gesellschaft wird eröffnet. Herr A ist der Meinung, dass er die im Jahr 2019 insgesamt gutgeschriebenen Erträge von CHF 80’000 nicht in seiner Steuererklä rung 2019 deklarieren muss. Vielmehr möchte er einen Verlust von CHF 250'000 geltend machen. Die Gutschriften aus den Anlagen der Y AG stellen Einkommen dar.
@@ -488,55 +516,57 @@
     jurisdiction: Swiss
     n_statements: 2
     negative_question: true
-- id: lexam-mcq-ab4ac0ab
+- id: lexam-mcq-83e332a0
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen zu Sinn und Zweck der Strafe treffen zu?
-    i. Die Denkzettelfunktion der relativen Strafzwecke wirkt sich direkt auf den verurteilten Täter aus.
-    ii. Generalprävention ist zukunftsorientiert und dient der Normbekräftigung.
-    iii. Die absoluten Strafzwecke dienen der ausgleichenden Gerechtigkeit.
-    iv. Die Spezialprävention hat in ihrem positiven Erscheinungsbild eine Resozialisierungsfunktion.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii und iv
-    B) iii und iv
-    C) i, ii, und iii
-    D) i, ii, iii, und iv
+    Welche der folgenden Aussagen ist/sind falsch?
+    i. Ordungsbussen sind oberhalb der massgeblichen Grenzwerte ausgeschlossen.
+    ii. Die beschriebenen Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+    iii. Die Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+
+    A) i und iii
+    B) ii
+    C) keine der Aussagen
+    D) ii und iii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii und iv
-  - iii und iv
-  - i, ii, und iii
-  - i, ii, iii, und iv
+  - i und iii
+  - ii
+  - keine der Aussagen
+  - ii und iii
   gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: ab4ac0ab-42eb-4691-bfa3-9ca4bb23b734
-    course: Jugendstrafrecht und Sanktionenrecht
+    id: 83e332a0-3873-4960-ad6d-319cb5737b08
+    course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 4
-    negative_question: false
+    n_statements: 3
+    negative_question: true
 - id: lexam-mcq-27dbc4a9
   suite: lexam_mcq
   area: Public
   language: de
   level: exam
-  question: "Welche der folgenden Aussagen ist/sind falsch?\ni. Der selbständig Erwerbstätige Bauer B\
-    \ beschafft sich für seinen Betrieb eine Maschine im Wert von 1 Mio. Hierbei findet ein Vermögensabfluss\
-    \ statt. Deshalb kann Bauer B einen Abzug geltend machen. \nii. In der Praxis handelt es sich nicht\
-    \ um Reserven aus Kapitaleinlagen, die für das Kapitaleinlageprinzip qualifizieren, wenn die Kapitaleinlage\
-    \ nicht verbucht und in der Bilanz nicht offen ausgewiesen wird.\niii. Bei selbständiger Erwerbstätigkeit\
-    \ dürfen die Zuwendungen an Vorsorgeeinrichtungen zugunsten des eigenen Personals nicht abgezogen\
-    \ werden.\n\nA) ii\nB) i und iii\nC) keine der Aussagen\nD) i und ii\n\nWählen Sie eine der Optionen\
-    \ A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten\
-    \ Option ist."
+  question: "Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X»\
+    \ ab, wobei X der Buchstabe der gewählten Option ist.\n\nWelche der folgenden Aussagen ist/sind falsch?\n\
+    i. Der selbständig Erwerbstätige Bauer B beschafft sich für seinen Betrieb eine Maschine im Wert von\
+    \ 1 Mio. Hierbei findet ein Vermögensabfluss statt. Deshalb kann Bauer B einen Abzug geltend machen.\
+    \ \nii. In der Praxis handelt es sich nicht um Reserven aus Kapitaleinlagen, die für das Kapitaleinlageprinzip\
+    \ qualifizieren, wenn die Kapitaleinlage nicht verbucht und in der Bilanz nicht offen ausgewiesen\
+    \ wird.\niii. Bei selbständiger Erwerbstätigkeit dürfen die Zuwendungen an Vorsorgeeinrichtungen zugunsten\
+    \ des eigenen Personals nicht abgezogen werden.\n\nA) ii\nB) i und iii\nC) keine der Aussagen\nD)\
+    \ i und ii\n\nWählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort:\
+    \ X» ab, wobei X der Buchstabe der gewählten Option ist."
   choices:
   - ii
   - i und iii
@@ -554,80 +584,87 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: true
-- id: lexam-mcq-08771724
+- id: lexam-mcq-eaf05fed
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Bei welchen der folgenden Aussagen ist es richtig, dass die Verhaltensweisen den objektiven Tatbestand gemäss Art. 116 AuG erfüllen?
-    i. Bei seiner illegalen Einreise über die "grüne Grenze" in den Alpen verletzt sich Selim. Bergbauer Anton verbindet und verpflegt ihn und lässt ihn eine Nacht bei sich übernachten, ohne das den Behörden zu melden.
-    ii. Franz vermietet Zimmer an Prostituierte ohne Arbeitsbewilligung, die dort - wie er weiss - ihre Kundschaft empfangen.
-    iii. Nach Ablauf der bewilligungsfreien Zeit reist Sandra nicht aus der Schweiz aus. Ihre hier legal anwesende Schwester Lisa lässt sie zwei Monate lang weiterhin bei sich wohnen.
-    iv. Sandro befördert eine Gruppe von fünf Flüchtlingen in einem geschlossenen Lastwagen von Kalabrien in die Umgebung von Chiavenna, wo er die Gruppe Rudolph übergibt, damit sie dieser über die grüne Grenze in die Schweiz begleitet.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii, iii, und iv
-    B) i, iii, und iv
-    C) keine der Aussagen
-    D) iii
+    Welche der folgenden Aussagen ist/sind falsch?
+    i. Im Kernstrafrecht gilt der AT StGB originär, im Nebenstrafrecht subsidiär. Die Aussage über die Unterschiede des Kern- und Nebenstrafrechts ist richtig.
+    ii. Velofahrerin X. "bläst" bei beiden Tests 0.6 mg Alkohol pro Liter Atemluft und bestätigt mit Unterschrift, diese Tests zu anerkennen. Polizist Y. will auf nummersicher gehen und erhält auf Anfrage von der Pikett-Staatsanwältin die Anordnung einer Blutprobe. Die Blutproben-Anordnungen sind zulässig.
+    iii. EG/EFTA-Angehörige, die ohne genügenden Mittel in die Schweiz einreisen, sind gemäss Art. 115 Abs. 1 Bst. a AIG in Verbindung mit Art. 5 Abs. 1 Bst. b AIG strafbar. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
+
+    A) i
+    B) iii
+    C) i und ii
+    D) keine der Aussagen
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii, iii, und iv
-  - i, iii, und iv
-  - keine der Aussagen
+  - i
   - iii
-  gold: A
+  - i und ii
+  - keine der Aussagen
+  gold: B
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 08771724-3172-43c3-a2be-168242c57135
+    id: eaf05fed-6bed-4618-aaa6-13efd6d72a51
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 4
-    negative_question: false
-- id: lexam-mcq-00750dae
+    n_statements: 3
+    negative_question: true
+- id: lexam-mcq-1a845f5c
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind falsch?
-    i. Die Geschwindigkeitsgrenzwerte werden teils durch Verordnung, teils durch Rechtsprechung, teils durch Gesetz definiert, und zwar jeweils einheitlich pro Ebene der Strafbarkeit, die durch die Grenzwertüberschreitung erreicht wird. Die Geschwindigkeitsgrenzwerte werden teils durch Verordnung, teils durch Rechtsprechung, teils durch Gesetz definiert, und zwar jeweils einheitlich pro Ebene der Strafbarkeit, die durch die Grenzwertüberschreitung erreicht wird.
-    ii. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) keine der Aussagen
-    B) i
-    C) ii
-    D) i und ii
+    Beurteilen Sie folgende Aussagen zu den Vollzugsformen. Welche Aussage(n) sind korrekt?
+    i. Die elektronische Überwachung ist als Vollzugsform von Freiheitsstrafen und Ersatzfreiheitsstrafen zwischen 20 Tagen und 12 Monaten zulässig.
+    ii. Verliert der elektronisch überwachte Verurteilte seine Arbeit, kann die Vollzugsbehörde den Vollzug in Form der elektronischen Überwachung abbrechen.
+    iii. Die gemeinnützige Arbeit ist nur auf Gesuch der Vollzugsbehörde hin möglich.
+    iv. Die gemeinnützige Arbeit kann auch als Vollzugsform bei Übertretungen angeordnet werden.
+
+    A) iv
+    B) iii
+    C) i, ii, und iv
+    D) ii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - keine der Aussagen
-  - i
+  - iv
+  - iii
+  - i, ii, und iv
   - ii
-  - i und ii
   gold: C
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 00750dae-d75f-41bd-b716-47d79143bc04
-    course: Nebenstrafrecht
+    id: 1a845f5c-a2cf-4447-9a4b-e45ced397573
+    course: Jugendstrafrecht und Sanktionenrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 2
-    negative_question: true
+    n_statements: 4
+    negative_question: false
 - id: lexam-mcq-76dab3fb
   suite: lexam_mcq
   area: Interdisciplinary
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Based on the following context, please select all applicable statements.
     Context: Eric is a Dutch citizen who accepted a job offer in Zürich. He will take up his new position in Zürich in January 2020. Before moving to Switzerland, he would like to learn more about the Swiss tax system. In particular, he has not yet decided whether he wants to rent an apartment in Zürich or outside of Zürich, maybe even in another canton.
     i. In Zürich, Eric would be subject to an income tax rate of 21.6% (federal, cantonal and communal income taxes). However, if he decides to move to another canton, his income tax rate could be much lower.
@@ -662,6 +699,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Anne lives in Zurich (Canton of Zurich) and works as a law clerk in Bern (Canton of Bern). She commutes daily to Bern. She would like to know whether the different items of income she earned in 2017 are subject to the federal and/or cantonal income taxes. Please indicate which of the following statements are correct:
     i. Anne owns a cottage in the mountains, situated in the Canton of Nidwalden. The rental income derived from this cottage is subject to the federal income tax and the income tax of the Canton of Nidwalden.
     ii. Anne derived dividends from a participation in a French company. The dividends are exempted from Swiss federal and cantonal income taxes.
@@ -696,18 +735,19 @@
   area: Interdisciplinary
   language: en
   level: exam
-  question: "Which of the following statements is/are incorrect?\ni. The capacity of judgment is not determined\
-    \ abstractly, but in light of each legal transaction or event taking place.\nii. Judgments given in\
-    \ Swiss civil proceedings become res judicata not only between the parties but against any person\
-    \ who has an interest in the matter.\niii. It is a Swiss particularity that all major political parties\
-    \ are represented in the Federal Council. To this effect, the so-called magic formula was established\
-    \ (by practice, not based on an explicit provision in the Constitution). \niv. The values “power”\
-    \ and “not power” constitute the political system’s code according to the sociologist Niklas Luhmann.\n\
-    v. Spouses are subject to the provisions governing separation of property, provided they have not\
-    \ agreed otherwise in a marital agreement and provided no extraordinary marital property regime has\
-    \ come into effect.\n\nA) ii and v\nB) ii, iii, and iv\nC) i, iii, and iv\nD) i, ii, and iv\n\nChoose\
-    \ one of the options A–D. End your answer with the line \"Answer: X\", where X is the letter of the\
-    \ option you choose."
+  question: "Choose one of the options A–D. End your answer with the line \"Answer: X\", where X is the\
+    \ letter of the option you choose.\n\nWhich of the following statements is/are incorrect?\ni. The\
+    \ capacity of judgment is not determined abstractly, but in light of each legal transaction or event\
+    \ taking place.\nii. Judgments given in Swiss civil proceedings become res judicata not only between\
+    \ the parties but against any person who has an interest in the matter.\niii. It is a Swiss particularity\
+    \ that all major political parties are represented in the Federal Council. To this effect, the so-called\
+    \ magic formula was established (by practice, not based on an explicit provision in the Constitution).\
+    \ \niv. The values “power” and “not power” constitute the political system’s code according to the\
+    \ sociologist Niklas Luhmann.\nv. Spouses are subject to the provisions governing separation of property,\
+    \ provided they have not agreed otherwise in a marital agreement and provided no extraordinary marital\
+    \ property regime has come into effect.\n\nA) ii and v\nB) ii, iii, and iv\nC) i, iii, and iv\nD)\
+    \ i, ii, and iv\n\nChoose one of the options A–D. End your answer with the line \"Answer: X\", where\
+    \ X is the letter of the option you choose."
   choices:
   - ii and v
   - ii, iii, and iv
@@ -731,6 +771,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Based on the following context, please select all applicable statements.
     Context: Eric is a Dutch citizen who accepted a job offer in the city of Zürich and just moved to Switzerland with his wife Clara and two children. He has rented a little house in the countryside close to the city of Baden (canton of Aargau, 35 minutes by bus and train from Zürich). Eric and Clara still own an apartment in Amsterdam that they rented out.
     i. Since Eric works in the canton of Zürich but lives in the canton of Aargau, his income from employment may be taxed by the canton of Zürich.
@@ -765,6 +807,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Alle wiederkehrenden und einmaligen Einkünfte aus der Säule 3b unterliegen der Einkommenssteuer. Steuerbar sind nach Art. 23 lit. b DBG auch einmalige oder wiederkehrende Zahlungen bei Tod sowie für bleibende körperliche oder gesundheitliche Nachteile.
     ii. Versicherungsleistungen müssen nicht zwingend zu einem Reinvermögenszugang führen, um einkommenssteuerlich relevant zu sein.
@@ -799,6 +843,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Please indicate which of the following statements about the Federal Assembly, the Federal Council and the Federal Supreme Court are correct:
     i. There is only limited constitutional review in Switzerland. The Federal Supreme Court does, however, hear cases in which it is called upon to review federal acts in light of the European Convention on Human Rights (ECHR).
     ii. The Federal Council consists of a Prime Minister and six other ministers. The Prime Minister represents Switzerland abroad and enjoys special powers. He/she can dissolve the Federal Assembly and thus trigger general elections
@@ -834,6 +880,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Die rechtsformwechselnde Umwandlung einer Einzelfirma in eine Kapitalgesellschaft ist nach Fusionsgesetz nicht vorgesehen.
     ii. Die Einbringung von Sacheinlagen unter dem Verkehrswert sind sowohl handels- als auch steuerrechtlich nicht zulässig.
@@ -868,6 +916,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. X und Y sind zu je zu 50% Aktionäre der XY AG. Sie möchten Z als weiteren Aktionär in die XY AG aufnehmen. Die XY AG beschliesst zu diesem Zweck ihr Aktienkapital durch Ausgabe von 100 Namenaktien, die einen Nennwert von je CHF 1'000 aufweisen, von CHF 200'000 auf CHF 300'000 zu erhöhen. X und Y verzichten auf ihr Bezugsrecht. Z zeichnet die neu herausgegebenen Aktien und leistet der XY AG pro Aktie einen Liberierungsbetrag von CHF 1'500, d.h. total einen Liberierungsbetrag von CHF 150'000. Auf den Liberierungsbetrag ist die Emissionsabgabe geschuldet.
     ii. Die X AG hat ein einbezahltes Aktienkapital von CHF 1'000'000, offene Reserven von CHF 300'000 und stille Reserven (inkl. Goodwill) von CHF 700'000. Alleinaktionär der X AG ist X. Die X AG erhöht ihr Aktienkapital um CHF 500'000. Die neuen Aktien werden von einem aussenstehenden Privatmann (Y) gezeichnet und durch eine Sacheinlage liberiert. Die Sacheinlage besteht in einem Grundstück, das Y vor Jahren für CHF 650'000 gekauft hat und dem heute ein Verkehrswert von CHF 700'000 zukommt. Das Grundstück, das hypothekarisch nicht belastet ist, wird von der X AG mit CHF 1‘000'000 bilanziert (entsprechend dem formellen Einbringungswert). Die Kapitalerhöhung hat emissionsabgaberechtliche Folgen.
@@ -901,6 +951,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Bei kollektiven Kapitalanlagen kann das Teilbesteuerungsverfahren nicht angewendet werden, wenn sie steuerlich transparent behandelt werden.
     ii. Jedem Inhaber von Beteiligungsrechten können die von ihm bezahlten Einlagen, Aufgelder und Zuschüsse wieder einkommenssteuerfrei zurückgezahlt werden.
@@ -937,6 +989,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Das nach der EuErbVO anwendbare Recht muss das Recht eines Mitgliedstaates sein, es gibt somit keine erga omnes Wirkung. Das nach der EuErbVO anwendbare Recht muss das Recht eines Mitgliedstaates sein, es gibt somit keine erga omnes Wirkung.
     ii. Nach der EuErbVO gilt das Erbstatut grundsätzlich für alle Fragen, während in der Schweiz daneben das Eröffnungsstatut für eher formale Aspekte gilt. Diese Aussage zur EU-Erbrechtsverordnung ist richtig.
@@ -970,6 +1024,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. In Switzerland, it is possible to enforce a money debt without obtaining a court judgment if the debtor does not object to an order for payment issued in enforcement proceedings.
     ii. In Swiss civil proceedings, the parties can normally appeal against the decision of the last-instance cantonal court to the Federal court.
@@ -1005,6 +1061,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. The Code of Obligations of 1881 comprised provisions regarding the general and specific law of obligations (contracts and torts) and commercial and exchange law.
     ii. The “Digest” (or “Pandects”) has had a marginal impact on the Western legal tradition, compared to that of the so-called Justinian Code.
@@ -1039,6 +1097,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Das dem Kapitalanteilsberechtigten zufliessende Liquidationsbetreffnis ist für die Berechnung des steuerbaren Ertrags um die Abschreibung der Kapitalanteilsrechte zu kürzen.
     ii. Verzichten Gläubiger auf ihre Forderungen gegenüber dem sanierungsbedürftigen Unternehmen ganz oder teilweise, stellt der daraus resultierende Sanierungsgewinn einen echten Ertrag dar. Die in der Handelsbilanz bzw. in der handelsrechtlichen Erfolgsrechnung zulasten des echten Sanierungsgewinns verbuchten (Sanierungs-)Aufwendungen gelten steuerlich als noch nicht vorgenommen.
@@ -1069,40 +1129,43 @@
     jurisdiction: Swiss
     n_statements: 5
     negative_question: false
-- id: lexam-mcq-ab120142
+- id: lexam-mcq-bd2e156e
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind richtig?
-    i. Autofahrer X. "bläst" bei beiden Tests 0.7 mg Alkohol pro Liter Atemluft und bestreitet dieses Testergebnis vehement. Nach einem Telefongespräch mit der anwesenden Polizistin Y. ordnet der Pikett-Staatsanwalt eine Blutprobe an, da er angesichts des Zustandes von X. eine ungenügende Kooperation bei der Atemalkoholmessung befürchtete, für die ein geeignetes Messgerät zur Verfügung steht. Die Blutproben-Anordnungen sind zulässig.
-    ii. Im Nebenstrafrecht gibt es mehr Doppelspurigkeiten als im Kernstrafrecht. Es gibt im Nebenstrafrecht mehr Doppelspurigkeiten als im Kernstrafrecht.
-    iii. Unfalllenker X. ist verletzt am Unfallort und nicht ansprechbar. Polizei-Offizierin Y., die über einen juristischen Hochschulabschluss und ein Anwaltspatent verfügt, ordnet eine Blutprobe an. Die Blutproben-Anordnungen sind zulässig.
-    iv. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii und iii
-    B) i, ii, und iii
-    C) i und ii
-    D) i, ii, iii, und iv
+    Welche Aussagen sind in Bezug auf das Mass der zulässigen Einwirkung gemäss Art. 293 StPO korrekt:
+    i. Dem verdeckten Ermittler V werden 5 Gramm Kokain von Dealer D angeboten. Da V genau weiss, dass D im Besitz von viel mehr Kokain ist, fragt er D, ob er ihm 10 Kilogramm Kokain verkaufen würde, da er selber ins Geschäft einsteigen möchte. D denkt darüber nach und obwohl er eigentlich nur 5 Gramm Kokain verkaufen wollte, wittert er das grosse Geschäft und verkauft V die gewünschten 10 Kilogramm. Die Vorgehensweise von V ist absolut zulässig, da er sich lediglich rollenadäquat verhält.
+    ii. Wird das Mass der zulässigen Einwirkung in krasser Weise überschritten, kann dies zur Folge haben, dass die dadurch gewonnenen Beweise nicht verwertet werden dürfen, da es sich dabei um eine verbotene Beweiserhebungsmethode i.S.v. Art. 140 Abs. 1 StPO handelt.
+    iii. Der verdeckte Ermittler darf die allgemeine Tatbereitschaft nicht wecken. Die Zielperson muss schon tatbereit sein, wenn der verdeckte Ermittler mit ihr in Kontakt tritt.
+    iv. Das Überschreiten des Masses der zulässigen Einwirkung findet Berücksichtigung in der Strafzumessung oder führt zu einem Umgangnehmen von Strafe.
+    v. Möchte der verdeckte Ermittler Drogen von einem Dealer kaufen, dann darf er unter keinen Umständen um den Preis feilschen, da ansonsten das Mass der zulässigen Einwirkung überschritten wäre.
+
+    A) ii, iii, iv, und v
+    B) ii, iii, und iv
+    C) iii und iv
+    D) i und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii und iii
-  - i, ii, und iii
-  - i und ii
-  - i, ii, iii, und iv
+  - ii, iii, iv, und v
+  - ii, iii, und iv
+  - iii und iv
+  - i und iv
   gold: C
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: ab120142-79f6-4cea-a940-fc483e65e098
-    course: Nebenstrafrecht
-    year: 2023
+    id: bd2e156e-3b5d-4b89-9926-544bc28a2849
+    course: Strafrecht und Strafverfahrensrecht
+    year: 2021
     jurisdiction: Swiss
-    n_statements: 4
+    n_statements: 5
     negative_question: false
 - id: lexam-mcq-1ac7dcee
   suite: lexam_mcq
@@ -1110,6 +1173,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. The treasure found on alien property had to be divided in halves between finder and landowner according to the opinion of the Roman legal experts, who found this to be the most equitable solution.
     ii. In Swiss civil proceedings, the parties can always make new factual submissions and introduce new evidence in the main oral hearing without restriction.
@@ -1145,6 +1210,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. In der Schweiz ist der Gesetzgebungsprozess auf Bundesebene vergleichsweise langsam wegen den Anforderungen gemäss Publikationsgesetz.
     ii. Legaldefinitionen sind im europäischen Recht stärker verbreitet als in der Schweiz.
@@ -1174,41 +1241,44 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
-- id: lexam-mcq-aef12028
+- id: lexam-mcq-0fc3e921
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Die Cloni GmbH, Dietlikon, besitzt eine schweizerische Ausfuhrbewilligung für Clonitazen, jedoch keine Bewilligung für den Handel in der Schweiz. Claudia hat als gewöhnliche Angestellte der Cloni GmbH ohne Entscheidungsbefugnisse den Versand abzuwickeln. Sie weiss, dass Clonitazen unter das BetmG fällt und nur ins Ausland gehen darf, meint aber, die Lieferung in die Schweiz sei nur eine Ordnungswidrigkeit. Andere Produkte liefert die Cloni GmbH auch in die Schweiz. Auf Bestellung von Thomas, der nicht bei der Cloni GmbH arbeitet, sendet Claudia Clonitazen an die Tazen AG, Zug, und verarbeitet das wie einen Inlandauftrag eines anderen Produkts, so dass eine ganz normale Rechnung der Cloni GmbH ausgelöst wird. Thomas, Geschäftsführer der Tazen AG, denkt noch: "Hoffentlich hat die Cloni GmbH die nötige Bewilligung, aber es wird schon so sein". Welche der folgenden Aussagen sind richtig?
-    i. Claudia erfüllt den Tatbestand von Art. 20 Abs. 1 Bst. b BetmG, u.a. weil sie weiss, dass Clonitazen nur ins Ausland gehen darf, so dass Vorsatz zu bejahen ist.
-    ii. Claudia erfüllt den Tatbestand von Art. 20 Abs. 1 Bst. b BetmG nicht, u.a. weil sie meint, die Lieferung von Clonitazen in die Schweiz sei nur eine Ordnungswidrigkeit.
-    iii. Claudia erfüllt den Tatbestand von Art. 20 Abs. 1 Bst. b BetmG nicht, u.a. weil ihr mangels selbständiger Entscheidungsbefugnis die Sonderstellung der Cloni GmbH nicht zugerechnet werden kann.
-    iv. Claudia erfüllt den Tatbestand von Art. 20 Abs. 1 Bst. b BetmG, u.a. weil sie die problematische Lieferung in geschäftlicher Verrichtung für die Cloni GmbH veranlasst hat.
-    v. Thomas erfüllt den Tatbestand der Anstiftung zur Widerhandlung gemäss Art. 20 Abs. 1 Bst. b BetmG, u.a. da er das Risiko der fehlenden Bewilligung erkannte und trotzdem keine weiteren Abklärungen traf.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) iv und v
-    B) i und iii
-    C) i
-    D) i und iv
+    Welche der folgenden Aussage(n) treffen zu?
+
+    Bestechung und sich bestechen lassen nach Art. 322ter und 322 quater StGB …
+    i. sind Sonderdelikte.
+    ii. werden auch als «Anfüttern» bzw. «Klimapflege» bezeichnet.
+    iii. sind mit Blick auf das Tatbestandsmerkmal des nicht gebührenden Vorteils in jedem Fall erfüllt, wenn eine wirtschaftliche oder soziale Besserstellung oder ein immaterieller Vorteil bejaht werden kann.
+    iv. müssen im Unternehmen durch erforderliche und zumutbare Massnahmen verhindert werden.
+
+    A) keine der Aussagen
+    B) i
+    C) i, ii, und iii
+    D) ii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - iv und v
-  - i und iii
+  - keine der Aussagen
   - i
-  - i und iv
-  gold: D
+  - i, ii, und iii
+  - ii
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: aef12028-2772-48c0-94a5-dd6858f92f45
-    course: Nebenstrafrecht
+    id: 0fc3e921-6a75-4539-8641-80595b34679e
+    course: Wirtschaftsstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 5
+    n_statements: 4
     negative_question: false
 - id: lexam-mcq-afa86026
   suite: lexam_mcq
@@ -1216,6 +1286,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. Swiss commercial law could be changed by the Responsible Business Initiative by creating potential liability for Swiss-based multinational companies in Swiss court for violations of international norms by their foreign subsidiaries.
     ii. According to the theory of autopoietic social systems, the legal system triggers democratic impulse for changes in politics.
@@ -1250,6 +1322,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Herr A ist Verwaltungsrat und Mitglied der Geschäftsleitung der Bank X AG. Er ist Hauptver antwortlicher des Bereichs «Anlagen und Investitionen». Er erleidet im Jahr 2019 einen Un fall, der einen Spitalaufenthalt und einen Erwerbsausfall zur Folge hat. Herr A ist durch sei nen Arbeitgeber gegen Berufs- und Nichtberufsunfälle versichert. Die Versicherung über nimmt die Spitalkosten, ein Taggeld für den Lohnausfall und bezahlt noch eine Genugtu ungssumme von CHF 5'000. Im Rahmen seiner Genesung hat er einige Zeit für sich und fängt an nebenbei CHF 250'000 in Anlagen der Y AG zu investieren. Diese schrieb ihm dafür monatsweise Erträge gut, welche er im System beliess und sogleich reinvestierte. Es hätte auch die Möglichkeit bestanden, sich die Erträge auszahlen zu lassen. Gegen Ende Jahr 2019 stellt sich heraus, dass dieses Anlagesystem betrügerisch ist (sog. Schneeballsystem), und der Konkurs über diese Gesellschaft wird eröffnet. Herr A ist der Meinung, dass er die im Jahr 2019 insgesamt gutgeschriebenen Erträge von CHF 80’000 nicht in seiner Steuererklä rung 2019 deklarieren muss. Vielmehr möchte er einen Verlust von CHF 250'000 geltend machen. Die Gutschriften aus den Anlagen der Y AG stellen Einkommen dar.
     ii. Die X AG wird mit einem Aktienkapitel von CHF 2 Mio. gegründet, dabei unterliegt der volle Betrag der Emissionsabgabe. Der volle Betrag der Emissionsabgabe unterliegt der Emissionsabgabe.
@@ -1277,12 +1351,51 @@
     jurisdiction: Swiss
     n_statements: 2
     negative_question: true
+- id: lexam-mcq-20612e7b
+  suite: lexam_mcq
+  area: Criminal
+  language: de
+  level: exam
+  question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
+    Ist es richtig, dass X. für folgende Verhaltensweisen nach Art. 97 SVG strafbar ist?
+    i. Nachdem X. durch die theoretische Fahrprüfung durchgefallen ist, schickt sie ihre beste Freundin, die ihr sehr ähnlich sieht, an die Wiederholungsprüfung und erlangt auf diesem Weg die Bestätigung der bestandenen Theorieprüfung und schliesslich auch den Führerausweis.
+    ii. X. hat die Haftpflichtversicherungsprämien nicht bezahlt, weshalb ihm das Strassenverkehrsamt den Entzug der Kontrollschilder mitgeteilt und ihn auffordert, die Schilder innerhalb einer Frist abzugeben. X. nimmt sich vor, das zu tun, vergisst es aber.
+    iii. X. hat einen Führerausweisentzug und lässt sich durch einen Spezialisten einen täuschend echten Ausweis anfertigen, für den Fall, dass er einmal dringend das Auto brauchen sollte, wozu es aber während der Dauer des Entzugs nicht kommt.
+    iv. X. hat einen Führerausweisentzug und führt bei einer Autofahrt als Lenker den Führerausweis seines Zwillingsbruders mit.
+
+    A) ii
+    B) keine der Aussagen
+    C) i und iii
+    D) i, ii, und iv
+
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+  choices:
+  - ii
+  - keine der Aussagen
+  - i und iii
+  - i, ii, und iv
+  gold: D
+  expect:
+    abstain: false
+    cites: optional
+  source:
+    dataset: LEXam-Benchmark/LEXam
+    id: 20612e7b-f053-4375-a561-d2c7e11ab28f
+    course: Nebenstrafrecht
+    year: 2023
+    jurisdiction: Swiss
+    n_statements: 4
+    negative_question: false
 - id: lexam-mcq-1084265d
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Wählen Sie bitte auf Grundlage des folgenden Kontexts alle zutreffenden Aussagen aus.
     Kontext: Peter ist Geschäftsführer der X. AG, die u.a. bewilligten Handel mit Morphin für den medizinischen Gebrauch betreibt. Er betraut seinen neuen Mitarbeiter Hermann mit der Aufgabe, die Gesuche um Einfuhrbewilligungen zu stellen und die Einfuhr zu organisieren. Peter hat bei der Anstellung nur die Ausbildung von Hermann überprüft, hat aber keine Referenzen und Auskünfte eingeholt und weiss deshalb nicht, dass gegen Hermann mehrere Betreibungen laufen. Auch kontrolliert Peter die Arbeit von Hermann nicht. Hermann gibt im Gesuch, das ihn als Vertretung des Gesuchstellers nennt, zu hohe Bestellmengen der legalen Abnehmer an, um die Überschüsse auf dem Schwarzmarkt zu verkaufen und mit dem Erlös seine Schulden zu bezahlen. Bei der Prüfung des Gesuchs stellt das Schweizerische Heilmittelinstitut (Institut) fest, dass die Angaben nicht stimmen. Es erteilt keine Bewillligung und es kommt nicht zur Einfuhr.
     i. Peter ist nicht strafbar gemäss Art. 20 Abs. 1 Bst. a BetmG, da er keine Absicht hatte, dass sein Betrieb falsche Angaben macht.
@@ -1311,75 +1424,45 @@
     jurisdiction: Swiss
     n_statements: 2
     negative_question: false
-- id: lexam-mcq-d73c3f68
+- id: lexam-mcq-89413777
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
-  question: |-
-    X. wohnt in der Schweiz und wird in Bregenz (A) mit seinem Motorrad von einem Radar wegen einer Geschwindigkeitsübertretung "geblitzt", die in der Schweiz und in Österreich im Ordnungsbussenbereich liegt. Welche der folgenden Aussagen sind richtig?
-    i. X. kann nicht in der Schweiz verfolgt werden, da für eine einfache Verkehrsregelverletzung  vorliegt und diese bundesrechtlich nicht mit Freiheitsstrafe bedroht ist.
-    ii. X. kann nicht in der Schweiz verfolgt werden, wenn er sich in Österreich bei den Behörden meldet, um dort die Ordnungsbusse zu zahlen.
-    iii. X. kann in der Schweiz verfolgt werden, wenn er dem zustimmt.
-    iv. X. kann in der Schweiz verfolgt werden, wenn die für Bregenz zuständige Behörde die am schweizerischen Wohnort von X. zuständige Behörde um die Übernahme der Strafverfolgung ersucht.
-
-    A) iii
-    B) i, iii, und iv
-    C) ii und iv
-    D) i und iv
-
-    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+  question: "Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X»\
+    \ ab, wobei X der Buchstabe der gewählten Option ist.\n\nWelche der folgenden Aussagen ist/sind richtig?\n\
+    i. Kuno fährt in einer eisig-kalten Januarnacht um 3 Uhr alkohol- und drogenfrei nach 7 Stunden \n\
+    Schlaf mit seinem Personenwagen von zu Hause über Land in Richtung seines Schichtbetriebs\nArbeitsplatzes.\
+    \ Auf einer Glatteis-Fläche kommt er ins Schleudern, bringt aber das Auto fast \nunter Kontrolle,\
+    \ so dass er nur leicht mit dem Pfahl eines Weidezauns kollidiert. Dieser war \nmorsch und bricht\
+    \ ab. Kuno schreibt auf seine Visitenkarte Datum, Uhrzeit, seine Kontrollschild\nNummer und das Wort\
+    \ \"Sorry\". Diese Visitenkarte befestigt er am Pfahl. Dann fährt er weiter, \nweil er aus betrieblichen\
+    \ Gründen unbedingt pünktlich zur Schicht erscheinen muss. Da Kuno weder den Geschädigten noch die\
+    \ Polizei unverzüglich benachrichtigt hat, ist ihm ein \npflichtwidriges Verhalten bei Unfall (Art.\
+    \ 92 Abs. 1 SVG in Verbindung mit Art. 51 Abs. 3 SVG) \nvorzuwerfen.\nii. Autofahrer X. \"bläst\"\
+    \ bei beiden Tests 0.7 mg Alkohol pro Liter Atemluft und bestreitet dieses Testergebnis vehement.\
+    \ Nach einem Telefongespräch mit der anwesenden Polizistin Y. ordnet der Pikett-Staatsanwalt eine\
+    \ Blutprobe an, da er angesichts des Zustandes von X. eine ungenügende Kooperation bei der Atemalkoholmessung\
+    \ befürchtete, für die ein geeignetes Messgerät zur Verfügung steht. Die Blutproben-Anordnungen sind\
+    \ zulässig.\n\nA) i und ii\nB) ii\nC) i\nD) keine der Aussagen\n\nWählen Sie eine der Optionen A–D.\
+    \ Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option\
+    \ ist."
   choices:
-  - iii
-  - i, iii, und iv
-  - ii und iv
-  - i und iv
-  gold: C
+  - i und ii
+  - ii
+  - i
+  - keine der Aussagen
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: d73c3f68-eda7-4e35-b048-6cf216e20e11
+    id: 89413777-58cf-42b3-9e0d-dc89bf1b091e
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 4
-    negative_question: false
-- id: lexam-mcq-068e978d
-  suite: lexam_mcq
-  area: Criminal
-  language: de
-  level: exam
-  question: |-
-    Welche der folgenden Aussagen über die Rechtsgrundlagen und Zuständigkeiten im Nebenstrafrecht sind richtig?
-    i. Strafbestimmungen in verwaltungsrechtlichen Erlassen unterliegen dem BG über das Verwaltungsstrafrecht (VStrR), sofern es sich um Übertretungen handelt.
-    ii. Strafbestimmungen in verwaltungsrechtlichen Erlassen unterliegen dem BG über das Verwaltungsstrafrecht (VStrR), sofern deren Verfolgung und Beurteilung einer Verwaltungsbehörde des Bundes obliegt.
-    iii. Strafbestimmungen in verwaltungsrechtlichen Erlassen unterliegen dem BG über das Verwaltungsstrafrecht (VStrR).
-    iv. Auf Strafbestimmungen in verwaltungsrechtlichen Erlassen findet der AT StGB subsidiär Anwendung, wenn in den massgeblichen Erlassen nichts Anderes bestimmt ist.
-
-    A) i, iii, und iv
-    B) i, ii, und iv
-    C) ii und iv
-    D) iii
-
-    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
-  choices:
-  - i, iii, und iv
-  - i, ii, und iv
-  - ii und iv
-  - iii
-  gold: C
-  expect:
-    abstain: false
-    cites: optional
-  source:
-    dataset: LEXam-Benchmark/LEXam
-    id: 068e978d-54bc-4306-a7f6-609fb0134a19
-    course: Nebenstrafrecht
-    year: 2023
-    jurisdiction: Swiss
-    n_statements: 4
+    n_statements: 2
     negative_question: false
 - id: lexam-mcq-030c73e5
   suite: lexam_mcq
@@ -1387,6 +1470,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Die Steuerhinterziehung und der Steuerbetrug stehen in echter Idealkonkurrenz. Daher kann eine steuerpflichtige Person für denselben Sachverhalt für beide Delikte verurteilt werden, wenn der steuerpflichtigen Person für beide Delikte Vorsatz nachgewiesen werden kann.
     ii. Die Besteuerung des Eigenmietwertes nach Art. 21 Abs. 1 lit. b DBG widerspricht dem Prinzip der Besteuerung nach der wirtschaftlichen Leistungsfähigkeit.
@@ -1420,14 +1505,16 @@
   area: Public
   language: de
   level: exam
-  question: "Welche der folgenden Aussagen ist/sind falsch?\ni. Kapitalgewinne aus Liegenschaftsverkäufen\
-    \ sind in der Schweiz steuerfrei.\nii. Der selbständig Erwerbstätige Bauer B beschafft sich für seinen\
-    \ Betrieb eine Maschine im Wert von 1 Mio. Hierbei findet ein Vermögensabfluss statt. Deshalb kann\
-    \ Bauer B einen Abzug geltend machen. \niii. Alle wiederkehrenden und einmaligen Einkünfte aus der\
-    \ Säule 3b unterliegen der Einkommenssteuer. Steuerbar sind nach Art. 23 lit. b DBG auch einmalige\
-    \ oder wiederkehrende Zahlungen bei Tod sowie für bleibende körperliche oder gesundheitliche Nachteile.\n\
-    \nA) i\nB) ii\nC) i, ii, und iii\nD) i und ii\n\nWählen Sie eine der Optionen A–D. Schliessen Sie\
-    \ Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist."
+  question: "Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X»\
+    \ ab, wobei X der Buchstabe der gewählten Option ist.\n\nWelche der folgenden Aussagen ist/sind falsch?\n\
+    i. Kapitalgewinne aus Liegenschaftsverkäufen sind in der Schweiz steuerfrei.\nii. Der selbständig\
+    \ Erwerbstätige Bauer B beschafft sich für seinen Betrieb eine Maschine im Wert von 1 Mio. Hierbei\
+    \ findet ein Vermögensabfluss statt. Deshalb kann Bauer B einen Abzug geltend machen. \niii. Alle\
+    \ wiederkehrenden und einmaligen Einkünfte aus der Säule 3b unterliegen der Einkommenssteuer. Steuerbar\
+    \ sind nach Art. 23 lit. b DBG auch einmalige oder wiederkehrende Zahlungen bei Tod sowie für bleibende\
+    \ körperliche oder gesundheitliche Nachteile.\n\nA) i\nB) ii\nC) i, ii, und iii\nD) i und ii\n\nWählen\
+    \ Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der\
+    \ Buchstabe der gewählten Option ist."
   choices:
   - i
   - ii
@@ -1450,15 +1537,17 @@
   area: Interdisciplinary
   language: en
   level: exam
-  question: "Which of the following statements is/are incorrect?\ni. The values “power” and “not power”\
-    \ constitute the political system’s code according to the sociologist Niklas Luhmann.\nii. In Switzerland,\
-    \ criminal law provisions exist on a federal and on a cantonal level. However, the cantons may only\
-    \ legislate on contraventions that are not the subject matter of federal legislation. \niii. In Swiss\
-    \ civil proceedings, it is generally open to the parties to appoint experts for the purpose of giving\
-    \ evidence.\niv. The constitutional principles of administrative law set out in the Federal constitution\
-    \ only apply with respect to activities of the Swiss confederation. However, they do not apply vis-à-vis\
-    \ the cantons.\n\nA) i and ii\nB) i, ii, and iii\nC) i\nD) iii and iv\n\nChoose one of the options\
-    \ A–D. End your answer with the line \"Answer: X\", where X is the letter of the option you choose."
+  question: "Choose one of the options A–D. End your answer with the line \"Answer: X\", where X is the\
+    \ letter of the option you choose.\n\nWhich of the following statements is/are incorrect?\ni. The\
+    \ values “power” and “not power” constitute the political system’s code according to the sociologist\
+    \ Niklas Luhmann.\nii. In Switzerland, criminal law provisions exist on a federal and on a cantonal\
+    \ level. However, the cantons may only legislate on contraventions that are not the subject matter\
+    \ of federal legislation. \niii. In Swiss civil proceedings, it is generally open to the parties to\
+    \ appoint experts for the purpose of giving evidence.\niv. The constitutional principles of administrative\
+    \ law set out in the Federal constitution only apply with respect to activities of the Swiss confederation.\
+    \ However, they do not apply vis-à-vis the cantons.\n\nA) i and ii\nB) i, ii, and iii\nC) i\nD) iii\
+    \ and iv\n\nChoose one of the options A–D. End your answer with the line \"Answer: X\", where X is\
+    \ the letter of the option you choose."
   choices:
   - i and ii
   - i, ii, and iii
@@ -1482,6 +1571,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Y is 13 years old and attends public elementary school. The government of the Canton where Y lives issued a disciplinary code in the form of an ordinance. § 25 of the ordinance states that students “may be suspended from school for up to six months in case they disturb class.” One day, Y throws a paper plane at a classmate during class. The classmate is not injured from the incident. In the following, the headmaster of the school bans Y from school for five months. Please indicate which of the following statements are correct:
     i. As is the case with all disciplinary measures in public schools, the suspension of Y qualifies as real act. Thus, no administrative decision must be issued.
     ii. There is a high chance that an appeal body finds the school suspension to violate the principle of proportionality.
@@ -1511,41 +1602,49 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
-- id: lexam-mcq-01342dc7
+- id: lexam-mcq-153099e9
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Ihr Klient sitzt in Untersuchungshaft, weil er verdächtigt wird, an einer Prügelei teilgenommen zu haben. Sie sind amtliche/r Verteidiger/in. Als Sie ihn besuchen, erzählt er Ihnen, dass er zur Tatzeit bei seiner Freundin war, was diese bezeugen könne. Allerdings sei die Freundin verheiratet und daher wolle er sie nicht in das Verfahren hineinziehen. Er werde sich das aber noch einmal überlegen und Sie dann per Brief orientieren, wie er weiter vorgehen möchte. Allenfalls gebe es auch Aufnahmen einer vor dem Haus seiner Freundin angebrachten Überwachungskamera, die zeigen könnten, dass er zum Tatzeitpunkt gar nicht am Tatort war. Wie reagieren Sie als amtliche/r Verteidiger/in?
-    i. Sie sagen Ihrem Klienten, dass Sie leider nicht nach der Überwachungskamera suchen können, da es Anwälten in der Schweiz nicht erlaubt ist, eigene Ermittlungen anzustellen.
-    ii. Sie suchen die Freundin sofort auf, schliesslich sind Sie als Anwalt verpflichtet, alle Beweise zur Entlastung Ihres Klienten geltend zu machen.
-    iii. Menschen, die sich an Ehebruch beteiligen, finden Sie moralisch verwerflich. Sie schreiben an die Staatsanwaltschaft, dass Sie die amtliche Verteidigung niederlegen. Damit ist diese aufgehoben.
-    iv. Sie sagen Ihrem Klienten, dass er in Briefen an Sie keine Angaben zum Delikt, das ihm vorgeworfen wird, machen darf, da diese sonst nicht weitergeleitet werden.
-    v. Sie sagen Ihrem Klienten, dass Sie leider nicht nach der Überwachungskamera suchen können, da dies von Ihrem amtlichen Mandat nicht gedeckt ist.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii und iv
-    B) keine der Aussagen
-    C) i
-    D) ii, iii, und v
+    Welche der folgenden Aussagen zur Strafbefreiung treffen zu?
+    i. Während sich Art. 52 StGB auf die Verhältnisse im Zeitpunkt der Tat und
+    die Tatfolgen bezieht, ist bei Art. 53 StGB das Verhalten des Täters nach
+    der Tat entscheidend.
+    ii. Strafbefreiung bedeutet, dass in Ausnahmefällen trotz
+    tatbestandsmässigem und rechtswidrigem Verhalten auf jede Sanktion
+    verzichtet werden kann.
+    iii. Damit eine Strafbefreiung aufgrund Wiedergutmachung zulässig ist,
+    müssen u.a. die Voraussetzungen für die bedingte Strafe erfüllt sein.
+    iv. Im Rahmen von Art. 54 StGB muss sich die Betroffenheit des Täters aus
+    den unmittelbaren Folgen der Tat ergeben. Dies ist z.B. der Fall, wenn sich
+    der Täter bei der Ausführung selbst verletzt.
+
+    A) keine der Aussagen
+    B) i und iv
+    C) i, ii, iii, und iv
+    D) i, ii, und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii und iv
   - keine der Aussagen
-  - i
-  - ii, iii, und v
-  gold: B
+  - i und iv
+  - i, ii, iii, und iv
+  - i, ii, und iv
+  gold: C
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 01342dc7-6657-430e-a364-68dac46f8bef
-    course: Strafrecht und Strafverfahrensrecht
-    year: 2021
+    id: 153099e9-95de-4d7d-812d-b87a300207b3
+    course: Jugendstrafrecht und Sanktionenrecht
+    year: 2023
     jurisdiction: Swiss
-    n_statements: 5
+    n_statements: 4
     negative_question: false
 - id: lexam-mcq-1071d0dc
   suite: lexam_mcq
@@ -1553,6 +1652,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Justice is regarded as a central purpose of the law. There has been a rich and intensive cross-cultural debate about justice since antiquity. Please indicate which of the following statements about the theory of justice are correct:
     i. According to the much criticised principle of proportional equality, grading the worst exam with the best score is just.
     ii. Since antiquity, justice has been identified with equality.
@@ -1583,45 +1684,51 @@
     jurisdiction: Swiss
     n_statements: 5
     negative_question: false
-- id: lexam-mcq-f05793eb
+- id: lexam-mcq-21eb5c99
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind falsch?
-    i. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen.
-    ii. Autofahrer X. "bläst" bei beiden Tests 0.7 mg Alkohol pro Liter Atemluft und bestreitet dieses Testergebnis vehement. Nach einem Telefongespräch mit der anwesenden Polizistin Y. ordnet der Pikett-Staatsanwalt eine Blutprobe an, da er angesichts des Zustandes von X. eine ungenügende Kooperation bei der Atemalkoholmessung befürchtete, für die ein geeignetes Messgerät zur Verfügung steht. Die Blutproben-Anordnungen sind zulässig.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii
-    B) keine der Aussagen
-    C) i
-    D) i und ii
+    Polizistin Paula hält PW-Lenker Kurt an, weil er keine Autobahnvignette hat. Kurt reagiert ungehalten. Paula bittet Kurt, ins Vortest-Gerät zu blasen, da sie vermutet, sein Verhalten sei von Alkohol beeinflusst. Da er nicht blasen will, geht sie mit Kurt ins Institut für Rechtsmedizin, für eine Blutprobe. Dort erklärt sich Kurt plötzlich bereit zu blasen. Das Atemalkoholmessgerät gibt ohne Fehlermeldung einen Wert von 0.74 mg/l an. Nach der Kenntnisnahme dieses Wertes sagt Kurt aufgebracht, das werde er nie anerkennen. Er verweigert die Unterschrift. Paula bringt ihn nach Hause, ohne dass eine Blutprobe genommen wird. Welche der folgenden Aussagen ist richtig?
+    i. Da Kurt die Atemalkoholprobe nicht anerkannt hat, ist sie nicht verwertbar.
+    ii. Da nur ein einziger Wert erhoben wurde, ist die Atemalkoholprobe nicht verwertbar.
+    iii. Die Atemalkoholprobe ist verwertbar und Kurt ist gemäss Art. 91 Abs. 2 Bst. a SVG zu bestrafen.
+    iv. Die Atemalkoholprobe ist nicht verwertbar, aber Kurt ist aufgrund seines Verhaltens gemäss Art. 91 Abs. 2 Bst. b SVG zu bestrafen.
+
+    A) i und iv
+    B) i, ii, iii, und iv
+    C) i, ii, und iii
+    D) iii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii
-  - keine der Aussagen
-  - i
-  - i und ii
-  gold: C
+  - i und iv
+  - i, ii, iii, und iv
+  - i, ii, und iii
+  - iii
+  gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: f05793eb-c6f1-44b2-9a05-28995823c702
+    id: 21eb5c99-2955-42fd-a4cf-0c367d3d4daf
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 2
-    negative_question: true
+    n_statements: 4
+    negative_question: false
 - id: lexam-mcq-9ecd920d
   suite: lexam_mcq
   area: Interdisciplinary
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Please indicate which of the following statements are correct:
     Real securities, such as pledge on movable property (pignus)…
     i. … tend to depend on the existence of the secured debt for their effective constitution: s.c. 'genetic' accessority.
@@ -1658,6 +1765,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Eine vollendete Steuerhinterziehung liegt vor, wenn der Steuerpflichtige in seiner Steuererklärung nicht alle Einkommensbestandteile deklariert.
     ii. Die Steuerbehörden können einen Einzelunternehmer verpflichten, Abschreibungen auf dem Geschäftsvermögen linear statt degressiv vorzunehmen.
@@ -1686,28 +1795,31 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: false
-- id: lexam-mcq-167ba362
+- id: lexam-mcq-34022e61
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen treffen zu?
-    i. In Art. 11 JStG kommt das geltende Prinzip des richterlichen Dualismus zum Ausdruck.
-    ii. Die Anordnung einer Schutzmassnahme erfolgt bei Massnahmebedürftigkeit nur sofern auch die Schuldfähigkeit gegeben ist.
-    iii. Sind mehrere Massnahmen erforderlich, wird zwischen den Möglichkeiten gewählt. Es wird nur eine angeordnet, um den Jugendlichen nicht zu überfordern.
-    iv. Das JStG geht davon aus, dass Jugendliche schutzmassnahmefähig sind. Trotzdem kann eine Schutzmassnahme aufgehoben werden, wenn sie keine Wirkung mehr entfaltet.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
+    Wählen Sie basierend auf dem folgenden Kontext alle Aussagen aus, die nicht zutreffen.
+    Kontext: Peter ist Geschäftsführer der X. AG, die u.a. bewilligten Handel mit Morphin für den medizinischen Gebrauch betreibt. Er betraut seinen neuen Mitarbeiter Hermann mit der Aufgabe, die Gesuche um Einfuhrbewilligungen zu stellen und die Einfuhr zu organisieren. Peter hat bei der Anstellung nur die Ausbildung von Hermann überprüft, hat aber keine Referenzen und Auskünfte eingeholt und weiss deshalb nicht, dass gegen Hermann mehrere Betreibungen laufen. Auch kontrolliert Peter die Arbeit von Hermann nicht. Hermann gibt im Gesuch, das ihn als Vertretung des Gesuchstellers nennt, zu hohe Bestellmengen der legalen Abnehmer an, um die Überschüsse auf dem Schwarzmarkt zu verkaufen und mit dem Erlös seine Schulden zu bezahlen. Bei der Prüfung des Gesuchs stellt das Schweizerische Heilmittelinstitut (Institut) fest, dass die Angaben nicht stimmen. Es erteilt keine Bewillligung und es kommt nicht zur Einfuhr.
+    i. Peter ist nicht strafbar gemäss Art. 20 Abs. 1 Bst. a BetmG, da er keine Absicht hatte, dass sein Betrieb falsche Angaben macht.
+    ii. Hermann ist nicht strafbar gemäss Art. 20 Abs. 1 Bst. a BetmG, da er bei der X. AG keine Kaderposition bekleidet und die Sonderpflicht zu richtigen Angaben nur der X. AG obliegt.
+    iii. Peter ist strafbar gemäss Art. 20 Abs. 1 Bst. a BetmG, da er als Arbeitgeber seine Sorgfaltspflichten bei der Auswahl und Überwachung von Hermann nicht erfüllt und es damit in Verletzung einer Rechtspflicht unterlassen hat, die Widerhandlung von Hermann abzuwenden.
+    iv. Hermann ist strafbar gemäss Art. 20 Abs. 1 Bst. a BetmG, da er vorsätzlich und in Ausübung geschäftlicher Verrichtung für die X. AG falsche Angaben gemacht hat.
 
     A) iv
-    B) ii
-    C) i und iv
+    B) iii
+    C) ii und iii
     D) iii und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
   - iv
-  - ii
-  - i und iv
+  - iii
+  - ii und iii
   - iii und iv
   gold: C
   expect:
@@ -1715,18 +1827,20 @@
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 167ba362-3f00-4152-8017-92540e69d5c7
-    course: Jugendstrafrecht und Sanktionenrecht
+    id: 34022e61-d389-45ca-b0ed-e739cbe13bc4
+    course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
     n_statements: 4
-    negative_question: false
+    negative_question: true
 - id: lexam-mcq-93853985
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufgewaschen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rückfallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Der geschlossene Vollzug kann angeordnet werden.
     ii. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufge wachsen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rück fallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Mittlerweile befindet sich Nico im Vollzug der Unterbringung im Massnahmenzentrum Uitikon (MZU). Beim Eintritt war die Leitung des MZU der Meinung, dass Nico länger im geschlossenen Vollzug verweilen muss. Da er einen grünen Daumen hat, wollte Nico schon immer eine Lehre als Gärtner machen. Ferner hat er schon früh bemerkt, dass er sich besonders gut mit seiner Vergangenheit auseinandersetzen kann, wenn er Sport macht. Diese Wünsche platziert er bei der Zentrumsleitung. Es sind ein paar Jahre vergangen. Nico ist nun 21 Jahre alt, befindet sich weiterhin im MZU und absolviert eine Berufslehre. Der 19-jährige Boris ist neu ins MZU eingetreten. Bei ihm wurde eine stationäre therapeutische Massnahme gemäss Art. 61 StGB angeordnet. Er soll in dieselbe Gruppe wie Nico eingeteilt werden. Mittlerweile ist Nico fast 24-jährig und immer noch im MZU. Er steht kurz vor dem Abschluss seiner Lehre. Mit seinen Leistungen sollte er die Abschlussprüfung knapp bestehen. Auch in der Therapie hat er Fortschritte erzielt. Er ist zwar kein Musterfall, doch gehen die zuständigen Therapeuten davon aus, dass er sich ausserhalb des MZU wahrscheinlich bewähren wird. Nico kann entlassen werden.
@@ -1755,71 +1869,74 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: false
-- id: lexam-mcq-9f2943f7
+- id: lexam-mcq-2a690ab9
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind falsch?
-    i. Die beschriebenen Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
-    ii. Ordungsbussen sind oberhalb der massgeblichen Grenzwerte ausgeschlossen.
-    iii. Die folgenden Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
-    iv. Die folgenden Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii
-    B) i
-    C) iv
+    Welche der folgenden Aussagen ist/sind richtig?
+    i. Xenia (X), geboren am 04.05.2012, ihre Schwester Susana (S), geboren am 07.10.2008, und ihr Bruder Bernard (B), geboren am 30.11.2003, wohnen mit ihren Eltern in der Stadt Zürich. Letzterer ist schon mehrfach vorbestraft (verschiedene Verstösse gegen das Betäubungsmittelgesetz, Raufhandel sowie Diebstahl). Am 10.11.2021 kommt es zu einer Auseinandersetzung zwischen S und ihrer Kollegin Karolina (K). Als der Streit nach einer Beleidigung von K gegenüber S eskaliert, eilen X und B herbei, um ihrer Schwester zu helfen. Zu dritt gehen sie auf K los, schlagen und treten sie. K erleidet eine leichte Gehirnerschütterung, Prellungen und Schürfungen. X, S und B erfüllen dadurch alle den Straftatbestand der einfachen Körperverletzung nach Art. 123 Ziff. 1 Abs. 1 StGB. Die Eltern sind verpflichtet, an der polizeilichen Einvernahme ihrer Kinder teilzunehmen.
+    ii. Timo (T) und sein älterer Bruder Simon (S), beide mit Wohnsitz in Winterthur, sind Mitglieder einer Bande, die regelmässig in den Warenhäusern der Stadt Zürich ihr Unwesen treibt und immer wieder Ladendiebstähle begeht. S und die anderen Bandenmitglieder sind alle zwischen 18 und 22 Jahre alt, während T erst 13-jährig ist. S und die anderen Bandenmitglieder nutzen das Alter des T aus, indem sie stets T die Diebstähle ausführen lassen. Wurde T erwischt, haben die Warenhäuser den «kleinen Jungen» bisher immer mit einer Verwarnung davonkommen lassen. Am 15. Januar 2022 möchte T mal wieder einen sehr teuren Pullover im Wert von CHF 850.- in seiner Tasche verschwinden lassen, als er von einem Ladendetektiv angehalten wird, der daraufhin sofort die Polizei alarmiert. Die Polizei nimmt T vorläufig fest und übergibt die Sache an die zuständige Untersuchungsbehörde. Während des Untersuchungsverfahrens stellt sich heraus, dass T aus schwierigen familiären Verhältnissen kommt. Beide Eltern sind aus beruflichen Gründen kaum zuhause und überlassen die Brüder S und T praktisch ihrem Schicksal. Weitere enge Bezugspersonen gibt es keine. Die Untersuchungsbeamtin möchte den Fall mit den Eltern besprechen. Die Eltern sind zur Teilnahme verpflichtet.
+    iii. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufge wachsen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rück fallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Mittlerweile befindet sich Nico im Vollzug der Unterbringung im Massnahmenzentrum Uitikon (MZU). Beim Eintritt war die Leitung des MZU der Meinung, dass Nico länger im geschlossenen Vollzug verweilen muss. Da er einen grünen Daumen hat, wollte Nico schon immer eine Lehre als Gärtner machen. Ferner hat er schon früh bemerkt, dass er sich besonders gut mit seiner Vergangenheit auseinandersetzen kann, wenn er Sport macht. Diese Wünsche platziert er bei der Zentrumsleitung. Es sind ein paar Jahre vergangen. Nico ist nun 21 Jahre alt, befindet sich weiterhin im MZU und absolviert eine Berufslehre. Der 19-jährige Boris ist neu ins MZU eingetreten. Bei ihm wurde eine stationäre therapeutische Massnahme gemäss Art. 61 StGB angeordnet. Er soll in dieselbe Gruppe wie Nico eingeteilt werden. Mittlerweile ist Nico fast 24-jährig und immer noch im MZU. Er steht kurz vor dem Abschluss seiner Lehre. Mit seinen Leistungen sollte er die Abschlussprüfung knapp bestehen. Auch in der Therapie hat er Fortschritte erzielt. Er ist zwar kein Musterfall, doch gehen die zuständigen Therapeuten davon aus, dass er sich ausserhalb des MZU wahrscheinlich bewähren wird. Nico kann entlassen werden.
+
+    A) ii und iii
+    B) i und iii
+    C) ii
     D) iii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii
-  - i
-  - iv
-  - iii
-  gold: B
-  expect:
-    abstain: false
-    cites: optional
-  source:
-    dataset: LEXam-Benchmark/LEXam
-    id: 9f2943f7-fcc2-4a65-b4f1-e9847a520156
-    course: Nebenstrafrecht
-    year: 2023
-    jurisdiction: Swiss
-    n_statements: 4
-    negative_question: true
-- id: lexam-mcq-d7410462
-  suite: lexam_mcq
-  area: Criminal
-  language: de
-  level: exam
-  question: |-
-    Bei B befinden sich Unterlagen, die die Staatsanwaltschaft für ein Verfahren gegen S verwenden will. Diese sollen daher sichergestellt und beschlagnahmt werden. Welche Aussagen treffen zu?
-    i. Wäre er beschuldigte Person, könnte er die Herausgabe nicht verweigern.
-    ii. Die Siegelung kann auch aus anderen Gründen beantragt werden. Etwa wenn Geheimnisse in den Aufzeichnungen enthalten sind, die ohne Relevanz für das Verfahren sind.
-    iii. Es kann die Siegelung beantragt werden, wenn ein Aussage- oder Zeugnisverweigerungsrecht geltend gemacht wird.
-    iv. Es besteht grundsätzlich eine Pflicht zu Herausgabe.
-
-    A) ii, iii, und iv
-    B) i und iii
-    C) i und ii
-    D) ii
-
-    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
-  choices:
-  - ii, iii, und iv
+  - ii und iii
   - i und iii
-  - i und ii
   - ii
+  - iii
   gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: d7410462-601f-4f1f-b96f-c122b1f91752
+    id: 2a690ab9-e247-4b13-adfa-a13a674c58ee
+    course: Jugendstrafrecht und Sanktionenrecht
+    year: 2023
+    jurisdiction: Swiss
+    n_statements: 3
+    negative_question: false
+- id: lexam-mcq-f5a014f3
+  suite: lexam_mcq
+  area: Criminal
+  language: de
+  level: exam
+  question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
+    A wird verdächtigt, am 1. Mai in der Zürcher Bahnhofstrasse randaliert zu haben, und wird diesbezüglich von der Polizei befragt. Nach zehn Minuten gibt er an, seinen Anwalt B hinzuziehen zu wollen. Der einvernehmende Polizist versucht B zu erreichen, als dies ohne Erfolg bleibt setzt er die Befragung fort. A beantwortet weitere Fragen und gibt schliesslich ein Geständnis ab. Nach der Einvernahme bespricht er sich mit B und beschliesst, das Geständnis zu widerrufen. Ausserdem verfasst er eine Schrift mit überwiegend politischem Inhalt und fordert B auf, diese in der Hauptverhandlung zu verlesen. Welche Aussagen treffen zu?
+    i. Eine Verurteilung des A darf sich nicht auf sein Geständnis während der polizeilichen Befragung stützen.
+    ii. B ist nicht verpflichtet, As Schrift in der Hauptverhandlung zu verlesen.
+    iii. Die Fortsetzung der polizeilichen Befragung war rechtmässig, da As Anwalt nicht erreicht werden konnte.
+    iv. Mit der weiteren Beantwortung der Fragen während der polizeilichen Einvernahme hat A auf sein Recht auf Verteidigung verzichtet.
+
+    A) i und ii
+    B) keine der Aussagen
+    C) i, ii, iii, und iv
+    D) i, ii, und iv
+
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+  choices:
+  - i und ii
+  - keine der Aussagen
+  - i, ii, iii, und iv
+  - i, ii, und iv
+  gold: A
+  expect:
+    abstain: false
+    cites: optional
+  source:
+    dataset: LEXam-Benchmark/LEXam
+    id: f5a014f3-9ee7-451e-90ac-ece955a89742
     course: Strafrecht und Strafverfahrensrecht
     year: 2021
     jurisdiction: Swiss
@@ -1830,17 +1947,18 @@
   area: Interdisciplinary
   language: en
   level: exam
-  question: "Which of the following statements is/are correct?\ni. In Swiss civil proceedings, the parties\
-    \ can normally appeal against the decision of the last-instance cantonal court to the Federal court.\n\
-    ii. Animals have no legal capacity like a person nor are they legally treated as objects; they rather\
-    \ form a third category of legal entities in property law.\niii. What should be protected by means\
-    \ of human rights depends on, amongst other things, a background theory of human goods. \niv. Spouses\
-    \ are subject to the provisions governing separation of property, provided they have not agreed otherwise\
-    \ in a marital agreement and provided no extraordinary marital property regime has come into effect.\n\
-    v. In Switzerland, a strict reciprocity principle applies with respect to the recognition and enforcement\
-    \ of foreign judgments.\n\nA) i and iii\nB) i, ii, and v\nC) v\nD) i, ii, and iv\n\nChoose one of\
-    \ the options A–D. End your answer with the line \"Answer: X\", where X is the letter of the option\
-    \ you choose."
+  question: "Choose one of the options A–D. End your answer with the line \"Answer: X\", where X is the\
+    \ letter of the option you choose.\n\nWhich of the following statements is/are correct?\ni. In Swiss\
+    \ civil proceedings, the parties can normally appeal against the decision of the last-instance cantonal\
+    \ court to the Federal court.\nii. Animals have no legal capacity like a person nor are they legally\
+    \ treated as objects; they rather form a third category of legal entities in property law.\niii. What\
+    \ should be protected by means of human rights depends on, amongst other things, a background theory\
+    \ of human goods. \niv. Spouses are subject to the provisions governing separation of property, provided\
+    \ they have not agreed otherwise in a marital agreement and provided no extraordinary marital property\
+    \ regime has come into effect.\nv. In Switzerland, a strict reciprocity principle applies with respect\
+    \ to the recognition and enforcement of foreign judgments.\n\nA) i and iii\nB) i, ii, and v\nC) v\n\
+    D) i, ii, and iv\n\nChoose one of the options A–D. End your answer with the line \"Answer: X\", where\
+    \ X is the letter of the option you choose."
   choices:
   - i and iii
   - i, ii, and v
@@ -1858,38 +1976,42 @@
     jurisdiction: Swiss
     n_statements: 5
     negative_question: false
-- id: lexam-mcq-682cc08c
+- id: lexam-mcq-02bd91d5
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind richtig?
-    i. EG/EFTA-Angehörige, die in die Schweiz einreisen, obwohl gegen sie ein Einreiseverbot wegen Verursachung von Sozialhilfekosten verfügt worden ist, sind gemäss Art. 115 Abs. 1 Bst. a AIG in Verbindung mit Art. 5 Abs. 1 Bst. d und 67 Abs. 2 Bst. b AIG strafbar. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
-    ii. Velofahrerin X. "bläst" bei beiden Tests 0.6 mg Alkohol pro Liter Atemluft und bestätigt mit Unterschrift, diese Tests zu anerkennen. Polizist Y. will auf nummersicher gehen und erhält auf Anfrage von der Pikett-Staatsanwältin die Anordnung einer Blutprobe. Die Blutproben-Anordnungen sind zulässig.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
+    Welche der folgenden Aussagen treffen zu?
+    i. Als Täterstrafrecht hat das Jugendstrafrecht eine spezialpräventive Zielsetzung.
+    ii. Weil das Jugendstrafrecht ein Täterstrafrecht ist, trifft die erziehungsberechtigte Person keine strafrechtliche Verantwortung.
+    iii. Das Jugendstrafrecht knüpft wegen seiner Ausgestaltung als Täterstrafrecht nicht an eine Strafe an.
+    iv. Im Jugendstrafrecht stehen die Persönlichkeit des Täters und das Bestreben, diesen von weiteren Straftaten abzuhalten im Vordergrund. Das Jugendstrafrecht ist daher kein Täterstrafrecht.
 
     A) i und ii
-    B) i
-    C) keine der Aussagen
-    D) ii
+    B) i, ii, und iii
+    C) iii
+    D) i, ii, iii, und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
   - i und ii
-  - i
-  - keine der Aussagen
-  - ii
+  - i, ii, und iii
+  - iii
+  - i, ii, iii, und iv
   gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 682cc08c-7231-4c8d-b521-346e671bd0b4
-    course: Nebenstrafrecht
+    id: 02bd91d5-9063-47ef-b3fb-97f3ccf6c4d1
+    course: Jugendstrafrecht und Sanktionenrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 2
+    n_statements: 4
     negative_question: false
 - id: lexam-mcq-5a3b1ebd
   suite: lexam_mcq
@@ -1897,6 +2019,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Erweist sich die Handelsbilanz einer steuerpflichtigen Gesellschaft als handelsrechtswidrig, muss sie eine neue Handelsbilanz erstellen und von der Generalversammlung genehmigen lassen.
     ii. Bei Kollektivgesellschaften ist die Verbuchung massgebend für die Zuordnung.
@@ -1926,38 +2050,40 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
-- id: lexam-mcq-9e3d60a1
+- id: lexam-mcq-ece63d9c
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussage(n) sind richtig? Wird gegen einen Strafbefehl Einsprache erhoben,
-    i. …gilt diese als zurückgezogen, wenn der Einsprecher unentschuldigt von einer daraufhin angesetzten Einvernahme fernbleibt, auch wenn er keine Kenntnis von der Vorladung hatte.
-    ii. …fällt die Rechtskraft des Strafbefehls ex nunc weg.
-    iii. …gilt der Strafbefehl automatisch als Anklageschrift.
-    iv. …ist die beschuldigte Person zwingend einzuvernehmen.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) iii und iv
-    B) i und ii
-    C) keine der Aussagen
-    D) i
+    Beurteilen Sie folgende Aussagen zu den Verfahrensregeln. Welche der folgenden Aussage(n) sind richtig?
+    i. Der beschuldigte Jugendliche Max möchte als Vertrauensperson Kurt beiziehen, der selbst mehrfach vorbestraft ist. Max steht das Recht, Kurt beizuziehen, ohne Einschränkung zu.
+    ii. Im Rahmen des Verfahrens gegen Jugendlichen Heinz wird erfolgreich eine Mediation durchgeführt. Jugendanwalt Müller übermittelt das Mediationsergebnis an das Gericht zwecks Fällung eines Urteils. Müllers Vorgehen ist korrekt.
+    iii. Bleibt die Mitwirkung der gesetzlichen Vertretung trotz Anordnung der Behörden aus, können die Untersuchungsbehörde oder das Jugendgericht eine Verwarnung aussprechen.
+    iv. Im Gegensatz zum Erwachsenenstrafrecht gilt bei den Jugendlichen grundsätzlich das Tatortprinzip und nicht das Wohnortprinzip. Ausgenommen sind Übertretungen, die am Wohnort verfolgt werden
+
+    A) ii, iii, und iv
+    B) iii
+    C) i
+    D) ii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - iii und iv
-  - i und ii
-  - keine der Aussagen
+  - ii, iii, und iv
+  - iii
   - i
-  gold: C
+  - ii
+  gold: B
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 9e3d60a1-350d-4c53-83e5-dad5a16ab95b
-    course: Strafrecht und Strafverfahrensrecht
-    year: 2021
+    id: ece63d9c-91ba-43fa-a676-17ce326c72a0
+    course: Jugendstrafrecht und Sanktionenrecht
+    year: 2023
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
@@ -1967,6 +2093,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Die Barabfindung stellt für die Empfänger deshalb Kapitalgewinn dar.
     ii. Es besteht das Risiko, dass bei Y im Umfang der Differenz Aktienertrag aufgerechnet wird.
@@ -2002,6 +2130,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Swiss commercial law requires that a shareholder of a company contribute only cash to become a shareholder of the company.
     ii. Switzerland is a member of the European Free Trade Association (EFTA), but not of the European Economic Area (EEA).
@@ -2036,6 +2166,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. In 1892, Eugen Huber was appointed to prepare a first draft of the Swiss Civil Code.
     ii. The treasure found on alien property quite likely belonged under Republican Roman law entirely to the landowner.
@@ -2065,46 +2197,18 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: true
-- id: lexam-mcq-a08fb4d4
+- id: lexam-mcq-5f5cd7fa
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
-  question: |-
-    Welche der folgenden Aussagen ist/sind richtig?
-    i. Unterhalb des massgeblichen Grenzwerts ist eine grobe bzw. qualifiziert grobe Verkehrsregelverletzung möglich. Unterhalb des massgeblichen Grenzwerts ist eine grobe bzw. qualifiziert grobe Verkehrsregelverletzung möglich.
-    ii. Alle Scheiben des von Roland gemieteten Personenwagens sind vereist, so dass man nicht mehr hindurchsieht. Roland kratzt auf Augenhöhe ein Guckloch 15 Mal 25 cm frei und fährt sehr vorsichtig mit den Verhältnissen angepasster Geschwindigkeit los. Die Vermieterin stellt Strafantrag gegen Roland und macht geltend, Roland nicht zu so verantwortungslosen Fahrten ermächtigt zu haben. Roland ist strafbar gemäss Art. 93 Abs. 2 Bst. a SVG.
-
-    A) ii
-    B) i
-    C) keine der Aussagen
-    D) i und ii
-
-    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
-  choices:
-  - ii
-  - i
-  - keine der Aussagen
-  - i und ii
-  gold: B
-  expect:
-    abstain: false
-    cites: optional
-  source:
-    dataset: LEXam-Benchmark/LEXam
-    id: a08fb4d4-4aab-4a16-a1e9-e930c585e073
-    course: Nebenstrafrecht
-    year: 2023
-    jurisdiction: Swiss
-    n_statements: 2
-    negative_question: false
-- id: lexam-mcq-12ff350a
-  suite: lexam_mcq
-  area: Criminal
-  language: de
-  level: exam
-  question: "Welche der folgenden Aussagen ist/sind falsch?\ni. Kuno fährt in einer eisig-kalten Januarnacht\
-    \ um 3 Uhr alkohol- und drogenfrei nach 7 Stunden \nSchlaf mit seinem Personenwagen von zu Hause über\
+  question: "Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X»\
+    \ ab, wobei X der Buchstabe der gewählten Option ist.\n\nWelche der folgenden Aussagen ist/sind richtig?\n\
+    i. Unterhalb des massgeblichen Grenzwerts hat der fehlbare Lenker stets einen Anspruch darauf, dass\
+    \ ihm die Erledigung seiner Verfehlung im Ordnungsbussenverfahren angeboten wird. Unterhalb des massgeblichen\
+    \ Grenzwerts hat der fehlbare Lenker stets einen Anspruch darauf, dass ihm die Erledigung seiner Verfehlung\
+    \ im Ordnungsbussenverfahren angeboten wird.\nii. Kuno fährt in einer eisig-kalten Januarnacht um\
+    \ 3 Uhr alkohol- und drogenfrei nach 7 Stunden \nSchlaf mit seinem Personenwagen von zu Hause über\
     \ Land in Richtung seines Schichtbetriebs\nArbeitsplatzes. Auf einer Glatteis-Fläche kommt er ins\
     \ Schleudern, bringt aber das Auto fast \nunter Kontrolle, so dass er nur leicht mit dem Pfahl eines\
     \ Weidezauns kollidiert. Dieser war \nmorsch und bricht ab. Kuno schreibt auf seine Visitenkarte Datum,\
@@ -2112,40 +2216,76 @@
     \ Pfahl. Dann fährt er weiter, \nweil er aus betrieblichen Gründen unbedingt pünktlich zur Schicht\
     \ erscheinen muss. Da Kuno weder den Geschädigten noch die Polizei unverzüglich benachrichtigt hat,\
     \ ist ihm ein \npflichtwidriges Verhalten bei Unfall (Art. 92 Abs. 1 SVG in Verbindung mit Art. 51\
-    \ Abs. 3 SVG) \nvorzuwerfen.\nii. Die Strafbestimmungen des AIG finden grundsätzlich Anwendung. Die\
-    \ Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.\n\
-    iii. Autofahrer X. \"bläst\" bei beiden Tests 0.7 mg Alkohol pro Liter Atemluft und bestreitet dieses\
-    \ Testergebnis vehement. Nach einem Telefongespräch mit der anwesenden Polizistin Y. ordnet der Pikett-Staatsanwalt\
-    \ eine Blutprobe an, da er angesichts des Zustandes von X. eine ungenügende Kooperation bei der Atemalkoholmessung\
-    \ befürchtete, für die ein geeignetes Messgerät zur Verfügung steht. Die Blutproben-Anordnungen sind\
-    \ zulässig.\niv. Fahrzeughalterin X. begleitet mit einer Atemalkoholkonzentration von 0.08 mg/L den\
-    \ fortgeschrittenen Lernfahrer Y., der alkoholfrei ist, auf einer Lernfahrt. X. ist wegen FinZ strafbar\n\
-    \nA) ii und iv\nB) iii und iv\nC) keine der Aussagen\nD) i und ii\n\nWählen Sie eine der Optionen\
-    \ A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten\
-    \ Option ist."
+    \ Abs. 3 SVG) \nvorzuwerfen.\niii. Unfalllenker X. ist verletzt am Unfallort und nicht ansprechbar.\
+    \ Polizei-Offizierin Y., die über einen juristischen Hochschulabschluss und ein Anwaltspatent verfügt,\
+    \ ordnet eine Blutprobe an. Die Blutproben-Anordnungen sind zulässig.\niv. Unterhalb des massgeblichen\
+    \ Grenzwerts ist eine grobe bzw. qualifiziert grobe Verkehrsregelverletzung möglich. Unterhalb des\
+    \ massgeblichen Grenzwerts ist eine grobe bzw. qualifiziert grobe Verkehrsregelverletzung möglich.\n\
+    \nA) ii, iii, und iv\nB) iii und iv\nC) ii und iii\nD) ii und iv\n\nWählen Sie eine der Optionen A–D.\
+    \ Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option\
+    \ ist."
   choices:
-  - ii und iv
+  - ii, iii, und iv
   - iii und iv
-  - keine der Aussagen
-  - i und ii
-  gold: C
+  - ii und iii
+  - ii und iv
+  gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 12ff350a-ef7c-49ef-a545-0c35f8ad9074
+    id: 5f5cd7fa-4b5c-4af1-8fa9-c11d79cbffd1
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
     n_statements: 4
-    negative_question: true
+    negative_question: false
+- id: lexam-mcq-e186939c
+  suite: lexam_mcq
+  area: Criminal
+  language: de
+  level: exam
+  question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
+    Bob fährt mit seinem Oldtimer "Citroën 2 CV" auf der Autobahn bei Tempo 120 km/h mit 109 km/h auf der Überholspur, um den mit 90 km/h fahrenden, von Salvatore gelenkten Sattelschlepper zu überholen. Don will mit seinem Sportwagen "Ferrari" auf der Autobahn mindestens 130 km/h fahren und ärgert sich über den "2 CV". Er fährt deshalb bis auf 5 Meter an den "2 CV" heran und fordert ihn durch Licht- und später auch durch Hupzeichen auf, unverzüglich die Spur zu wechseln. Unter diesem Druck schwenkt Bob nach dem Überholmanöver vorzeitig wieder nach rechts ein, so dass er zunächst nur einen Abstand von 15 Meter zum Sattelschlepper hat, welcher Abstand sich in der Folge vergrössert. Welche der folgenden Aussagen sind richtig?
+    i. Don erfüllt den Tatbestand der Nötigung, da er Bob erheblich gefährdete und ihn dadurch veranlasste, die Überholspur unter Verletzung der Verkehrsregeln vorzeitig zu verlassen.
+    ii. Bob erfüllt den Tatbestand der einfachen Verkehrsregelverletzung, da er zu früh vor dem Sattelschlepper eingeschwenkt ist, doch wird Bob dadurch zumindest entschuldigt, dass er dadurch die von Don verursachte Gefahr abwendete und dass die von ihm dabei verursachte andere Gefahr für ihn und für dritte bedeutend kleiner war.
+    iii. Salvatore erfüllt den Tatbestand der einfachen Verkehrsregelverletzung, da er einen zu kleinen Abstand zu dem vor ihm fahrenden "2 CV" hatte, doch wird Salvatore dadurch gerechtfertigt, dass er keine Möglichkeit hatte, diese Situation zu verhindern.
+    iv. Don erfüllt den Tatbestand der groben Verkehrsregelverletzung, da er bei diesen Geschwindigkeit durch den sehr kleinen Abstand Bob ernsthaft und konkret gefährdete.
+
+    A) ii und iv
+    B) i, ii, iii, und iv
+    C) iv
+    D) i, ii, und iv
+
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+  choices:
+  - ii und iv
+  - i, ii, iii, und iv
+  - iv
+  - i, ii, und iv
+  gold: D
+  expect:
+    abstain: false
+    cites: optional
+  source:
+    dataset: LEXam-Benchmark/LEXam
+    id: e186939c-4514-45db-b10f-d96a51c4dcc6
+    course: Nebenstrafrecht
+    year: 2023
+    jurisdiction: Swiss
+    n_statements: 4
+    negative_question: false
 - id: lexam-mcq-10826004
   suite: lexam_mcq
   area: Interdisciplinary
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. The Convention for the Amelioration of the Condition of the Wounded in Armies in the Field was held on 22 August 1864.
     ii. The Federal Council consists of a Prime Minister and six other ministers. The Prime Minister represents Switzerland abroad and enjoys special powers. He/she can dissolve the Federal Assembly and thus trigger general elections.
@@ -2180,6 +2320,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. A, Alleinaktionär der X AG entscheidet sich noch im Jahre 2019 3.5% seiner Beteiligungen in eine Holding AG einzubringen, an der er zu 60% beteiligt ist. Dies führt zu steuerbarem Ertrag.
     ii. Alle wiederkehrenden und einmaligen Einkünfte aus der Säule 3b unterliegen der Einkommenssteuer. Steuerbar sind nach Art. 23 lit. b DBG auch einmalige oder wiederkehrende Zahlungen bei Tod sowie für bleibende körperliche oder gesundheitliche Nachteile.
@@ -2216,6 +2358,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Die Y AG ist an der Schweizer Börse kotiert und hat CHF 300'000 Kapitalreserven und CHF 300'000 Gewinnreserven. Sie beabsichtigt am 31. Dezember 2020 CHF 200'000 Dividenden auszuschütten. Sie entnimmt diese den Kapitalreserven, da dies keine Steuerfolgen nach sich zieht. Sie entnimmt diese den Kapitalreserven, da dies keine Steuerfolgen nach sich zieht.
     ii. A ist Alleinaktionär der E AG mit Sitz in Zürich. Sein Vater C war Inhaber von 100% der Aktien der F AG, ebenfalls mit Sitz in Zürich, deren Aktienkapital aus 5'000 voll liberierten Aktien à CHF 500 besteht. Am 1. Januar 2018 verkaufte C 2'500 Aktien (50% des Aktienkapitals) der F AG zum Preis von CHF 3 Mio. an die E AG. Dieser Preis entspricht dem Verkehrswert der Beteiligung. Der Kaufpreis wurde als unverzinsliches Darlehen von C gegenüber der E AG stehengelassen. Mit Schenkungsvertrag vom 20. Dezember 2018 trat C von seinem Darlehensguthaben gegenüber der E AG per 31. Dezember 2018 den Teilbetrag von CHF 1.5 Mio. an seinen Sohn A ab. Der Tatbestand der Transponierung ist vorliegend erfüllt.
@@ -2251,6 +2395,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Der Schweizer Pharmakonzern P verwaltet bzw. verwertet sein ganzes Produkte-Portfolio in den USA über die Lizenznehmerin L. Das heisst, L kümmert sich um Herstellung, Vertrieb und Marketing der (patentrechtlich geschützten) Produkte. Zu diesem Zweck hat P der L an allen relevanten Patenten eine ausschliessliche Lizenz für das Gebiet der USA erteilt (zum pauschalen Preis von 1 Mrd. CHF pro Jahr). Das eigene Portfolio von L ist in letzter Zeit stark angewachsen und L überlegt sich daher, ob sie die Herstellung und Verwertung der Produkte von P an das Unternehmen D auslagern könnte, um sich mehr auf die Vermarktung der hauseigenen Produkte konzentrieren zu können. Dies soll mittels ausschliesslicher Unterlizenzierung der Patente von P durch L an D bewerkstelligt werden (mit Ausschluss der eigenen Nutzung durch L). Der Lizenzvertrag enthält keine Bestimmungen dazu. Welche Indizien sind bei der rechtlichen Beurteilung der Zulässigkeit der Unterlizenzierung durch L zu berücksichtigen?
     i. Keine – die Unterlizenzierung ist nur mit Zustimmung des Hauptlizenzgebers erlaubt
     ii. Die Tatsache, dass es sich bei den lizenzierten Rechten um Patente handelt.
@@ -2286,6 +2432,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Based on the following context, please select all statements that do not apply.
     Context: Dr. Genius estimates the value of a real estate in the canton of Lucerne on demand of Katrina.
     i. If Katrina revokes the contract at an inopportune point in time, she must compensate Dr. Genius for any resulting damage.
@@ -2314,39 +2462,43 @@
     jurisdiction: Swiss
     n_statements: 2
     negative_question: true
-- id: lexam-mcq-2a690ab9
+- id: lexam-mcq-6b1ee002
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind richtig?
-    i. Xenia (X), geboren am 04.05.2012, ihre Schwester Susana (S), geboren am 07.10.2008, und ihr Bruder Bernard (B), geboren am 30.11.2003, wohnen mit ihren Eltern in der Stadt Zürich. Letzterer ist schon mehrfach vorbestraft (verschiedene Verstösse gegen das Betäubungsmittelgesetz, Raufhandel sowie Diebstahl). Am 10.11.2021 kommt es zu einer Auseinandersetzung zwischen S und ihrer Kollegin Karolina (K). Als der Streit nach einer Beleidigung von K gegenüber S eskaliert, eilen X und B herbei, um ihrer Schwester zu helfen. Zu dritt gehen sie auf K los, schlagen und treten sie. K erleidet eine leichte Gehirnerschütterung, Prellungen und Schürfungen. X, S und B erfüllen dadurch alle den Straftatbestand der einfachen Körperverletzung nach Art. 123 Ziff. 1 Abs. 1 StGB. Die Eltern sind verpflichtet, an der polizeilichen Einvernahme ihrer Kinder teilzunehmen.
-    ii. Timo (T) und sein älterer Bruder Simon (S), beide mit Wohnsitz in Winterthur, sind Mitglieder einer Bande, die regelmässig in den Warenhäusern der Stadt Zürich ihr Unwesen treibt und immer wieder Ladendiebstähle begeht. S und die anderen Bandenmitglieder sind alle zwischen 18 und 22 Jahre alt, während T erst 13-jährig ist. S und die anderen Bandenmitglieder nutzen das Alter des T aus, indem sie stets T die Diebstähle ausführen lassen. Wurde T erwischt, haben die Warenhäuser den «kleinen Jungen» bisher immer mit einer Verwarnung davonkommen lassen. Am 15. Januar 2022 möchte T mal wieder einen sehr teuren Pullover im Wert von CHF 850.- in seiner Tasche verschwinden lassen, als er von einem Ladendetektiv angehalten wird, der daraufhin sofort die Polizei alarmiert. Die Polizei nimmt T vorläufig fest und übergibt die Sache an die zuständige Untersuchungsbehörde. Während des Untersuchungsverfahrens stellt sich heraus, dass T aus schwierigen familiären Verhältnissen kommt. Beide Eltern sind aus beruflichen Gründen kaum zuhause und überlassen die Brüder S und T praktisch ihrem Schicksal. Weitere enge Bezugspersonen gibt es keine. Die Untersuchungsbeamtin möchte den Fall mit den Eltern besprechen. Die Eltern sind zur Teilnahme verpflichtet.
-    iii. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufge wachsen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rück fallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Mittlerweile befindet sich Nico im Vollzug der Unterbringung im Massnahmenzentrum Uitikon (MZU). Beim Eintritt war die Leitung des MZU der Meinung, dass Nico länger im geschlossenen Vollzug verweilen muss. Da er einen grünen Daumen hat, wollte Nico schon immer eine Lehre als Gärtner machen. Ferner hat er schon früh bemerkt, dass er sich besonders gut mit seiner Vergangenheit auseinandersetzen kann, wenn er Sport macht. Diese Wünsche platziert er bei der Zentrumsleitung. Es sind ein paar Jahre vergangen. Nico ist nun 21 Jahre alt, befindet sich weiterhin im MZU und absolviert eine Berufslehre. Der 19-jährige Boris ist neu ins MZU eingetreten. Bei ihm wurde eine stationäre therapeutische Massnahme gemäss Art. 61 StGB angeordnet. Er soll in dieselbe Gruppe wie Nico eingeteilt werden. Mittlerweile ist Nico fast 24-jährig und immer noch im MZU. Er steht kurz vor dem Abschluss seiner Lehre. Mit seinen Leistungen sollte er die Abschlussprüfung knapp bestehen. Auch in der Therapie hat er Fortschritte erzielt. Er ist zwar kein Musterfall, doch gehen die zuständigen Therapeuten davon aus, dass er sich ausserhalb des MZU wahrscheinlich bewähren wird. Nico kann entlassen werden.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii und iii
-    B) i und iii
-    C) ii
-    D) iii
+    Welche der folgenden Aussagen ist/sind richtig?
+    i. Die folgenden Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+    ii. Die folgenden Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+    iii. Die Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+    iv. Ordungsbussen sind oberhalb der massgeblichen Grenzwerte ausgeschlossen.
+    v. Die beschriebenen Verhaltensweisen erfüllen einen objektiven Tatbestand gemäss Art. 116 AIG.
+
+    A) keine der Aussagen
+    B) i, iii, iv, und v
+    C) iii und v
+    D) i, ii, und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii und iii
-  - i und iii
-  - ii
-  - iii
-  gold: A
+  - keine der Aussagen
+  - i, iii, iv, und v
+  - iii und v
+  - i, ii, und iv
+  gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 2a690ab9-e247-4b13-adfa-a13a674c58ee
-    course: Jugendstrafrecht und Sanktionenrecht
+    id: 6b1ee002-3457-47e3-ada5-09a9a4a8161a
+    course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 3
+    n_statements: 5
     negative_question: false
 - id: lexam-mcq-166da4f0
   suite: lexam_mcq
@@ -2354,6 +2506,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Um vom Tourismus in der Gemeinde X (Kanton Y) zu profitieren, will Fritz Innovativ (F) auf seinem kleinen Grundstück in den Bergen vier mobile Schlafzimmer in Form eines Würfels aufstellen lassen. Dabei sollen alle Wände aus Glas sein, damit man nachts die ungestörte Alpenlandschaft und die Steinböcke in ihrem natürlichen Lebensraum bestaunen kann. Das Projekt soll in der unberührten Natur erstellt werden, fernab von Bauzonen, welche die Aussicht trüben könnten. Es soll auf einer flachen Erhöhung realisiert werden und auch aus der Ferne sichtbar sein, da das Glas das einfallende Sonnenlicht reflektiert und so für eine anmutige Stimmung sorgt. Die Glaszimmer sollen die Grösse eines Schlafzimmers haben (ca. 15 m2) und Platz für ein Doppelbett, einen kleineren Schrank, einen Tisch und zwei Stühle bieten. Dabei beabsichtigt F, dass die Besucher maximal eine Nacht dort verbringen sollen, sodass er auf weitere Annehmlichkeiten verzichten kann. Auch können die Zimmer als Ganzes jederzeit wieder abgebaut werden, da es im Winter zu gefährlich wäre, diese dort stehen zu lassen. So sollen sie denn auch nur in den Sommermonaten über einen Lufttransport aufgestellt werden. Dabei werden sie mit entfernbaren Stahlkabeln verankert, um das Ganze zu sichern. Weil die Glaszimmer jederzeit entfernt werden können, ist F der Meinung, dass er für das Projekt keiner Baubewilligung bedarf. Da er sich der Sache jedoch nicht ganz sicher ist, wendet er sich an seinen Anwalt. Die Auffassung von F, dass er für das Projekt keiner Baubewilligung bedarf, ist zutreffend.
     ii. Die Gemeinde Y im Kanton Zürich möchte das "Sägereiareal" (Parzellen-Nrn. 3000–3005), welches in der Gewerbezone liegt, umnutzen. Weil das Areal schon länger nicht mehr ge nutzt wird, soll es in eine Wohnzone, in welcher nur nichtstörende Betriebe gestattet sind, umgezont werden. Die entsprechende Nutzungsplanänderung wird vom Gemeindevorstand zurzeit ausgearbeitet. Um die Planung zu sichern, soll nun für die Parzellen des "Sägerei areals" eine auf zwei Jahre befristete Planungszone erlassen werden. Die Planungszone ist zulässig.
@@ -2387,6 +2541,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. The acquisition of land ownership, including the building thereon, takes place when the acquirer gets the full possession of the building.
     ii. Switzerland is a party to the Council of Europe, but is not bound by the European Convention on Human Rights (ECHR).
@@ -2422,6 +2578,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Paul is a non-married, employed Swiss citizen living in the city of Zurich (canton of Zurich). His girlfriend Christine lives in Zurich as well, but works in Aarau (canton of Aargau). She commutes to Aarau every day. The canton of Zurich is allowed to introduce a VAT without any restrictions.
     ii. Swiss commercial law requires a commercial partnership to act in its own name in legal proceedings. Swiss commercial law requires a commercial partnership to act in its own name in legal proceedings.
@@ -2455,6 +2613,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Madeleine, a lawyer with special knowledge in insurances, is planning to open an insurance broker boutique. In order to start her business activities, she needs some advice which type of business association she should choose. Which answers are correct?
     i. In order to set up a company limited by shares Madeleine needs at least CHF 100'000.
     ii. With a company limited by shares Madeleine’s business seems more trustworthy than with a limited liability company.
@@ -2491,6 +2651,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. In Switzerland, a foreign judgment and a foreign insolvency decree can be recognised and enforced irrespective of whether Swiss judgments and Swiss insolvency decrees would also be recognised and enforced in the state of origin of the foreign judgment or decree.
     ii. Under Swiss law, in order for one’s actions to create legal effect one must not necessarily have capacity of judgement.
@@ -2525,6 +2687,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Judgments given in Swiss civil proceedings become res judicata not only between the parties but against any person who has an interest in the matter.
     ii. The “Digest” (or “Pandects”) was conceived as a short introduction to Roman Law for the students of Berytus and Constantinople.
@@ -2554,40 +2718,43 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
-- id: lexam-mcq-49cca77a
+- id: lexam-mcq-60e2fb0c
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen treffen zu?
-    i. Für die Bestimmung des Strafrahmens sind u.a. die Legaldefinitionen der Strafarten massgebend.
-    ii. Die echte Konkurrenz führt nur zur Strafschärfung, wenn es um gleichartige Delikte geht. Bei verschiedenartigen führt sie zur Strafmilderung.
-    iii. Die unechte Konkurrenz führt nicht zur Strafschärfung.
-    iv. Nach dem Absorptionsprinzip wird nur die nach dem leichtesten Tatbestand angedrohte Strafe verhängt.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i und iii
-    B) ii und iv
-    C) i und iv
-    D) iii und iv
+    Welche der folgenden Aussage(n) sind richtig? Die verdeckte Fahndung…
+    i. … erfolgt im Rahmen kurzer Einsätze und ist darauf gerichtet, mit der Zielperson ein Vertrauensverhältnis aufzubauen.
+    ii. … wird von Angehörigen der Polizei durchgeführt, welche sich während der verdeckten Fahndung einfacher Lügen bedienen dürfen, um ihre wahre Identität nicht offenzulegen.
+    iii. … grenzt sich unter anderem dadurch von der verdeckten Ermittlung ab, dass bei der verdeckten Fahndung die Ermittler nicht über eine Legende verfügen.
+    iv. … wird im Ermittlungsverfahren durch die Staatsanwaltschaft und im Untersuchungsverfahren durch die Polizei angeordnet.
+    v. … kann immer angeordnet werden, wenn der Verdacht besteht, ein Verbrechen oder Vergehen sei begangen worden.
+
+    A) i, iv, und v
+    B) i, ii, und v
+    C) iii
+    D) i und ii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i und iii
-  - ii und iv
-  - i und iv
-  - iii und iv
-  gold: A
+  - i, iv, und v
+  - i, ii, und v
+  - iii
+  - i und ii
+  gold: C
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 49cca77a-2b14-44b0-8e27-8fda5404c4c0
-    course: Jugendstrafrecht und Sanktionenrecht
-    year: 2023
+    id: 60e2fb0c-3ab7-4cd1-b984-8fe03106e2ea
+    course: Strafrecht und Strafverfahrensrecht
+    year: 2021
     jurisdiction: Swiss
-    n_statements: 4
+    n_statements: 5
     negative_question: false
 - id: lexam-mcq-d60d8887
   suite: lexam_mcq
@@ -2595,6 +2762,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Based on the following context, please select all applicable statements.
     Context: Eric is a Dutch citizen who accepted a job offer in the city of Zürich and just moved to Switzerland with his wife Clara and two children. He has rented a little house in the countryside close to the city of Baden (canton of Aargau, 35 minutes by bus and train from Zürich). Eric and Clara still own an apartment in Amsterdam that they rented out.
     i. Since Eric works in the canton of Zürich but lives in the canton of Aargau, his income from employment may be taxed by the canton of Zürich.
@@ -2631,6 +2800,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. The treasure found on alien property is a good example of how contemporary law occasionally needs to depart from the old Roman solutions.
     ii. Swiss commercial law is based on a comprehensive codification of the civil code in the 2000s.
@@ -2666,6 +2837,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. EG/EFTA-Angehörige, die ohne genügenden Mittel in die Schweiz einreisen, sind gemäss Art. 115 Abs. 1 Bst. a AIG in Verbindung mit Art. 5 Abs. 1 Bst. b AIG strafbar. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
     ii. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen.
@@ -2701,6 +2874,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Naturaldividenden, die ein im Inland unbeschränkt Steuerpflichtiger empfängt, unterliegen der Verrechnungssteuer.
     ii. Der degressive Steuertarif, wie er im Kanton Obwalden vorlag, verletzt das Leistungsfähigkeitsprinzip wie auch den Grundsatz der Gleichmässigkeit der Besteuerung. Wirtschaftspolitische Überlegungen wie die Erhöhung der Standortattraktion können die Verletzung aber rechtfertigen, weshalb ein degressiver Steuertarif verfassungsmässig ist.
@@ -2735,6 +2910,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. In der Schweiz ist der Gesetzgebungsprozess auf Bundesebene vergleichsweise langsam wegen der Arbeit mit Problemlösungszyklen.
     ii. In der Schweiz ist der Gesetzgebungsprozess auf Bundesebene vergleichsweise langsam wegen dem Vernehmlassungsverfahren.
@@ -2770,14 +2947,16 @@
   area: Interdisciplinary
   language: en
   level: exam
-  question: "Which of the following statements is/are incorrect?\ni. It is a Swiss particularity that\
-    \ all major political parties are represented in the Federal Council. To this effect, the so-called\
-    \ magic formula was established (by practice, not based on an explicit provision in the Constitution).\
-    \ \nii. Johann Caspar Bluntschli, Gustave Moynier and Emer de Vattel were among the founding members\
-    \ of the Institute of International Law (Institut de Droit International) (1873).\niii. The treasure\
-    \ found on alien property raised in classical Roman law the question whether possession is possible\
-    \ without knowledge.\n\nA) iii\nB) i\nC) ii\nD) i, ii, and iii\n\nChoose one of the options A–D. End\
-    \ your answer with the line \"Answer: X\", where X is the letter of the option you choose."
+  question: "Choose one of the options A–D. End your answer with the line \"Answer: X\", where X is the\
+    \ letter of the option you choose.\n\nWhich of the following statements is/are incorrect?\ni. It is\
+    \ a Swiss particularity that all major political parties are represented in the Federal Council. To\
+    \ this effect, the so-called magic formula was established (by practice, not based on an explicit\
+    \ provision in the Constitution). \nii. Johann Caspar Bluntschli, Gustave Moynier and Emer de Vattel\
+    \ were among the founding members of the Institute of International Law (Institut de Droit International)\
+    \ (1873).\niii. The treasure found on alien property raised in classical Roman law the question whether\
+    \ possession is possible without knowledge.\n\nA) iii\nB) i\nC) ii\nD) i, ii, and iii\n\nChoose one\
+    \ of the options A–D. End your answer with the line \"Answer: X\", where X is the letter of the option\
+    \ you choose."
   choices:
   - iii
   - i
@@ -2801,6 +2980,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Alexandra lives in the city of Zug (canton of Zug) and works in the city of Zurich (canton of Zurich). She commutes to Zurich every day. When Alexandra was born, she received shares in an U.S. company with a total value of CHF 1’000 from her grandparents. The U.S. company pays her a yearly dividend. Due to the principle of totality of income, the dividend paid by the U.S. company to Alexandra is subject to income tax on the federal, cantonal and communal level.
     ii. Swiss commercial law requires a commercial partnership to act in its own name in legal proceedings. Swiss commercial law requires a commercial partnership to act in its own name in legal proceedings.
@@ -2836,6 +3017,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Spouses are subject to the provisions governing separation of property, provided they have not agreed otherwise in a marital agreement and provided no extraordinary marital property regime has come into effect.
     ii. Carl Stooss advocated that sanctions for committed offences may only be retributive: offenders shall pay for the offence they committed.
@@ -2870,6 +3053,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Fiancés are legal heirs.
     ii. Human rights cannot be justified outside of the context of Western culture.
@@ -2905,6 +3090,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. Spouses are subject to the provisions governing separation of property, provided they have not agreed otherwise in a marital agreement and provided no extraordinary marital property regime has come into effect.
     ii. Fiancés are legal heirs.
@@ -2933,45 +3120,52 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: false
-- id: lexam-mcq-e7874d7a
+- id: lexam-mcq-42708b0d
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind falsch?
-    i. EG/EFTA-Angehörige, die ohne genügenden Mittel in die Schweiz einreisen, sind gemäss Art. 115 Abs. 1 Bst. a AIG in Verbindung mit Art. 5 Abs. 1 Bst. b AIG strafbar. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
-    ii. Unterhalb des massgeblichen Grenzwerts hat der fehlbare Lenker stets einen Anspruch darauf, dass ihm die Erledigung seiner Verfehlung im Ordnungsbussenverfahren angeboten wird. Unterhalb des massgeblichen Grenzwerts hat der fehlbare Lenker stets einen Anspruch darauf, dass ihm die Erledigung seiner Verfehlung im Ordnungsbussenverfahren angeboten wird.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii
-    B) i und ii
+    Gegen Hans besteht ein hinreichender Tatverdacht, dass er eine Serie von Diebstählen gemäss Art. 139 StGB verübt hat und noch weitere plant. Die bisherigen Untersuchungshandlungen sind erfolglos geblieben. Welche der folgenden Aussagen zur verdeckten Ermittlung sind richtig?
+    i. Bei der Beurteilung, ob eine Katalogtat objektiv schwer wiegt, sind die Rechtsgutsverletzung, die Art der Tatbegehung und die Intensität des deliktischen Willens massgebend.
+    ii. Da es sich vorliegend um eine milde Katalogtat handelt, wird der verdeckte Ermittler nicht mit einer vollständigen Legende ausgestattet. Dies würde ansonsten den Verhältnismässigkeitsgrundsatz verletzen.
+    iii. Bei besonders schweren Straftaten darf die Staatsanwaltschaft ausnahmsweise auch präventiv eine verdeckte Ermittlung anordnen.
+    iv. Da kumulativ der Verhältnismässigkeitsgrundsatz gewahrt wurde (keine mildere Massnahme möglich, um das angestrebte Ziel zu erreichen) und es sich bei Art. 139 StGB um eine Katalogtat handelt, kann die Staatsanwaltschaft eine verdeckte Ermittlung anordnen.
+    v. Im Rahmen der verdeckten Ermittlung ermutigt der Ermittler die Zielperson zur Begehung eines Diebstahls. Da die Zielperson bereits den Entschluss gefasst hatte, die Tat auszuführen, ist diese Ermutigung zulässig.
+
+    A) i und v
+    B) i, ii, iii, und iv
     C) i
-    D) keine der Aussagen
+    D) ii, iii, iv, und v
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - ii
-  - i und ii
+  - i und v
+  - i, ii, iii, und iv
   - i
-  - keine der Aussagen
-  gold: B
+  - ii, iii, iv, und v
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: e7874d7a-dc72-4ea8-9b2a-b861a4ab5206
-    course: Nebenstrafrecht
-    year: 2023
+    id: 42708b0d-fc09-42ad-99a1-ec04b6265c8d
+    course: Strafrecht und Strafverfahrensrecht
+    year: 2021
     jurisdiction: Swiss
-    n_statements: 2
-    negative_question: true
+    n_statements: 5
+    negative_question: false
 - id: lexam-mcq-1632256a
   suite: lexam_mcq
   area: Interdisciplinary
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are correct?
     i. The possibility of an appeal to an administrative authority is sufficient to meet the requirements of the guarantee of access to courts as long as this authority reviews questions of administrative discretion.
     ii. Any justification of human rights must eventually refer to spiritual sources of legitimacy.
@@ -3008,6 +3202,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. The “Digest” (or “Pandects”) compiled and promulgated in Constantinople in the 6th century CE by order of Justinian I.
     ii. The treasure found on alien property belongs under most contemporary legal systems in halves to the finder and the landowner.
@@ -3042,6 +3238,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Wählen Sie bitte auf Grundlage des folgenden Kontexts alle zutreffenden Aussagen aus.
     Kontext: Das Bundesgericht hatte in seinem Gaba-Entscheid (BGE 143 II 297) über die kartellrechtliche Zulässigkeit eines Vertrags zu befinden und fällte dabei einen Grundsatzentscheid.
     i. Erhebliche Wettbewerbsbeschränkungen können seit „Gaba“ nicht mehr aus Gründen der wirtschaftlichen Effizienz gerechtfertigt werden
@@ -3076,6 +3274,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Bei der Zuordnung eines Vermögenswertes zum Geschäfts- oder Privatvermögen zu einer Kommanditgesellschaft haben sachenrechtliche Eigutemsverhältnisse eine herausragende Bedeutung.
     ii. Verluste aus dem Betrieb einer Einzelfirma können nur mit Gewinnen aus dieser Einzelfirma verrechnet werden.
@@ -3110,6 +3310,8 @@
   language: en
   level: exam
   question: |-
+    Choose one of the options A–D. End your answer with the line "Answer: X", where X is the letter of the option you choose.
+
     Which of the following statements is/are incorrect?
     i. Penalties and measures can never be combined according to the Swiss Criminal Code.
     ii. The international community formally recognized the neutrality of Switzerland with the Peace of Westphalia in 1648.
@@ -3144,6 +3346,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussage(n) treffen zu?
 
     Voraussetzung für die Bestrafung eines Unternehmens gestützt auf Art. 102 StGB ist unter anderem, dass …
@@ -3182,6 +3386,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Um vom Tourismus in der Gemeinde X (Kanton Y) zu profitieren, will Fritz Innovativ (F) auf seinem kleinen Grundstück in den Bergen vier mobile Schlafzimmer in Form eines Würfels aufstellen lassen. Dabei sollen alle Wände aus Glas sein, damit man nachts die ungestörte Alpenlandschaft und die Steinböcke in ihrem natürlichen Lebensraum bestaunen kann. Das Projekt soll in der unberührten Natur erstellt werden, fernab von Bauzonen, welche die Aussicht trüben könnten. Es soll auf einer flachen Erhöhung realisiert werden und auch aus der Ferne sichtbar sein, da das Glas das einfallende Sonnenlicht reflektiert und so für eine anmutige Stimmung sorgt. Die Glaszimmer sollen die Grösse eines Schlafzimmers haben (ca. 15 m2) und Platz für ein Doppelbett, einen kleineren Schrank, einen Tisch und zwei Stühle bieten. Dabei beabsichtigt F, dass die Besucher maximal eine Nacht dort verbringen sollen, sodass er auf weitere Annehmlichkeiten verzichten kann. Auch können die Zimmer als Ganzes jederzeit wieder abgebaut werden, da es im Winter zu gefährlich wäre, diese dort stehen zu lassen. So sollen sie denn auch nur in den Sommermonaten über einen Lufttransport aufgestellt werden. Dabei werden sie mit entfernbaren Stahlkabeln verankert, um das Ganze zu sichern. Weil die Glaszimmer jederzeit entfernt werden können, ist F der Meinung, dass er für das Projekt keiner Baubewilligung bedarf. Da er sich der Sache jedoch nicht ganz sicher ist, wendet er sich an seinen Anwalt. Die Auffassung von F, dass er für das Projekt keiner Baubewilligung bedarf, ist zutreffend.
     ii. Die Privatschule P betreibt in der Gemeinde G (Kanton Zürich) eine Primarschule. Sie möchte ihren Schulbetrieb erweitern und nebst der Primarstufe neu auch eine Oberstufe führen. Zu diesem Zweck benötigt sie weitere Räumlichkeiten. Daher will sie neben ihrem bestehenden Gebäude ein zweites Schulhaus für die Oberstufenschüler bauen. Am 1. Februar 2018 reichte sie ein entsprechendes Baugesuch ein. Das Grundstück, auf welchem der Neubau zu stehen kommen soll, liegt in einer Wohnzone und ist mit einem Wohnanteil von 90% belegt. Der Gemeindevorstand hat dem Gemeindeparlament deshalb beantragt, den Wohnanteil auf diesem Grundstück auf 0% herabzusetzen. Das Gemeindeparlament beschloss am 15. Mai 2018 eine entsprechende Teilrevision der Bau- und Zonenordnung (BZO). Am 23. Mai 2018 erteilte der Gemeindevorstand der Privatschule P die Baubewilligung für den Neubau und begründete dies in den Erwägungen mit der inzwischen beschlossenen Herabsetzung des Wohnanteils auf 0%. Die erteilte Baubewilligung ist rechtens.
@@ -3210,36 +3416,38 @@
     jurisdiction: Swiss
     n_statements: 3
     negative_question: true
-- id: lexam-mcq-62f71a6a
+- id: lexam-mcq-6c7a4460
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    X. hat sich im Restaurant Alpha einen Rausch angetrunken. Trotzdem fährt er mit dem Auto heimwärts, bleibt aber auf halbem Weg im Strassengraben stecken, ohne dass Drittschaden entstanden ist. Er montiert die Kontrollschilder ab geht zu Fuss zu dem nahegelegenen Haus eines Freundes, der ihn den Rausch ausschlafen lässt. Nach der Ausnüchterung geht X. zurück zum Fahrzeug, wo ihn die Polizei verhaftet. Die Blutprobe ergibt 0.0 Gewichtspromille Alkohol im Blut. Mehrere Zeugen sagen aus, X. habe im Restaurant Alpha exzessiv Alkohol konsumiert. Als ihm die Wirtin den Autoschlüssel habe abnehmen wollen, sei er sehr wütend geworden und habe das Lokal schwankend und lallend verlassen. Jemand sah, wie er einstieg, Mühe mit Anfahren hatte und schliesslich mit lautem Motorenheulen losfuhr. Welche der folgenden Aussagen sind richtig?
-    i. X. hat sich der Vereitelung von Massnahmen zur Feststellung der Fahrunfähigkeit gemäss Art. 91a Abs. 1 SVG schuldig gemacht, da er aufgrund des Unfallgeschehens mit der Anordnung einer Blutprobe rechnen musste und durch das Abmontieren der Kontrollschilder Machenschaften zur Verhinderungen seiner rechtzeitigen Ermittlung vornahm.
-    ii. X. hat sich der Vereitelung von Massnahmen zur Feststellung der Fahrunfähigkeit gemäss Art. 91a Abs. 1 SVG nicht schuldig gemacht, da der von ihm verursachte Unfall mangels eines Drittschadens nicht zur Polizeibeizugspflicht führte.
-    iii. X. ist wegen Fahrens in fahrunfähigem Zustand gemäss SVG 91 Abs. 1 Bst. a SVG zu bestrafen, da die Zeugenaussagen die genaue Blutalkoholkonzentration nicht mit hinreichender Sicherheit beweisen und die Regel "im Zweifelsfalle für den Angeklagten" Anwendung findet.
-    iv. X. kann nicht wegen Fahrens in nicht fahrfähigem Zustand gemäss Art. 91 Abs. 2 bestraft werden, da dafür der Nachweis durch eine Blutprobe oder ein Atemalkohol-Messgerät erforderlich ist.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) ii
-    B) i, ii, und iv
-    C) i und ii
-    D) i und iii
+    Welche Aussage über das Verhältnis von Nebenstrafrecht und Kernstrafrecht ist richtig?
+    i. Das Nebenstrafrecht ist grundsätzlich subsidiär zum Kernstrafrecht, wenn nichts anderes bestimmt wird.
+    ii. Strafbestimmungen über sehr technische Materien sind meist im Nebenstrafrecht.
+    iii. Das geschützte Rechtsgut entscheidet darüber, ob eine Strafnorm ins Kernstrafrecht oder ins Nebenstrafrecht kommt.
+    iv. Der Allgemeine Teil des Strafgesetzbuchs findet auch auf das Nebenstrafrecht Anwendung, wenn das Gesetz keine abweichenden Bestimmungen enthält.
+
+    A) ii und iv
+    B) iii
+    C) i, ii, und iii
+    D) ii
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
+  - ii und iv
+  - iii
+  - i, ii, und iii
   - ii
-  - i, ii, und iv
-  - i und ii
-  - i und iii
   gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 62f71a6a-9e4c-42ca-a165-b61320b4d90f
+    id: 6c7a4460-63fa-42bb-9804-09bbf575f3c9
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
@@ -3251,6 +3459,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Die Inkraftsetzung erfolgt im Bund meistens durch den Bundesrat aus praktischen Gründen (Organisation Vollzug).
     ii. Die Inkraftsetzung erfolgt im Bund meistens durch den Bundesrat aufgrund der zwingenden Vorschriften des Publikationsgesetzes.
@@ -3286,6 +3496,8 @@
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind richtig?
     i. Das dem Kapitalanteilsberechtigten zufliessende Liquidationsbetreffnis ist für die Berechnung des steuerbaren Ertrags um die Abschreibung der Kapitalanteilsrechte zu kürzen.
     ii. Die Gewinnberechnung durch Vermögensstandesvergleich berücksichtigt offene und verdeckte Kapitalentnahmen im betrachtenden Geschäftsjahr. Der durch den Vermögensstandesvergleich errechnete Gewinn ist um die Kapitaleinlagen zu erhöhen und um die Kapitalentnahmen zu vermindern.
@@ -3315,81 +3527,89 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: false
-- id: lexam-mcq-b4ac3f55
+- id: lexam-mcq-8817b2da
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind falsch?
-    i. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufge wachsen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rück fallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Mittlerweile befindet sich Nico im Vollzug der Unterbringung im Massnahmenzentrum Uitikon (MZU). Beim Eintritt war die Leitung des MZU der Meinung, dass Nico länger im geschlossenen Vollzug verweilen muss. Da er einen grünen Daumen hat, wollte Nico schon immer eine Lehre als Gärtner machen. Ferner hat er schon früh bemerkt, dass er sich besonders gut mit seiner Vergangenheit auseinandersetzen kann, wenn er Sport macht. Diese Wünsche platziert er bei der Zentrumsleitung. Es sind ein paar Jahre vergangen. Nico ist nun 21 Jahre alt, befindet sich weiterhin im MZU und absolviert eine Berufslehre. Der 19-jährige Boris ist neu ins MZU eingetreten. Bei ihm wurde eine stationäre therapeutische Massnahme gemäss Art. 61 StGB angeordnet. Er soll in dieselbe Gruppe wie Nico eingeteilt werden. Mittlerweile ist Nico fast 24-jährig und immer noch im MZU. Er steht kurz vor dem Abschluss seiner Lehre. Mit seinen Leistungen sollte er die Abschlussprüfung knapp bestehen. Auch in der Therapie hat er Fortschritte erzielt. Er ist zwar kein Musterfall, doch gehen die zuständigen Therapeuten davon aus, dass er sich ausserhalb des MZU wahrscheinlich bewähren wird. Nico kann entlassen werden.
-    ii. Nicolas (N) ist 17-jährig und wohnt bei seinen Eltern in Bülach im Kanton Zürich. Eines Abends besprüht er eine Garage in der Nachbarschaft mit einem Graffiti (es lautet: «Fuck School»). Er begeht damit eine Sachbeschädigung i.S.v. Art. 144 StGB. Die Garage gehört Doris Diethelm (D), die Strafanzeige gegen unbekannt einreicht. Aufgrund einer Videoüberwachung wird N schnell identifiziert. D beantragt die Bestrafung von N (Strafantrag). Der zuständige Jugend anwalt ordnet die Einvernahme durch die Polizei an. N erscheint an der Einvernahme zusam men mit seinen Eltern. Die Einvernahme wird durch den Polizisten Thomas Thiel (T) geleitet. Dieser war bis vor drei Jahren der Klassenlehrer von N und arbeitet nun als Quereinsteiger bei der Polizei. Vor der Einvernahme sagt T zu N, er «sei schon in der Schule gut gewesen. Einfach nicht in Mathematik, sondern beim Dummheiten Machen und Vandalieren». Am Anfang der polizeilichen Einvernahme bringt N vor, er würde gerne einen Anwalt beiziehen. Er habe allerdings kein Geld, einen solchen selbst zu bezahlen. Er bittet darum, dass ihm ein Anwalt kostenlos zur Verfügung gestellt wird. Die Anwaltskosten werden nicht übernommen.
-    iii. Nico ist 17 Jahre alt. Er ist in Bazenheid in problematischen familiären Verhältnissen aufgewaschen. Sein Vater war Alkoholiker und liess bei der Erziehung oft seine Faust sprechen. Als Nico in der dritten Klasse war, ging sein Vater eines samstagmorgens «Zigaretten kaufen», wovon er nie mehr zurückkehrte. Daraufhin begann seine Mutter ihre Schmerzen in Alkohol zu ertränken. Heute sieht Nico seine Mutter nur noch ab und an. Zwar ist er offiziell noch bei seiner Mutter angemeldet, doch wohnt er praktisch vollständig bei seinen Grosseltern in Winterthur. Nico wurde schon früh strafrechtlich auffällig, verübte mehrere Diebstähle und prügelte sich oft mit seinen Klassenkameraden. Er ist der Anführer seiner Gang «WW» (Westside Winterthur). Seinen Rang in der Gang hat er auf sicher. Niemand würde es wagen, die Stellung von Nico anzuzweifeln, hat er doch diejenigen, die es versuchten, spitalreif geprügelt. Es ist auch schon vorgekommen, dass Nico jemanden verprügelte, der ihn «schief» angeschaut hat. Nico weiss zwar, dass seine Taten nicht in Ordnung sind, doch dies ist ihm egal. Allgemein scheint Nico eine tiefe Wut auf seine Mitmenschen und die Welt zu haben. Nur mit seinen Pflanzen geht er stets sehr liebevoll um. Für das Züchten seiner seltenen Exemplare gibt er viel Geld aus. Er beschliesst, dass er dieses am einfachsten durch bewaffnete Raubüberfälle auf Tankstellen einnehmen könnte. Schon beim ersten Raubzug wird er jedoch erwischt. Der zuständige Untersuchungsbeamte lässt ein Gutachten erstellen. Dieses ergibt, dass bei Nico eine erhebliche Persönlichkeitsentwicklungsstörung vorliegt, die mit einer grossen Rückfallgefahr verbunden ist. Der zuständige Beamte will eine Unterbringung anordnen. Der geschlossene Vollzug kann angeordnet werden.
-    iv. Timo (T) und sein älterer Bruder Simon (S), beide mit Wohnsitz in Winterthur, sind Mitglieder einer Bande, die regelmässig in den Warenhäusern der Stadt Zürich ihr Unwesen treibt und immer wieder Ladendiebstähle begeht. S und die anderen Bandenmitglieder sind alle zwischen 18 und 22 Jahre alt, während T erst 13-jährig ist. S und die anderen Bandenmitglieder nutzen das Alter des T aus, indem sie stets T die Diebstähle ausführen lassen. Wurde T erwischt, haben die Warenhäuser den «kleinen Jungen» bisher immer mit einer Verwarnung davonkommen lassen. Am 15. Januar 2022 möchte T mal wieder einen sehr teuren Pullover im Wert von CHF 850.- in seiner Tasche verschwinden lassen, als er von einem Ladendetektiv angehalten wird, der daraufhin sofort die Polizei alarmiert. Die Polizei nimmt T vorläufig fest und übergibt die Sache an die zuständige Untersuchungsbehörde. Während des Untersuchungsverfahrens stellt sich heraus, dass T aus schwierigen familiären Verhältnissen kommt. Beide Eltern sind aus beruflichen Gründen kaum zuhause und überlassen die Brüder S und T praktisch ihrem Schicksal. Weitere enge Bezugspersonen gibt es keine. Die Untersuchungsbeamtin möchte den Fall mit den Eltern besprechen. Die Eltern sind zur Teilnahme verpflichtet.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i und ii
-    B) i, ii, und iv
-    C) keine der Aussagen
-    D) i und iii
+    Beurteilen Sie folgende Aussagen zu den Schutzmassnahmen. Welche der folgenden Aussage(n) sind richtig?
+    i. Die Schutzmassnahme endet mit Vollendung des 25. Altersjahres. Wenn der Täter, der sich bis dahin in der Unterbringung befand, nach Vollendung des 25. Altersjahrs noch immer eine Bedrohung für die Sicherheit anderer darstellt, ist eine Überweisung in eine Verwahrung möglich.
+    ii. Die urteilende Behörde kann eine Schutzmassnahme nachträglich in eine schärfere Schutzmassnahme umwandeln.
+    iii. Die 13-jährige Anita lebt mit ihrer alkoholkranken, allein erziehenden Mutter. Nun wird Anita verdächtigt, an einem Raubüberfall beteiligt gewesen zu sein. Die Tat kann ihr aber nicht nachgewiesen werden. Die Untersuchungsbehörde hat die Möglichkeit, die Platzierung in einer Pflegefamilie anzuordnen.
+    iv. Die Unterbringung in einer geschlossenen Einrichtung darf angeordnet werden, wenn dies für den persönlichen Schutz des Jugendlichen notwendig ist.
+
+    A) ii und iii
+    B) iv
+    C) i und iii
+    D) ii und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i und ii
-  - i, ii, und iv
-  - keine der Aussagen
+  - ii und iii
+  - iv
   - i und iii
-  gold: C
+  - ii und iv
+  gold: D
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: b4ac3f55-14de-4683-8c14-ce2ccfbd17d5
+    id: 8817b2da-0807-4924-8fb1-82b0a8a68d3d
     course: Jugendstrafrecht und Sanktionenrecht
     year: 2023
     jurisdiction: Swiss
     n_statements: 4
-    negative_question: true
-- id: lexam-mcq-310b45e5
+    negative_question: false
+- id: lexam-mcq-e8b21644
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Wählen Sie basierend auf dem folgenden Kontext alle Aussagen aus, die nicht zutreffen.
-    Kontext: X. hat sich im Restaurant Alpha einen Rausch angetrunken. Trotzdem fährt er mit dem Auto heimwärts, bleibt aber auf halbem Weg im Strassengraben stecken, ohne dass Drittschaden entstanden ist. Er montiert die Kontrollschilder ab und geht zu Fuss zu dem nahegelegenen Haus eines Freundes, der ihn den Rausch ausschlafen lässt. Nach der Ausnüchterung geht X. zurück zum Fahrzeug, wo ihn die Polizei verhaftet. Die Blutprobe ergibt 0.0 Gewichtspromille Alkohol im Blut. Mehrere Zeugen sagen aus, X. habe im Restaurant Alpha exzessiv Alkohol konsumiert. Als ihm die Wirtin den Autoschlüssel habe abnehmen wollen, sei er sehr wütend geworden und habe das Lokal schwankend und lallend verlassen. Jemand sah, wie er einstieg, Mühe mit Anfahren hatte und schliesslich mit lautem Motorenheulen losfuhr.
-    i. X. hat sich der Vereitelung von Massnahmen zur Feststellung der Fahrunfähigkeit gemäss Art. 91a Abs. 1 SVG schuldig gemacht, da er aufgrund des Unfallgeschehens mit der Anordnung einer Blutprobe rechnen musste und durch das Abmontieren der Kontrollschilder Machenschaften  zur Verhinderungen seiner rechtzeitigen Ermittlung vornahm.
-    ii. X. kann nicht wegen Fahrens in nicht fahrfähigem Zustand gemäss Art. 91 Abs. 2 bestraft werden, da dafür der Nachweis durch eine Blutprobe oder ein Atemalkohol-Messgerät erforderlich ist.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) i und ii
-    B) keine der Aussagen
-    C) i
-    D) ii
+    Der Bundesrat erlässt gestützt auf Art. 106 Abs. 1 SVG die "Verordnung über die Ausstattung sämtlicher Motorfahrzeuge mit einem Restwegschreiber" und droht für die Manipulation oder Entfernung dieses Geräts Freiheitsstrafe bis zu einem Jahr an. Welche der folgenden Aussagen ist richtig?
+    i. Die Verordnung ist unter der Bedingung zulässig, dass der Restwegschreiber nur bei Unfällen mit Körperverletzung oder Sachschaden über CHF 100'000 ausgewertet werden darf, denn in solchen Fällen tritt das Datenschutz-Interesse des Einzelnen hinter dem öffentlichen Interesse an der Ermittlung des Sachverhalts zurück.
+    ii. Die Verordnung wurde nicht kompetenzgemäss erlassen, da die Einführung des Restwegschreiber-Obligatoriums keine Ausführungsbestimmung, sondern eine primäre Vorschrift ist, für die eine besondere Delegation in einem formellen Gesetz erforderlich ist.
+    iii. Die Verordnung wurde kompetenzgemäss und damit gültig erlassen, da die Vorschrift eines Restwegschreibers eine effiziente und verhältnismässige Massnahme zum Vollzug des Strassenverkehrsgesetzes ist.
+    iv. Die Strafnorm verletzt den Grundsatz "nulla poena sine lege", da eine Freiheitsstrafe nur in einem Gesetz im formellen Sinne angedroht werden darf.
+    v. Die Strafnorm verletzt den Grundsatz "nulla poena sine lege", da sie zu wenig bestimmt ist.
+
+    A) ii, iii, und v
+    B) ii und iv
+    C) ii und v
+    D) i und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - i und ii
-  - keine der Aussagen
-  - i
-  - ii
-  gold: A
+  - ii, iii, und v
+  - ii und iv
+  - ii und v
+  - i und iv
+  gold: B
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 310b45e5-5311-4e69-8608-6acafd610e1c
+    id: e8b21644-26d5-4e8e-85cd-817e48a070f9
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 2
-    negative_question: true
+    n_statements: 5
+    negative_question: false
 - id: lexam-mcq-0b119af4
   suite: lexam_mcq
   area: Public
   language: de
   level: exam
   question: |-
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
+
     Welche der folgenden Aussagen ist/sind falsch?
     i. Natürliche Personen haben einen Anspruch auf Rückerstattung der Verrechnungssteuer, wenn sie die betreffenden Einkünfte ordnungsgemäss deklariert haben sowie bei Fälligkeit im Inland Wohnsitz und das Recht zur Nutzung des den steuerbaren Ertrag abwerfenden Vermögenswertes hatten.
     ii. A, Alleinaktionär der X AG entscheidet sich noch im Jahre 2019 3.5% seiner Beteiligungen in eine Holding AG einzubringen, an der er zu 60% beteiligt ist. Dies führt zu steuerbarem Ertrag.
@@ -3419,37 +3639,40 @@
     jurisdiction: Swiss
     n_statements: 4
     negative_question: true
-- id: lexam-mcq-41e30c2b
+- id: lexam-mcq-ca6bf0de
   suite: lexam_mcq
   area: Criminal
   language: de
   level: exam
   question: |-
-    Welche der folgenden Aussagen ist/sind richtig?
-    i. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen. Im Nebenstrafrecht gibt es keine Delikte gegen den Einzelnen.
-    ii. Die Geschwindigkeitsgrenzwerte werden teils durch Verordnung, teils durch Rechtsprechung, teils durch Gesetz definiert, und zwar jeweils einheitlich pro Ebene der Strafbarkeit, die durch die Grenzwertüberschreitung erreicht wird. Die Geschwindigkeitsgrenzwerte werden teils durch Verordnung, teils durch Rechtsprechung, teils durch Gesetz definiert, und zwar jeweils einheitlich pro Ebene der Strafbarkeit, die durch die Grenzwertüberschreitung erreicht wird.
-    iii. EG/EFTA-Angehörige, die in die Schweiz einreisen, obwohl gegen sie ein Einreiseverbot wegen Verursachung von Sozialhilfekosten verfügt worden ist, sind gemäss Art. 115 Abs. 1 Bst. a AIG in Verbindung mit Art. 5 Abs. 1 Bst. d und 67 Abs. 2 Bst. b AIG strafbar. Die Aussage über die Anwendbarkeit des Ausländergesetzes auf Angehörige von EG/EFTA-Staaten ist richtig.
+    Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
 
-    A) iii
-    B) ii
-    C) ii und iii
-    D) i und ii
+    Welche der folgenden Aussagen über die internationalen Betäubungsmittelkonventionen sind richtig?
+    i. Die Einflüsse des Übereinkommens gegen den unerlaubten Verkehr mit Betäubungsmitteln (SR 0.812.121.03) sind im schweizerischen Betäubungsmittelstrafrecht deutlich sichtbar.
+    ii. Die völkerrechtlichen Grundlagen für die universale internationale Zusammenarbeit zur Bekämpfung des Missbrauchs von Betäubungsmitteln sind vorbildlich.
+    iii. Das Einheitsübereinkommen über Betäubungsmittel (SR 0.812.121) schafft ein Organ mit der supranationalen Kompetenz zur laufenden Anpassung des Katalogs der gemäss Übereinkommen zu verbietenden Substanzen.
+    iv. Das Übereinkommen über psychotrope Stoffe (SR 0.812.121.02) ist grundlegend anders aufgebaut als das Einheitsübereinkommen über Betäubungsmittel (SR 0.812.121).
+
+    A) i, ii, und iii
+    B) i, iii, und iv
+    C) ii und iv
+    D) i, ii, und iv
 
     Wählen Sie eine der Optionen A–D. Schliessen Sie Ihre Antwort mit der Zeile «Antwort: X» ab, wobei X der Buchstabe der gewählten Option ist.
   choices:
-  - iii
-  - ii
-  - ii und iii
-  - i und ii
-  gold: C
+  - i, ii, und iii
+  - i, iii, und iv
+  - ii und iv
+  - i, ii, und iv
+  gold: A
   expect:
     abstain: false
     cites: optional
   source:
     dataset: LEXam-Benchmark/LEXam
-    id: 41e30c2b-7ed6-42bd-8d14-310661903fda
+    id: ca6bf0de-93bd-4293-9471-39f7e665f8ff
     course: Nebenstrafrecht
     year: 2023
     jurisdiction: Swiss
-    n_statements: 3
+    n_statements: 4
     negative_question: false

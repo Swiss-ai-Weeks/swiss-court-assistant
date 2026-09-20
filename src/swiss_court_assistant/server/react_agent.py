@@ -131,6 +131,80 @@ PUSHBACK = ("Before writing, you noted that the passages do not answer this: {ga
             "found; it is not filled in.")
 _NOTHING = re.compile(r"(?i)^\W*(nothing|none|n/a|nichts|kein|rien|aucun|niente|nessun|all\b|everything|covered)")
 
+# A question can name a doctrine, a leading case or a rule that does not exist - "the Lehre der
+# gespaltenen Kuendigungswirkung the Federal Supreme Court developed". The grounding checks cannot
+# catch it: asked for that doctrine the agent searched, found real passages about subsidiary
+# termination, and wrote sentences those passages do state. Every sentence held, and the answer
+# still confirmed a doctrine no court has. The checks work sentence by sentence; the false premise
+# is in the question, so it is checked here instead - mechanically, like the quotes: a term the
+# user puts in quotation marks either appears in a passage that was found or it does not.
+_QUOTED = re.compile(r"[\u00ab\u201e\u201c\u2018\"']\s*([^\u00bb\u201c\u201d\u2019\"'\n]{6,100}?)\s*[\u00bb\u201c\u201d\u2019\"']")
+# "Lehre der X", "principe de la X": the head noun is the writer's, the distinctive part is X
+_HEAD = re.compile(r"(?i)^(?:die |der |das |la |le |il |the )?"
+                   r"(?:lehre|theorie|grundsatz|prinzip|doktrin|doctrine|th\u00e9orie|principe|teoria|principio|"
+                   r"dottrina|rule|regel)\b\s*(?:der |des |vom |von |de la |du |de |di |della |of the |of )?")
+TERM_PUSHBACK = ("Your question names {terms} in quotation marks, and no passage you have found contains "
+                 "that wording. Before you answer, run keyword_search on it exactly as it is written, in "
+                 "double quotes. You have {left} tool calls left. If it still returns nothing, that is the "
+                 "answer to give: no decision in this corpus uses the term. Do not answer about a "
+                 "different concept as though it were the one named.")
+NO_SUCH_TERM = (" The question names {terms} in quotation marks, and no passage found contains that "
+                "wording - the searches for it returned nothing. Open the answer by saying plainly that no "
+                "decision or statute article in this corpus uses that term, and that you therefore cannot "
+                "confirm it is established law. Say it about the corpus, not about the law itself: this "
+                "corpus is a subset, so it shows the term was not found here, never that no such rule "
+                "exists anywhere. Those opening sentences take no citation at all: no passage states that "
+                "something is absent, so a citation on them fails the check and is removed together with "
+                "the sentence it is attached to, which is how this correction goes missing. Then report "
+                "what the searches did find on the subject and under what "
+                "name it goes there, cited as usual, so the user has the neighbouring law. Do not describe "
+                "the named term as established, do not give it conditions or requirements, and do not "
+                "quietly answer about the neighbouring concept as if it were the one asked about.")
+
+
+def _flat(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
+def named_terms(question: str) -> list[str]:
+    """Terms the question puts in quotation marks. Lines starting with ">" are text the user selected,
+    not their own words, so a quotation inside one is not the user naming anything."""
+    asked = "\n".join(line for line in question.splitlines() if not line.lstrip().startswith(">"))
+    seen: dict[str, None] = {}
+    for term in _QUOTED.findall(asked):
+        if any(c.isalpha() for c in term) and len(term.split()) <= 12:
+            seen.setdefault(" ".join(term.split()))
+    return list(seen)
+
+
+def missing_terms(question: str, results: str) -> list[str]:
+    """Of the terms the question names, those no tool result contains. The head noun is dropped for a
+    second try ("Lehre der gespaltenen Kuendigungswirkung" against a passage that writes only the
+    rest), so the check reports a term absent only when it really is."""
+    haystack = _flat(results)
+    missing = []
+    for term in named_terms(question):
+        folded = _flat(term)
+        if folded in haystack or (short := _HEAD.sub("", folded)) != folded and short in haystack:
+            continue
+        missing.append(term)
+    return missing
+
+
+# What write_answer returns is the agent's own stock-taking and the instructions sent back to it -
+# including TERM_PUSHBACK, which quotes the term. Only what a research tool returned is evidence that
+# the corpus contains something; otherwise the check reads back its own words and clears itself.
+_EVIDENCE_TOOLS = {"semantic_search", "keyword_search", "read_decision", "citing_decisions",
+                   "search_laws", "read_law", "list_decisions", "read_document", "search_document",
+                   "search_case_file"}
+
+
+def _results_text(messages: list[BaseMessage]) -> str:
+    return " ".join(str(m.content) for m in messages
+                    if isinstance(m, ToolMessage) and getattr(m, "name", "") in _EVIDENCE_TOOLS)
+
+
+
 # Asking the agent not to repeat a search only works if it notices that it is, so each turn
 # remembers what it has searched for. Queries are compared as token sets, because the repeats are
 # rewordings, not copies ("DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO Wettbewerbsrecht").
@@ -169,6 +243,7 @@ class Turn:
     collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
     case_prep: str | None = None  # document id of the matter's generated case prep, when asked from Case Prep
     pushed_back: bool = False    # only once per turn
+    chased_term: bool = False    # sent back once to keyword_search a term the question names
     researched_again: int = 0    # times the checks rejected the draft and the agent researched again
     resumed_at: int = 0          # tool calls made when it last went back to research
     # statements whose citations failed in an earlier draft: one that comes back without a citation is dropped
@@ -898,6 +973,16 @@ class ResearchThenAnswer(AgentMiddleware):
         # The agent's own stock-taking says something was not found. Early in the research that is
         # worth one more look, so write_answer runs as a tool this once and sends it back; what it
         # returns is set here, where the count of calls is known.
+        # A term the question names in quotation marks that no passage contains: it may simply not
+        # have been searched for, so look it up before concluding anything from its absence.
+        if write and turn is not None and not turn.chased_term and used < budget:
+            asked = str(next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), ""))
+            if absent := missing_terms(asked, _results_text(request.messages)):
+                turn.chased_term = True
+                turn.pushback = TERM_PUSHBACK.format(
+                    terms=", ".join(f"«{t}»" for t in absent), left=budget - used - 1)
+                log.info("no passage contains %s; sent back to search for it", absent)
+                return response
         if (write and turn is not None and not turn.pushed_back and used < NUDGE_AFTER
                 and (gap := _gap(args.get("not_found")))):
             turn.pushed_back = True
@@ -959,6 +1044,10 @@ class ResearchThenAnswer(AgentMiddleware):
                    "answer in this conversation is not a source for it and is never repeated as the answer.")
         if language:
             final += f" Write its text parts and explanations in {language}."
+        # The premise check: the searches were made and still nothing found uses the term.
+        if absent := missing_terms(question, _results_text(request.messages)):
+            log.warning("answering %s: no passage contains %s", question[:60], absent)
+            final += NO_SUCH_TERM.format(terms=", ".join(f"«{t}»" for t in absent))
         attached = [d for d in (turn.documents if turn else []) if d != (turn.case_prep if turn else None)]
         if turn and turn.case_prep:
             # Asked to sum up the memo, the draft cited the client's documents for what the memo says, quoting
@@ -991,6 +1080,22 @@ class ResearchThenAnswer(AgentMiddleware):
         if not parts:
             answer = VerifiedAnswer([TextPart(type="text", text=NO_ANSWER.get(code, NO_ANSWER["en"]))], [], [])
             return self._finish(turn, answer, [])
+        # The research runs in German whatever the question's language, and the draft follows it: an
+        # Italian question came back in German, down to "Un Arbeitgeber kann...". The instruction in
+        # `final` does not hold against a conversation of German passages, so the draft is checked and
+        # written once more. Only the text is redrafted; the quotes stay in the passage's own language.
+        if language and (drafted := " ".join(p.text for p in parts if isinstance(p, TextPart))) \
+                and len(drafted) > 120 and detect_language(drafted, default=code) != code:
+            log.warning("the draft came back in %s, not %s; writing it again",
+                        detect_language(drafted, default=code), code)
+            status(Status("checking", "Writing the answer in the language of the question"))
+            redo = HumanMessage(
+                f"That draft is not in {language}. Write the same answer again, with every text part and "
+                f"every explanation in {language}, the language the user asked in. Leave the citations as "
+                "they are: decision_id, chunk_id and quote unchanged, each quote still copied character "
+                "for character from its passage in that passage's own language.")
+            if again_parts := _parse_answer(again_text := await self._generate([*base, AIMessage(text), redo])):
+                text, parts = again_text, again_parts
         seen = _seen(request.messages) | set(turn.documents if turn else [])
         # statements whose citations did not hold, across the rounds and the earlier research
         failed: list[str] = list(turn.rejected) if turn else []
@@ -1002,6 +1107,12 @@ class ResearchThenAnswer(AgentMiddleware):
             report = await self.verifier.verify(parts, question, code, seen,
                                                 lenient=rounds >= self.max_revisions, check_answers=rounds == 0)
             if not report.problems or rounds >= self.max_revisions:
+                break
+            # Rewording cannot rescue a draft the passages simply do not state (Report.rejected), and
+            # researching again is what follows anyway. Revising twice first cost ~9 s of the turn and
+            # came back to the same rejection both times, so go straight there.
+            if may_research and report.rejected:
+                log.info("the passages do not support the draft; skipping the revisions")
                 break
             rounds += 1
             failed += report.failed_statements
