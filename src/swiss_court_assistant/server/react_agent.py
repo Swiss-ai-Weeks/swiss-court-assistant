@@ -138,7 +138,12 @@ _NOTHING = re.compile(r"(?i)^\W*(nothing|none|n/a|nichts|kein|rien|aucun|niente|
 # still confirmed a doctrine no court has. The checks work sentence by sentence; the false premise
 # is in the question, so it is checked here instead - mechanically, like the quotes: a term the
 # user puts in quotation marks either appears in a passage that was found or it does not.
-_QUOTED = re.compile(r"[\u00ab\u201e\u201c\u2018\"']\s*([^\u00bb\u201c\u201d\u2019\"'\n]{6,100}?)\s*[\u00bb\u201c\u201d\u2019\"']")
+# Guillemets, German and curly double quotes, and the straight double quote. Not the apostrophe and
+# not the curly single quote: in French and Italian every elision carries one, and treating those as
+# quotation marks read "le Tribunal federal a-t-il confirme l" out of `l'arret ... a-t-il confirme
+# l'absence`, then reported that term missing from the corpus - a false premise correction on an
+# ordinary French question.
+_QUOTED = re.compile("[\u00ab\u201e\u201c\"]\\s*([^\u00bb\u201c\u201d\"\\n]{6,100}?)\\s*[\u00bb\u201c\u201d\"]")
 # "Lehre der X", "principe de la X": the head noun is the writer's, the distinctive part is X
 _HEAD = re.compile(r"(?i)^(?:die |der |das |la |le |il |the )?"
                    r"(?:lehre|theorie|grundsatz|prinzip|doktrin|doctrine|th\u00e9orie|principe|teoria|principio|"
@@ -1107,12 +1112,6 @@ class ResearchThenAnswer(AgentMiddleware):
             report = await self.verifier.verify(parts, question, code, seen,
                                                 lenient=rounds >= self.max_revisions, check_answers=rounds == 0)
             if not report.problems or rounds >= self.max_revisions:
-                break
-            # Rewording cannot rescue a draft the passages simply do not state (Report.rejected), and
-            # researching again is what follows anyway. Revising twice first cost ~9 s of the turn and
-            # came back to the same rejection both times, so go straight there.
-            if may_research and report.rejected:
-                log.info("the passages do not support the draft; skipping the revisions")
                 break
             rounds += 1
             failed += report.failed_statements
