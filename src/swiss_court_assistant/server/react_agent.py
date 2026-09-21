@@ -1890,7 +1890,7 @@ class ReactAgent:
                       temperature=0.2, streaming=True)
         # the research steps reason before each tool call (streamed to the UI); the answer is constrained
         # JSON and starts right away
-        research_llm = ReasoningChatOpenAI(**common, max_tokens=4096,
+        research_llm = ReasoningChatOpenAI(**common, max_tokens=8192,
                                            extra_body={"chat_template_kwargs": {"enable_thinking": LLM_THINKING}})
         # Passed in the request body as is, bypassing LangChain's own response_format handling.
         # "nostream": drafts are checked before anything is shown, so no call inside the graph streams to
