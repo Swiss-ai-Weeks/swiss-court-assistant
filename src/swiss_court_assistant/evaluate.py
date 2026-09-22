@@ -123,12 +123,14 @@ def main() -> None:
     print(f"wrote {out}\n")
     systems = list(results)
     for view in ["overall", *BREAKDOWNS]:
-        print(f"== {view}  (mrr@10 / hit@10)")
+        # Headline the first retrieved decision. These are offline retrieval results, not answer
+        # citations; the live search-only OpenCaseLaw comparison lives in agent-eval/opencaselaw.py.
+        print(f"== {view}  (hit@1 / hit@10)")
         keys = ["all"] if view == "overall" else list(results[systems[0]][view])
         print(f"{'system':16s}" + "".join(f"{k:>14s}" for k in keys))
         for s in systems:
             cells = [results[s]["overall"]] if view == "overall" else [results[s][view][k] for k in keys]
-            print(f"{s:16s}" + "".join(f"{c['mrr@10']:>7.3f}/{c['hit@10']:.2f}" for c in cells))
+            print(f"{s:16s}" + "".join(f"{c['hit@1']:>7.3f}/{c['hit@10']:.2f}" for c in cells))
         print()
 
 

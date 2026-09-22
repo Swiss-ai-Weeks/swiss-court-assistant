@@ -1,0 +1,83 @@
+# Short-query language and exact-lookup regressions. These are answer tests, not search metrics.
+- id: keyword-language-hundebiss
+  suite: behaviour
+  area: Tierhalterhaftung
+  language: de
+  level: basic
+  question: Hundebiss
+  reference: |
+    Antwort durchgehend auf Deutsch. Erklärt, soweit durch gefundene Quellen belegt,
+    die Tierhalterhaftung nach Art. 56 OR und den Entlastungsbeweis; erfindet keinen
+    pauschalen Anspruch oder Schadenersatzbetrag. Wörtliche Quellenzitate dürfen in
+    ihrer Originalsprache bleiben.
+  rubric:
+    - Erklärt Art. 56 OR anhand einschlägiger Quellen
+    - Schildert den Entlastungsbeweis ohne eine automatische Haftung zu behaupten
+  expect:
+    language: de
+    cites: true
+
+- id: keyword-language-art41
+  suite: behaviour
+  area: Ausservertragliche Haftung
+  language: de
+  level: basic
+  question: Art. 41 OR Schadenersatz ausservertragliche Haftung
+  reference: |
+    Antwort auf Deutsch, nicht auf Englisch wegen des englischen Funktionsworts
+    "or". Erklärt die Voraussetzungen von Art. 41 OR aus den gefundenen Quellen.
+  rubric:
+    - Nennt Schaden, Widerrechtlichkeit, Kausalzusammenhang und Verschulden
+    - Belegt die Erläuterung mit passenden Quellen
+  expect:
+    language: de
+    cites: true
+
+- id: keyword-language-notwehr
+  suite: behaviour
+  area: Strafrecht
+  language: de
+  level: basic
+  question: Notwehr Angriff straflos Strafrecht
+  reference: |
+    Antwort auf Deutsch. Unterscheidet rechtfertigende Notwehr nach Art. 15 StGB
+    und Notwehrexzess nach Art. 16 StGB, soweit die gefundenen Quellen dies belegen.
+  rubric:
+    - Erläutert den rechtswidrigen Angriff und die angemessene Abwehr
+    - Unterscheidet Notwehr und Notwehrexzess
+  expect:
+    language: de
+    cites: true
+
+- id: keyword-language-italian
+  suite: behaviour
+  area: Procedura
+  language: it
+  level: basic
+  question: ricorso tardivo restituzione termine
+  reference: |
+    Risposta in italiano sulla tardività del ricorso e sulla restituzione del termine,
+    fondata sulle fonti reperite. Non inventa un termine uniforme per tutti i procedimenti.
+  rubric:
+    - Distingue la tardività dalla possibile restituzione del termine
+    - Non promette una restituzione automatica del termine
+  expect:
+    language: it
+    cites: true
+
+- id: lookup-missing-exact-no-substitute
+  suite: behaviour
+  area: Decision lookup
+  language: de
+  level: basic
+  question: BGE 999 I 999
+  reference: |
+    Der Entscheid ist nicht im Korpus. Die Antwort sagt das ausdrücklich, statt
+    einen anderen Entscheid als Treffer auszugeben. Keine unpassenden Zitate.
+  rubric:
+    - Sagt, dass kein passender Entscheid im Korpus gefunden wurde
+    - Gibt keinen anderen Entscheid als Ersatztreffer aus
+  expect:
+    language: de
+    abstain: true
+    cites: false

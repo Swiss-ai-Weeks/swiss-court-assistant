@@ -116,7 +116,7 @@ that disconnects loses the stream, not the work.
 
 | Tool | What it does |
 |---|---|
-| `semantic_search(query_de, query_fr, query_it, …filters)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the decisions in its language (the in-memory vector matrix, else sqlite-vec; the three run in parallel), and its top 40 are reranked against it by the Nemotron reranker NIM; returns 8 passages, at least 2 per language and at most 2 per decision |
+| `semantic_search(query_de, query_fr, query_it, …filters)` | the agent writes the search in each corpus language (with that language's statute abbreviations); each query runs a KNN over the decisions in its language (the in-memory vector matrix, else sqlite-vec; the three run in parallel), and its top 40 plus 40 BGE-only candidates (respecting the same filters) are reranked against it by the Nemotron reranker NIM; adds citation-count and court-level priors on the logit scale; returns up to 12 distinct decisions, reserving a BGE per language when available and then sorting globally |
 | `keyword_search(keyword, …filters)` | SQLite FTS5 over all passages; `"quoted text"` is an exact phrase, other words must all appear; docket numbers in the query are matched to decisions |
 | `list_decisions(…filters, oldest=False)` | how many decisions match the filters, split by court, area and decade, and the ten newest (or oldest) with Regeste or title - for questions about the corpus or a court's latest decisions |
 | `read_decision(decision_id, offset=0)` | metadata, Regeste and 8,000 characters of the full text per call |

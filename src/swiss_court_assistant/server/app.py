@@ -10,11 +10,11 @@ import re
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
-from fastapi import (Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket,
+from fastapi import (Depends, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile, WebSocket,
                      WebSocketDisconnect)
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -144,6 +144,35 @@ def _vector_search(agent: Agent) -> dict | None:
         return {"backend": "sqlite-vec"}
     return {"backend": matrix.backend, "vectors": len(matrix.ids),
             **(matrix.stats() if hasattr(matrix, "stats") else {})}
+
+
+@app.get("/api/search")
+async def search(s: Svc, q: Annotated[str, Query(min_length=1, max_length=2000)],
+                 k: Annotated[int, Query(ge=1, le=50)] = 10,
+                 language: Literal["de", "fr", "it"] | None = None,
+                 baseline: bool = False, strategy: Literal['legacy', 'hybrid'] | None = None,
+                 debug: bool = False) -> dict:
+    """Ranked, distinct decisions without answer generation. `baseline` is the relevance-only
+    ablation (no extra BGE candidates or authority priors), not a historical chat replay."""
+    corpus = getattr(s.agent, "corpus", None)
+    if corpus is None:
+        raise HTTPException(503, "Search is unavailable with the stub agent")
+    if not q.strip():
+        raise HTTPException(422, "The query must not be blank")
+    if baseline and strategy == 'hybrid':
+        raise HTTPException(422, 'baseline is the legacy relevance-only ablation; do not combine with hybrid')
+    start = time.perf_counter()
+    diagnostics = {} if debug else None
+    hits = await corpus.search_decisions(q.strip(), k, language, baseline, strategy=strategy, diagnostics=diagnostics)
+    selected_strategy = 'legacy' if baseline else strategy or getattr(corpus, 'search_strategy', 'legacy')
+    return {"query": q, "k": k, "baseline": baseline, "language": language,
+            "strategy": selected_strategy, "diagnostics": diagnostics,
+            "weights": asdict(corpus.hybrid_config) if selected_strategy == 'hybrid' else corpus.authority_weights,
+            "elapsed_ms": (time.perf_counter() - start) * 1000,
+            "results": [{"decision_id": h.decision_id, "chunk_id": h.chunk_id,
+                         "court": h.court, "docket": h.docket, "language": h.language,
+                         "score": h.score, "reranker_score": h.reranker_score,
+                         "passage_score": h.passage_score, "cited_by": h.cited_by} for h in hits]}
 
 
 @app.get("/api/conversations", response_model=list[ConversationSummary])

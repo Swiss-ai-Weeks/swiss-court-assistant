@@ -17,6 +17,8 @@ from pathlib import Path
 
 import polars as pl
 
+from swiss_court_assistant.identity import canonical_id
+
 RAW_GLOB = "data/raw/data/*.parquet"
 OUT_DIR = Path("data/subset")
 
@@ -43,11 +45,20 @@ def load_candidates(raw_glob: str = RAW_GLOB, where: pl.Expr | None = None) -> p
     `where` narrows the pool before stratification (e.g. decisions since a year)."""
     return (
         pl.scan_parquet(raw_glob)
-        .filter(pl.col("has_full_text") & (pl.col("text_length") >= MIN_TEXT_CHARS))
-        .filter(where if where is not None else pl.lit(True))
-        # GE/VD publish one ruling under two identifiers: keep one copy per text.
-        .sort("text_length", descending=True)
-        .unique(subset="content_hash", keep="first", maintain_order=False)
+        .with_columns(court=pl.col("court").replace({"bge_historical": "bge"}))
+        .filter(pl.col("has_full_text") & ((pl.col("text_length") >= MIN_TEXT_CHARS)
+                                         | ((pl.col("court") == "bge") & (pl.col("text_length") > 0))))
+        .filter((where | (pl.col("court") == "bge")) if where is not None else pl.lit(True))
+        .with_columns(source_decision_id=pl.col("decision_id"),
+                      decision_id=pl.col("decision_id").map_elements(canonical_id, return_dtype=pl.String))
+        .sort(["text_length", "source_decision_id"], descending=[True, False])
+        .unique(subset="decision_id", keep="first", maintain_order=True)
+        # Keep each published BGE identity; elsewhere deduplicate identical texts, but never
+        # collapse unrelated decisions just because their content_hash is missing.
+        .with_columns(_text_key=pl.when(pl.col("court") == "bge").then(pl.col("decision_id"))
+                      .otherwise(pl.col("content_hash").fill_null(pl.col("decision_id"))))
+        .unique(subset="_text_key", keep="first", maintain_order=True)
+        .drop("_text_key")
         .with_columns(
             period=period_expr(),
             branch=pl.col("branch").fill_null("unknown"),
@@ -92,6 +103,10 @@ def sample(n: int, floor: int, seed: int, raw_glob: str = RAW_GLOB, where: pl.Ex
         .filter(pl.col("_r") <= pl.col("take"))
         .select("decision_id")
     )
+    # Published Federal Supreme Court decisions are the compact set of leading authorities. They
+    # must not compete with cantonal decisions for a proportional stratum quota.
+    bge = keys.filter(pl.col("jurisdiction") == "bge").select("decision_id")
+    chosen = pl.concat([chosen, bge]).unique()
     subset = cand.join(chosen.lazy(), on="decision_id", how="semi").collect()
     return subset, keys
 

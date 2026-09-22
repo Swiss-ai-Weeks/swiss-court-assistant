@@ -129,18 +129,21 @@ def _chunk_batch(rows: list[dict]) -> list[dict]:
 
 
 def build_chunks(decisions_path: str | Path, workers: int = 64) -> pl.DataFrame:
-    docs = pl.read_parquet(
-        decisions_path, columns=["decision_id", "language", "full_text", "regeste"]
-    )
+    columns = ["decision_id", "language", "full_text", "regeste"]
+    if "source_decision_id" in pl.read_parquet_schema(decisions_path):
+        columns.append("source_decision_id")
+    docs = pl.read_parquet(decisions_path, columns=columns)
+    if "source_decision_id" not in docs.columns:
+        docs = docs.with_columns(source_decision_id=pl.col("decision_id"))
     paras = (
         pl.scan_parquet(PARAGRAPHS)
-        .join(docs.lazy().select("decision_id"), on="decision_id", how="semi")
+        .join(docs.lazy().select(pl.col("source_decision_id").alias("decision_id")), on="decision_id", how="semi")
         .with_row_index("_ord")  # keep document order for the sequential search
         .group_by("decision_id")
         .agg(pl.struct("e_number", "text").sort_by("_ord").alias("paras"))
         .collect()
     )
-    docs = docs.join(paras, on="decision_id", how="left").with_columns(
+    docs = docs.join(paras, left_on="source_decision_id", right_on="decision_id", how="left").with_columns(
         pl.col("paras").list.eval(pl.concat_list(
             pl.element().struct.field("e_number"), pl.element().struct.field("text")
         ))

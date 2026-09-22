@@ -27,7 +27,8 @@ from .agent import (AgentEvent, Cite, Clarify, Delta, Mention, Status, Thought, 
 from .case_index import CaseHit, CaseIndex, IndexUnavailable
 from .corpus import Corpus, FiltersUnavailable, Passage
 from .decisions import court_label
-from .language import detect_language
+from .language import detect_language, language_matches
+from swiss_court_assistant.identity import exact_reference
 from .llm import LLM_KEY, LLM_THINKING, LLM_URL, served_model, today_note
 from .parsing import DocumentStore
 from .schemas import DocumentInfo, Message, Source
@@ -581,7 +582,8 @@ def make_tools(corpus: Corpus, documents: DocumentStore | None = None, case_inde
             return repeat, {"summary": "repeats an earlier search"}
         try:
             hits = await corpus.semantic_search_by_language({"de": query_de, "fr": query_fr, "it": query_it},
-                                                            where=where)
+                                                            where=where,
+                                                            query_language=(_turn.get().language if _turn.get() else None))
         except Exception as e:
             return _failed(e)
         text, artifact = _hits_result(hits, label)
@@ -1033,7 +1035,7 @@ class ResearchThenAnswer(AgentMiddleware):
         # Passages and searches in three languages pull the answer away from the question's language
         # (a French question got a German answer), so name it when the question makes it clear.
         question = str(next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), ""))
-        code = (turn.language if turn else None) or detect_language(question, default="")
+        code = (turn.language if turn else None) or detect_language(question)
         language = LANGUAGE_NAMES.get(code)
         notes = ""
         if established := " ".join(str(args.get("established") or "").split()):
@@ -1090,7 +1092,7 @@ class ResearchThenAnswer(AgentMiddleware):
         # `final` does not hold against a conversation of German passages, so the draft is checked and
         # written once more. Only the text is redrafted; the quotes stay in the passage's own language.
         if language and (drafted := " ".join(p.text for p in parts if isinstance(p, TextPart))) \
-                and len(drafted) > 120 and detect_language(drafted, default=code) != code:
+                and not language_matches(drafted, code):
             log.warning("the draft came back in %s, not %s; writing it again",
                         detect_language(drafted, default=code), code)
             status(Status("checking", "Writing the answer in the language of the question"))
@@ -1832,8 +1834,9 @@ class Verifier:
         for statement in needed:
             problems.append(f"The sentence «{statement}» has no citation and says more than the cited sentences "
                             f"do. Cite a passage from the tool results that says it, or remove it.")
-        if language in LANGUAGE_NAMES and (got := detect_language(text, default="")) and got != language:
-            problems.append(f"The answer is written in {LANGUAGE_NAMES.get(got, got)}; the question is in "
+        if language in LANGUAGE_NAMES and text.strip() and not language_matches(text, language):
+            got = detect_language(text, default="unknown")
+            problems.append(f"The answer is written in {LANGUAGE_NAMES.get(got, got)} or mixes languages; the question is in "
                             f"{LANGUAGE_NAMES[language]}. Write the text parts and explanations in "
                             f"{LANGUAGE_NAMES[language]}.")
         # Only when some citation held: this model marks an answer down for what it leaves out (see
@@ -1927,7 +1930,15 @@ class ReactAgent:
         # one question back per question: after the user has answered one, the agent answers
         last = next((m for m in reversed(history) if m.role == "assistant"), None)
         turn = Turn(may_ask=ask and not (last and last.clarification),
-                    language=detect_language(original_question(question, history), default="") or None)
+                    language=detect_language(original_question(question, history)))
+        # A bare exact reference is a lookup, not permission to substitute a different judgment.
+        if not attachments and exact_reference(question) and not self.corpus.decisions.find(question):
+            missing = {"de": "Kein passender Entscheid im Korpus gefunden.",
+                       "fr": "Aucune décision correspondante trouvée dans le corpus.",
+                       "it": "Nessuna decisione corrispondente trovata nel corpus.",
+                       "en": "No matching decision found in the corpus."}
+            yield Delta(missing.get(turn.language, missing["de"]))
+            return
         attachments = attachments or []
         # every document attached so far in the conversation stays readable, not only this message's
         earlier = [d for m in history if m.attachments for d in m.attachments]

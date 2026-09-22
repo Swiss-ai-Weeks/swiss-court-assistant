@@ -57,6 +57,7 @@ from swiss_court_assistant import retrieval as R
 from swiss_court_assistant import sampling as S
 from swiss_court_assistant import vectordb as V
 from swiss_court_assistant.sampling import period_expr
+from swiss_court_assistant.identity import canonical_id
 
 REPO = "voilaj/swiss-caselaw"
 LAWS_REPO = "voilaj/swiss-legislation"  # article-level statute text, federal + cantonal
@@ -180,14 +181,25 @@ def _chunks_table(con: sqlite3.Connection) -> None:
 
 # ── one shard ───────────────────────────────────────────────────────────
 def prepare(df: pl.DataFrame) -> pl.DataFrame:
-    """The two columns sampling.py derives; the rest ships with the shard."""
+    """The two columns sampling.py derives; the rest ships with the shard.
+
+    BGE appears under both ``bge_122 V 157`` and ``bge_BGE_122_V_157`` upstream.  A reporter
+    citation is its stable public identity, so collapse those twins before decisions and passages
+    are indexed; otherwise authority counts and result diversity are split across them.
+    """
     if "branch" not in df.columns:  # the root-level bge_historical.parquet is an older, 33-column layout
         df = df.with_columns(branch=pl.lit(None, dtype=pl.String))
+    if "full_text" in df.columns:
+        df = df.filter(pl.col("full_text").is_not_null() & (pl.col("full_text").str.len_chars() > 0))
+    df = df.with_columns(court=pl.col("court").replace({"bge_historical": "bge"}))
     return df.with_columns(
+        source_decision_id=(pl.col("source_decision_id").fill_null(pl.col("decision_id"))
+                            if "source_decision_id" in df.columns else pl.col("decision_id")),
+        decision_id=pl.col("decision_id").map_elements(canonical_id, return_dtype=pl.String),
         branch=pl.col("branch").fill_null("unknown"),
         jurisdiction=pl.when(pl.col("canton") == "CH").then(pl.col("court")).otherwise(pl.col("canton")),
         period=period_expr(),
-    )
+    ).unique(subset="decision_id", keep="first", maintain_order=True)
 
 
 def drop_decisions(con: sqlite3.Connection, fts: sqlite3.Connection, ids: list[str]) -> int:
@@ -258,13 +270,21 @@ def ingest(con: sqlite3.Connection, fts: sqlite3.Connection, path: Path, label: 
         return 0, 0
     selected = [r[0] for r in con.execute("SELECT decision_id FROM selected_decisions")]
     if selected:  # only the chosen sample; a delta may bring decisions outside it, which are skipped
-        df = df.filter(pl.col("decision_id").is_in(selected))
+        df = df.filter(pl.col("decision_id").is_in([canonical_id(d) for d in selected]) | (pl.col("court") == "bge"))
     if skip:
         df = df.filter(~pl.col("decision_id").is_in(list(skip)))
     if df.is_empty():
         return 0, 0
     _decisions_table(con, df)
     _chunks_table(con)
+    # Remove legacy twin rows as well as their passages/vectors/FTS entries. Incoming BGE IDs
+    # are canonical, but an existing index may still use the space-separated export convention.
+    incoming = set(df["decision_id"])
+    twins = [did for (did,) in con.execute("SELECT decision_id FROM decisions WHERE court = 'bge'")
+             if canonical_id(did) in incoming and did != canonical_id(did)]
+    drop_decisions(con, fts, twins)
+    with con:
+        con.executemany("DELETE FROM decisions WHERE decision_id = ?", [[d] for d in twins])
     # decisions already held under one of these ids are being replaced: drop their passages first,
     # otherwise the old vectors and FTS rows would survive alongside the new ones
     con.execute("CREATE TEMP TABLE IF NOT EXISTS _incoming (decision_id TEXT PRIMARY KEY)")
@@ -475,7 +495,8 @@ def build(courts: list[str] | None, model: str, device: str, batch: int, limit: 
         local = fetch(repo_path)
         sha = _sha256(local)
         row = con.execute("SELECT sha256 FROM index_sources WHERE path = ?", [repo_path]).fetchone()
-        if row and row[0] == sha:
+        needs_bge_upgrade = Path(repo_path).stem in {"bge", "bge_historical"} and state(con, f"identity:{repo_path}") != "2"
+        if row and row[0] == sha and not needs_bge_upgrade:
             print(f"[{i}/{len(shards)}] {repo_path} unchanged")
             continue
         t0 = time.time()
@@ -483,11 +504,14 @@ def build(courts: list[str] | None, model: str, device: str, batch: int, limit: 
         with con:
             con.execute("INSERT OR REPLACE INTO index_sources VALUES (?, ?, ?, ?)",
                         [repo_path, sha, n_dec, _utc()])
+        state(con, f"identity:{repo_path}", "2")
         ingested += 1
         print(f"[{i}/{len(shards)}] {repo_path}: {n_dec:,} decisions, {n_chunks:,} passages "
               f"({time.time() - t0:.0f}s)")
     if shards:
         state(con, "snapshot_date", manifest()["snapshot"]["date"])
+        if courts is None and limit is None:
+            state(con, "identity_version", "2")
     if ingested:
         # A shard holds the snapshot, which predates every delta: decisions that a delta had already
         # updated just went back in time. Clear the watermark so `update` replays them.
@@ -562,6 +586,25 @@ def update(model: str, device: str, batch: int, skip_embed: bool) -> None:
                         [d["parquet"]["path"], got, n_dec, _utc()])
         state(con, "delta_date", d["date"])
         print(f"  {d['date']}: {n_dec:,} decisions, {n_chunks:,} passages")
+    if not skip_embed:
+        embed(con, model, device, batch)
+    con.close()
+    fts.close()
+
+
+def backfill_bge(model: str, device: str, batch: int, skip_embed: bool) -> None:
+    """Append missing published BGE without resampling or replacing existing decisions.
+
+    Existing twin IDs remain readable through runtime aliases; ordinary `build` canonicalises
+    physical rows too. This command is resumable and adds all years, independently of selection.
+    """
+    con, fts = open_db(), open_fts()
+    done = {canonical_id(r[0]) for r in con.execute("SELECT DISTINCT decision_id FROM chunks")}
+    paths = sorted(shard_files(["bge", "bge_historical"]), key=lambda p: ('historical' in p, p))
+    for path in paths:
+        n, chunks = ingest(con, fts, fetch(path), Path(path).stem, skip=done)
+        print(f"{path}: {n:,} missing BGE added, {chunks:,} passages", flush=True)
+        done = {canonical_id(r[0]) for r in con.execute("SELECT DISTINCT decision_id FROM chunks")}
     if not skip_embed:
         embed(con, model, device, batch)
     con.close()
@@ -645,6 +688,7 @@ def main() -> None:
     g.add_argument("--since", type=int, help="widen the pool to decisions from this year on (needs 1.0)")
     g.add_argument("--all-years", action="store_true", help="every decision, whatever its date (needs 1.0)")
     common(g)
+    common(sub.add_parser("backfill-bge", help="append all missing published BGE, including historical volumes"))
     u = sub.add_parser("update", help="apply the dataset's dated deltas since the watermark")
     common(u)
     sub.add_parser("citations", help="rebuild the citation graph over the indexed decisions")
@@ -667,6 +711,11 @@ def main() -> None:
         update(args.model, args.device, args.batch, args.skip_embed)
         if not args.skip_embed:
             vectors(args.model)  # restart the app afterwards: it opens the matrix at startup
+    elif args.cmd == "backfill-bge":
+        backfill_bge(args.model, args.device, args.batch, args.skip_embed)
+        if not args.skip_embed:
+            vectors(args.model)
+            citations()
     elif args.cmd == "citations":
         citations()
     else:

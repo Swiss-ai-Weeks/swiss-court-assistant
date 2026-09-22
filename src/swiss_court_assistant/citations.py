@@ -16,6 +16,8 @@ from pathlib import Path
 
 import polars as pl
 
+from swiss_court_assistant.identity import canonical_id
+
 CITATIONS = Path("data/raw/graph/citations.parquet")
 CORPUS = Path("data/raw/data")
 DEFAULT_SUBSET = Path("data/subset/decisions_50k_seed42.parquet")
@@ -43,6 +45,7 @@ def _labels(ids: set[str]) -> pl.DataFrame:
     for f in sorted(CORPUS.glob("*.parquet")):
         frame = (pl.scan_parquet(f)
                  .select("decision_id", "court", "docket_number", "decision_date")
+                 .with_columns(pl.col("decision_id").map_elements(canonical_id, return_dtype=pl.String))
                  .filter(pl.col("decision_id").is_in(ids))
                  .collect())
         if len(frame):
@@ -54,11 +57,15 @@ def _labels(ids: set[str]) -> pl.DataFrame:
 
 def build(subset: Path = DEFAULT_SUBSET) -> Path:
     t0 = time.time()
-    ids = set(pl.read_parquet(subset, columns=["decision_id"])["decision_id"])
+    ids = {canonical_id(d) for d in pl.read_parquet(subset, columns=["decision_id"])["decision_id"]}
     edges = (pl.read_parquet(CITATIONS, columns=["source_decision_id", "target_decision_id", "confidence_score"])
+             .with_columns(pl.col(c).map_elements(canonical_id, return_dtype=pl.String)
+                           for c in ("source_decision_id", "target_decision_id"))
              .filter(pl.col("target_decision_id").is_in(ids) | pl.col("source_decision_id").is_in(ids))
              .rename({"source_decision_id": "source", "target_decision_id": "target",
-                      "confidence_score": "confidence"}))
+                      "confidence_score": "confidence"})
+             .filter(pl.col("source") != pl.col("target"))
+             .group_by("source", "target").agg(pl.col("confidence").max()))
     print(f"{len(edges):,} edges touch the subset ({time.time() - t0:.0f}s)")
 
     mentioned = set(edges["source"]) | set(edges["target"])
@@ -68,7 +75,10 @@ def build(subset: Path = DEFAULT_SUBSET) -> Path:
 
     out = index_path(subset)
     out.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(out)
+    # Publish atomically: a running app can keep reading the old graph throughout the build.
+    temp = out.with_suffix('.building.sqlite')
+    temp.unlink(missing_ok=True)
+    con = sqlite3.connect(temp)
     _schema(con)
     for frame in edges.iter_slices(CHUNK):
         con.executemany("INSERT INTO edges VALUES (?, ?, ?)", frame.iter_rows())
@@ -84,9 +94,10 @@ def build(subset: Path = DEFAULT_SUBSET) -> Path:
           GROUP BY d;
     """)
     con.commit()
+    con.close()
+    temp.replace(out)
     size = out.stat().st_size / 1e6
     print(f"{out} - {size:.0f} MB, {time.time() - t0:.0f}s")
-    con.close()
     return out
 
 

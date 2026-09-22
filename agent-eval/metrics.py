@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from swiss_court_assistant.server.language import detect_language
+from swiss_court_assistant.server.language import detect_language, language_matches
 
 from client import Turn
 
@@ -41,7 +41,7 @@ def mechanical(case: dict[str, Any], turn: Turn) -> dict[str, Any]:
     wanted = expect.get("cites", True)
     out = {
         "answer_language": language,
-        "language_ok": language == (expect.get("language") or case["language"]),
+        "language_ok": language_matches(prose, expect.get("language") or case["language"]),
         "answer_chars": len(prose),
         "thinking_chars": turn.thinking_chars,
         "n_citations": len(sources),

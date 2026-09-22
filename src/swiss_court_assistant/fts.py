@@ -62,9 +62,50 @@ def match_expr(keyword: str) -> str:
     return " ".join(parts)
 
 
+def broad_terms(query: str) -> list[str]:
+    """Plain-text retrieval terms, not executable FTS syntax. Exact keyword_search stays unchanged."""
+    from bm25s import stopwords as sw
+    stop = set(sw.STOPWORDS_GERMAN) | set(sw.STOPWORDS_FRENCH) | set(sw.STOPWORDS_ITALIAN) | set(sw.STOPWORDS_EN)
+    stop |= {'art', 'artikel', 'article', 'articolo', 'abs', 'al', 'cpv', 'cherche', 'sagt', 'sagen',
+             'rechtsprechung', 'entscheid', 'arrêt', 'sentenza', 'find', 'please', 'suche',
+             'what', 'how', 'which', 'when', 'does', 'say', 'about', 'can', 'could', 'would'}
+    return list(dict.fromkeys(w.lower() for w in re.findall(r'[^\W_]+', query)
+                             if len(w) >= 2 and (w.lower() not in stop or w in {'OR', 'CO', 'CP'})))[:12]
+
+
 class KeywordIndex:
     def __init__(self, path: Path):
         self.con = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
+
+    def broad_search(self, query: str, k: int = 200, timeout: float = 4.0) -> list[tuple[int, float]]:
+        """Precision-first AND, backed up by BM25 OR, with a wall-clock budget for broad terms.
+
+        Meant for hybrid candidate generation, not the agent's exact keyword tool. Always quote
+        tokens, and clear the progress handler even on cancellation/error (the connection is reused).
+        """
+        terms = broad_terms(query)
+        if not terms:
+            return []
+        quoted = ['"' + t + '"' for t in terms]
+        deadline = time.monotonic() + timeout
+        self.con.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+        found = []
+        try:
+            for separator in (' AND ', ' OR ') if len(quoted) > 1 else (' OR ',):
+                rows = self.con.execute(
+                    'SELECT rowid, bm25(passages) FROM passages WHERE passages MATCH ? ORDER BY rank LIMIT ?',
+                    (separator.join(quoted), k)).fetchall()
+                seen = {i for i, _ in found}
+                found.extend(r for r in rows if r[0] not in seen)
+                if len(found) >= k:
+                    break
+        except sqlite3.OperationalError as exc:
+            if 'interrupted' not in str(exc):
+                raise
+            # A bounded lexical recall supplement must not block semantic retrieval indefinitely.
+        finally:
+            self.con.set_progress_handler(None, 0)
+        return found[:k]
 
     def search(self, keyword: str, k: int = 50) -> list[tuple[int, float]]:
         """(chunks.id, bm25) best first; bm25 is negative, lower is better."""
