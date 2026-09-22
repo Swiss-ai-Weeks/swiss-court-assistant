@@ -57,6 +57,95 @@ interface CaseFileProps {
   onAdded: (matter: Matter) => void;
 }
 
+/** A party as the intake writes it: "Laura Brunner — Mieterin", "Client - locataire", "Landlord (AG)". */
+interface Party {
+  name: string;
+  role: string;
+  /** Words distinctive enough to recognise the party in a timeline entry. */
+  words: string[];
+}
+
+// titles and legal forms are not what a person is called, so they give no initial and no match
+const NOISE = /^(m|mr|mrs|ms|me|dr|prof|herr|frau|madame|monsieur|signor|signora|ag|sa|gmbh|sàrl|sarl|srl|si|inc|ltd)\.?$/i;
+
+/** The parties of a matter, each with the words that identify it in a timeline entry: capitalised, long
+ *  enough to be a name, and used by this party alone — the intake often puts the real name in the role
+ *  ("Client — Mme A."), and a word two parties share says nothing about which one an entry is about. */
+function parseParties(entries: string[]): Party[] {
+  // the separator has to stand alone: "SI Béthusy-Soleil SA" is one name, not a name and a role
+  const parsed = entries.map((entry) => {
+    const [, name = entry, role = ""] = entry.match(/^(.*?)(?:\s+[—–-]\s+|:\s+)(.*)$/s) ?? [];
+    const words = [...new Set(entry.split(/[^\p{L}\p{N}]+/u))]
+      .filter((w) => w.length >= 4 && /^\p{Lu}/u.test(w) && !NOISE.test(w));
+    return { name: name.trim() || entry, role: role.trim(), words };
+  });
+  const shared = new Set(parsed.flatMap((p) => p.words).filter((w, i, all) => all.indexOf(w) !== i));
+  return parsed.map((p) => ({ ...p, words: p.words.filter((w) => !shared.has(w)) }));
+}
+
+function initials(name: string): string {
+  const words = name.split(/[^\p{L}\p{N}]+/u).filter((w) => w && !NOISE.test(w));
+  return (words.length ? words : name.split(/\s+/)).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+}
+
+/** A party's badge: the same tone every time it appears, so the timeline can be read by colour. */
+function Avatar({ p, i, small }: { p: Party; i: number; small?: boolean }) {
+  return (
+    <span className={`avatar tone-${i % 4}${small ? " small" : ""}`} title={p.role ? `${p.name} — ${p.role}` : p.name}
+      aria-hidden={small}>
+      {initials(p.name)}
+    </span>
+  );
+}
+
+const MONTHS = /jan|feb|mar|apr|may|mai|jun|jul|aug|sep|o[ck]t|nov|de[czs]/i;
+
+/** "2024-03-14: termination served" as its date and what happened; an entry without one keeps its text. */
+function dated(entry: string): { when: string | null; what: string } {
+  const m = entry.match(/^([^:]{1,32}):\s*(\S.*)$/s);
+  if (m && (/\d/.test(m[1]) || MONTHS.test(m[1]))) return { when: m[1].trim(), what: m[2].trim() };
+  return { when: null, what: entry };
+}
+
+/** The dated facts as a line with a point per entry, each carrying the parties it names and, where the
+ *  case file says it, a link that opens the passage it was taken from. */
+function Timeline({ entries, parties, sources, onOpenSource }: {
+  entries: string[];
+  parties: Party[];
+  sources: (Source | null)[];
+  onOpenSource: (sources: Source[], n: number) => void;
+}) {
+  return (
+    <ol className="timeline">
+      {entries.map((entry, i) => {
+        const from = sources[i] ?? null;
+        const { when, what } = dated(entry);
+        const named = parties
+          .map((p, n) => ({ p, n }))
+          .filter(({ p }) => p.words.some((w) => new RegExp(`\\b${w}`, "iu").test(what)));
+        return (
+          <li key={i}>
+            <span className="timeline-dot" />
+            {when && <span className="timeline-when">{when}</span>}
+            <span className="timeline-what">{what}</span>
+            {named.length > 0 && (
+              <span className="timeline-who">
+                {named.map(({ p, n }) => <Avatar key={n} p={p} i={n} small />)}
+              </span>
+            )}
+            {from && (
+              <button className="timeline-from" onClick={() => onOpenSource([from], from.n)}
+                title={`Open the passage in ${from.decision.docket}`}>
+                {from.decision.docket}{from.erwaegungen.length ? ` · ${from.erwaegungen[0]}` : ""}
+              </button>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 /** Everything the matter holds: what the client handed over, and what the assistant produced from it. */
 function CaseFile({ matter, running, onOpenSource, onAdded }: CaseFileProps) {
   const assets = matter.assets ?? [];
@@ -290,6 +379,8 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
     onChanged();
   }, [onChanged]);
 
+  const parties = useMemo(() => parseParties(matter?.intake?.parties ?? []), [matter]);
+
   const authorities = useMemo(() => (matter ? citationSources(matter) : []), [matter]);
 
   if (!matter) return <div className="matter"><MatterIntake busy={busy} error={error} onStart={start} /></div>;
@@ -370,20 +461,27 @@ export default function MatterPage({ matterId, onOpenMatter, onChanged, onOpenSo
           <section className="matter-block" data-select-lang={matter.language} data-select-source="the facts">
             <h2>Facts as understood</h2>
             <p className="facts">{matter.intake.summary}</p>
-            <div className="facts-grid">
-              {matter.intake.parties.length > 0 && (
-                <div>
-                  <h3>Parties</h3>
-                  <ul>{matter.intake.parties.map((p) => <li key={p}>{p}</li>)}</ul>
-                </div>
-              )}
-              {matter.intake.timeline.length > 0 && (
-                <div>
-                  <h3>Timeline</h3>
-                  <ul>{matter.intake.timeline.map((t) => <li key={t}>{t}</li>)}</ul>
-                </div>
-              )}
-            </div>
+            {matter.intake.parties.length > 0 && (
+              <div className="facts-part">
+                <h3>Parties</h3>
+                <ul className="parties">
+                  {parties.map((p, i) => (
+                    <li key={matter.intake!.parties[i]}>
+                      <Avatar p={p} i={i} />
+                      <span className="party-name">{p.name}</span>
+                      {p.role && <span className="party-role">{p.role}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {matter.intake.timeline.length > 0 && (
+              <div className="facts-part">
+                <h3>Timeline</h3>
+                <Timeline entries={matter.intake.timeline} parties={parties}
+                  sources={matter.intake.timelineSources ?? []} onOpenSource={onOpenSource} />
+              </div>
+            )}
           </section>
         )}
 

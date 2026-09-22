@@ -207,6 +207,9 @@ class Intake(Model):
     summary: str
     parties: list[str] = []
     timeline: list[str] = []  # dated facts, in order
+    # where each dated fact was found in the case file, entry by entry (null: nowhere clear enough);
+    # null for the whole list on matters taken in before the passages were located
+    timeline_sources: list[Source | None] | None = None
 
 
 class MatterSummary(Model):

@@ -24,8 +24,8 @@ from .agent import (Agent, Cite, Clarify, Delta, Mention, Status, StubAgent, Tho
                     original_question)
 from .decisions import DecisionStore, SqliteDecisionStore
 from .documents import MAX_CHARS, UnreadableError, transcribe
-from .matters import (MatterStore, Pipeline, case_prep_document, create_matter, docx_memo, memo,
-                      prep_document_id)
+from .matters import (MatterStore, Pipeline, case_prep_document, create_matter, docx_memo, in_order,
+                      locate_timeline, memo, prep_document_id)
 from .language import detect_language
 from .mentions import statute_links
 from .parsing import ACCEPTED, DocumentStore, ParserUnavailable
@@ -431,6 +431,20 @@ async def new_matter_from_text(req: MatterRequest, s: Svc) -> Matter:
     return _open_matter(s, [await asyncio.to_thread(s.documents.keep_notes, req.text.strip())], req.title)
 
 
+async def _located(s: Services, matter: Matter) -> Matter:
+    """Matters taken in before the timeline was put in date order and traced back to the case file are
+    caught up here, once, the first time the page is opened."""
+    if not (matter.intake and matter.intake.timeline):
+        return matter
+    changed = in_order(matter.intake)
+    if matter.intake.timeline_sources is None and matter.assets:
+        matter.intake.timeline_sources = await asyncio.to_thread(locate_timeline, s.documents, matter)
+        changed = True
+    if changed:
+        s.matters.save(matter)
+    return matter
+
+
 def _with_assets(s: Services, matter: Matter) -> Matter:
     """Matters opened before the case file was kept have only their one document's id."""
     if not matter.assets and matter.document_id and (info := s.documents.info(matter.document_id)):
@@ -443,7 +457,7 @@ async def get_matter(matter_id: str, s: Svc) -> Matter:
     matter = s.matters.get(matter_id)
     if matter is None:
         raise HTTPException(404, "Matter not found")
-    return _with_assets(s, matter)
+    return await _located(s, _with_assets(s, matter))
 
 
 @app.delete("/api/matters/{matter_id}", status_code=204)

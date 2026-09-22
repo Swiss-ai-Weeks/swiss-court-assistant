@@ -177,6 +177,127 @@ def numbered(matter: Matter) -> tuple[list[Source], list[str]]:
     return sources, answers
 
 
+# ── the timeline in order ───────────────────────────────────────────────
+_MONTHS = {}
+for _i, _names in enumerate((
+        "jan januar janvier gennaio january", "feb februar février febbraio february",
+        "mar märz maerz mars marzo march", "apr april avril aprile",
+        "mai mag may maggio", "jun juni juin giugno june", "jul juli juillet luglio july",
+        "aug august août agosto", "sep sept september septembre settembre",
+        "okt oct oktober octobre ottobre october", "nov november novembre",
+        "dez dec dezember décembre dicembre december"), 1):
+    _MONTHS.update({name: _i for name in _names.split()})
+
+_ISO = re.compile(r"(\d{4})-(\d{1,2})(?:-(\d{1,2}))?")
+_NUMERIC = re.compile(r"(\d{1,2})[./](\d{1,2})[./](\d{4})")
+_NAMED = re.compile(r"(?:(\d{1,2})\.?\s+)?([^\W\d_]{3,})\.?,?\s+(\d{4})|([^\W\d_]{3,})\s+(\d{1,2}),\s*(\d{4})")
+_YEAR = re.compile(r"\b(1[89]\d{2}|20\d{2})\b")
+
+
+def _date(entry: str) -> tuple[int, int, int] | None:
+    """The first date a timeline entry gives, however it is written: "2024-03-14", "14.03.2024",
+    "3. Februar 2025", "July 19, 2024", or just "2023". A day or month it leaves out counts as 0, so
+    the vaguer entry comes first within its year. None when there is no date at all."""
+    head = entry[:60]
+    if (m := _ISO.search(head)):
+        return int(m[1]), int(m[2]), int(m[3] or 0)
+    if (m := _NUMERIC.search(head)):
+        a, b = int(m[1]), int(m[2])
+        day, month = (a, b) if b <= 12 else (b, a)  # day first here; "03/14/2024" is read the other way
+        return int(m[3]), month, day
+    if (m := _NAMED.search(head)):
+        name, day, year = (m[2], m[1], m[3]) if m[3] else (m[4], m[5], m[6])
+        if (month := _MONTHS.get(name.lower()[:4]) or _MONTHS.get(name.lower()[:3])) is not None:
+            return int(year), month, int(day or 0)
+    if (m := _YEAR.search(head)):
+        return int(m[1]), 0, 0
+    return None
+
+
+def in_order(intake: Intake) -> bool:
+    """Put the dated facts in date order, carrying each one's located passage with it; entries with no
+    date keep their place at the end. The intake model writes them roughly in order and gets it wrong
+    often enough to notice (15.09.2023 after 01.10.2023). Returns whether anything moved."""
+    sources = intake.timeline_sources or [None] * len(intake.timeline)
+    if len(sources) != len(intake.timeline):
+        sources = [None] * len(intake.timeline)
+    rows = list(zip(intake.timeline, sources, strict=True))
+    ordered = sorted(enumerate(rows), key=lambda r: ((d := _date(r[1][0])) is None, d or (0, 0, 0), r[0]))
+    if [i for i, _ in ordered] == list(range(len(rows))):
+        return False
+    intake.timeline = [entry for _, (entry, _) in ordered]
+    if intake.timeline_sources is not None:
+        intake.timeline_sources = [source for _, (_, source) in ordered]
+    return True
+
+
+# ── where a dated fact comes from ───────────────────────────────────────
+WINDOW = 420  # characters of the document shown as the passage behind a timeline entry
+_TERM = re.compile(r"[^\W\d_]{5,}|\d[\d.\-/]{2,}", re.UNICODE)  # a longish word, or a date-like number
+
+
+def _terms(entry: str) -> list[str]:
+    """What to look for in the documents: the entry's long words and its numbers, "2024-03-14" also as
+    "14.03.2024" and as its parts, since a letter rarely writes a date the way the intake does."""
+    out: list[str] = []
+    for term in _TERM.findall(entry.lower()):
+        out.append(term)
+        if (parts := re.split(r"[.\-/]", term)) and len(parts) == 3 and all(parts):
+            out += [".".join(reversed(parts)), ".".join(parts), *(p for p in parts if len(p) == 4)]
+    return list(dict.fromkeys(out))[:16]
+
+
+def _passage(text: str, terms: list[str]) -> tuple[int, int, int] | None:
+    """The window of the document the entry was taken from: (start, end, terms matched).
+
+    It opens at the entry's own date wherever the document writes it — in a file note listing every
+    date, every window matches the case's names, and without this anchor they all pointed at the first
+    line. With no date in common, the window opens at the word that draws most of the others around it."""
+    hits: list[tuple[int, str]] = []
+    low = text.lower()
+    for term in terms:
+        start = low.find(term)
+        while start != -1 and len(hits) < 200:
+            hits.append((start, term))
+            start = low.find(term, start + len(term))
+    if not hits:
+        return None
+    dates = [h for h in hits if any(c.isdigit() for c in h[1])]
+    anchors = dates or hits
+    around = lambda h: len({t for p, t in hits if h[0] - 80 <= p < h[0] + WINDOW})  # noqa: E731
+    best = max(anchors, key=around)
+    return max(0, best[0] - 80), min(len(text), best[0] + WINDOW), around(best)
+
+
+def locate_timeline(documents: DocumentStore, matter: Matter) -> list[Source | None]:
+    """For each dated fact, the passage of the case file it was taken from — found by the words and dates
+    the entry and the document share. Two terms in one window is the threshold: one word in common
+    (a party's name, a year) happens all over a case file and would point at the wrong page. Blocking."""
+    if matter.intake is None:
+        return []
+    texts = [(a, documents.text(a.id) or "") for a in matter.assets]
+    out: list[Source | None] = []
+    for n, entry in enumerate(matter.intake.timeline, 1):
+        terms = _terms(entry)
+        best: tuple[int, DocumentInfo, str, tuple[int, int, int]] | None = None
+        for asset, text in texts:
+            found = _passage(text, terms) if text else None
+            if found and found[2] >= 2 and (best is None or found[2] > best[0]):
+                best = (found[2], asset, text, found)
+        if best is None:
+            out.append(None)
+            continue
+        matched, asset, text, (start, end, _) = best
+        summary = documents.summary(asset.id)
+        page = DocumentStore.page_at(text, start)
+        out.append(Source(
+            n=n, chunk_id=f"{asset.id}#{start}", decision_id=asset.id, text=text[start:end],
+            section="document", erwaegungen=[f"p. {page}"] if page else [],
+            char_start=start, char_end=end, score=matched / max(len(terms), 1),
+            decision=summary) if summary else None)
+    return out
+
+
 def prep_document_id(matter_id: str) -> str:
     """The id of a matter's case prep in the document store: the same every time it is rewritten."""
     return "doc_" + hashlib.sha1(f"case-prep:{matter_id}".encode()).hexdigest()[:12]
@@ -406,6 +527,9 @@ class Pipeline:
             raise RuntimeError("The intake step did not return a readable result.") from e
         matter.title = drafted.title.strip() or matter.title
         matter.intake = Intake(summary=drafted.summary, parties=drafted.parties, timeline=drafted.timeline)
+        in_order(matter.intake)  # the model writes them roughly in order, not reliably in order
+        if (documents := getattr(self.agent, "documents", None)) is not None:
+            matter.intake.timeline_sources = await asyncio.to_thread(locate_timeline, documents, matter)
         matter.issues = [
             Issue(n=i, question=without_invented_articles(d.question, matter.facts), why=d.why, area=d.area)
             for i, d in enumerate(drafted.issues[:self.max_issues], 1)]

@@ -201,6 +201,9 @@ export interface Intake {
   summary: string;
   parties: string[];
   timeline: string[];
+  /** Where each dated fact was found in the case file, entry by entry; null where nothing matched
+   *  clearly enough, and null as a whole on matters taken in before passages were located. */
+  timelineSources?: (Source | null)[] | null;
 }
 
 export interface MatterSummary {
