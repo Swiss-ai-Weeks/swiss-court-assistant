@@ -291,7 +291,7 @@ export default function App() {
         </button>
         <div className="wordmark">
           <Logo className="wordmark-logo" />
-          Swiss Court Assistant
+          ACE
         </div>
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={page === "matters"} className={page === "matters" ? "active" : ""}
