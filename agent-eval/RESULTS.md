@@ -1,5 +1,150 @@
 # Results
 
+## 23 September - LEXam: the agent against Nemotron alone, and Nemotron against the leaderboard
+
+**Multiple choice: 18 % → 57 %** on the 100-question Swiss sample (two runs, 57 % and 57 %), level
+with Nemotron answering alone (55 %, three runs: 58, 53, 55). **Per statement, the reasoning went from
+39 % to 66 % right**, and **wrongly cited statute articles in the assessment from 30 % to 8 %**. Nemotron alone, on all 1,655 LEXam multiple-choice questions and scored exactly
+as the leaderboard scores them: **53.5 %** (95 % CI 51.1–55.9), 7th among the 31 leaderboard models - but see the token budget
+below.
+
+### Why the agent scored below chance
+
+The answer check keeps only sentences a passage states, and no passage states "Answer: C". On the
+earlier run 59 of 100 answers ended with no option at all; 18 % was the refusal rate, not the law.
+Four changes (react_agent.py):
+
+1. **A decision step for questions that ask for one option** (`answer_options`, `_decide`). After the
+   checked answer, one call with thinking on sees the research and the checked answer, gives a verdict
+   on each statement with the article or decision it rests on, maps them to an option and ends
+   "Antwort: X". It is shown under its own heading ("Beurteilung der Optionen"), apart from the
+   cited text. Decisions may only be named if they appear in the research (the first draft cited a
+   BGE from memory). If it names no option, it is asked once more without thinking (3 % of bare
+   answers loop in their reasoning past 32k tokens). `SCA_EXAM_DECIDE=0` turns it off.
+2. **Research statement by statement** for those questions (`EXAM_RESEARCH_NOTE`): the article each
+   statement turns on, one call per point, instead of three searches for the whole question.
+   `SCA_EXAM_RESEARCH=0` turns it off.
+3. **The premise check misfired on every exam question**: the quoted «Antwort: X» of the answer format
+   counted as a named term no passage contains, so the agent was sent to search for it and the answer
+   told to open with "no decision uses this term"; it also flagged the fictional parties of fact
+   patterns ("Sophara AG"). It now skips exam-style questions and answer formats.
+4. Detection is strict: lettered options count only with an answer format, an instruction to pick one,
+   or options built from the statements ("B) i und iii"). It finds all 1,655 raw LEXam questions and
+   none of the open, exam, behaviour or casefile cases (an open question listing statements A-E to mark
+   true or false one by one is left alone).
+
+| arm (100 MCQ, same questions) | accuracy | vs D, won/lost |
+|---|---|---|
+| A current agent (stopped at 27, then 2 right, 23 no option) | ~ 7-18 % | |
+| E decision step only | 53 % | 16/20 |
+| **D decision + statement-by-statement research** | **57 %** | |
+| **F = D + retry without thinking + stricter detection** | **57 %** | 14/14 |
+| Nemotron alone, LEXam prompt, thinking (3 runs) | 58 / 53 / 55 % | 17/16, 17/21, 16/18 |
+| Nemotron alone, no thinking | 37 % | 11/31 (p = 0.003) |
+
+None of the differences among D, E, F and the bare runs is significant (McNemar p > 0.6); the agent
+is not worse than the model alone any more, and not clearly better. `lexam_compare.py` makes this table.
+
+**Scored on the reasoning** (`reasoning.py`: is each statement judged the way the key has it,
+whatever letter was picked):
+
+| | old agent (20 Sep) | F |
+|---|---|---|
+| statements it takes a position on | 58 % | 89 % |
+| right, of those | 68 % | 74 % |
+| right, of all statements | 39 % | **66 %** |
+| questions right on every statement | 14 % | 39 % |
+| German / English, right of those addressed | 63 / 74 % | 69 / 85 % |
+
+### The articles the assessment names
+
+The assessment reasons partly from memory, and memory gets article numbers wrong: "Art. 469 ZGB" for
+the parentelic order (it is Art. 457; 469 is about defects of intent), "Art. 222 ZPO" for court experts
+(Art. 183), "Art. 1 DBG" for investment income (Art. 20). `article_check.py` looks every "Art. N CODE"
+of an assessment up in the statute index and asks whether the article's text is about what the
+sentence cites it for. On F's 100 assessments **57 of 190 checkable references were wrong (30 %)**; a
+hand check of 14 at random found 5 wrong (36 %), so the check is about right.
+
+The agent now runs the same check after the decision (`Verifier.article_problems`, `_fix_articles`,
+`SCA_ARTICLE_CHECK`): a reference to an article that does not exist in its act, or whose text is about
+something else, goes back once with the article's real text, to be corrected or reduced to the rule
+without a number; one still wrong after that keeps only the act's name. Applied offline to the same 98
+assessments with their saved research: **wrong references 57/190 → 12/146 (8 %)**, 34 assessments
+changed, multiple-choice accuracy unchanged (57 → 57). Measured with the fixer's own check, so read
+the 8 % as a floor; the hand check says the check agrees with a lawyer's reading about two times in
+three at worst. A prompt that asks for article numbers only when certain did less (from-memory
+articles 142 → 118 over 3 replays) and cost a point.
+
+### What the research is worth to the decision
+
+`lexam_decide.py` replays the decision on the research F saved (`SCA_DECIDE_DUMP`), 4 times per variant:
+
+| decision sees | accuracy (mean of 4) | majority of 4 | same letter all 4 times |
+|---|---|---|---|
+| research + checked answer (as shipped) | 54.8 % | 55 % | 61/100 |
+| research, no checked answer | 53.0 % | 57 % | 53/100 |
+| the question only | 51.2 % | 51 % | 42/100 |
+
+The research adds about 3.5 points and makes the decision markedly steadier; hiding the checked answer
+does not help (an early "+6 %" on 43 questions was noise). Voting over several decisions does not pay;
+for Nemotron alone a majority of 3 gave +2 (57 vs 55.3 %). What the votes do give is a confidence
+signal: where three bare runs agree (58 of 100) they are right 69 % of the time, otherwise about 38 %.
+
+### Nemotron against the LEXam leaderboard
+
+`lexam_bare.py`: LEXam's own prompt and letter extraction, mcq_4_choices test (1,655), temperature
+0.6, thinking on, 32,768 tokens.
+
+| # | model | MCQ accuracy |
+|---|---|---|
+| 1 | GPT-5 | 62.65 |
+| 2 | Claude-4.5-Sonnet | 58.01 |
+| 3 | Claude-3.7-Sonnet | 57.23 |
+| 4 | Gemini-2.5-Pro | 55.72 |
+| 5 | GPT-5-mini | 54.82 |
+| 6 | GPT-4.1 | 54.40 |
+| **7** | **Nemotron-3.5-Lightning, thinking** | **53.53** |
+| 8 | GPT-4o | 53.13 |
+| 9 | DeepSeek-V3.2-Exp | 53.07 |
+| 10 | DeepSeek-R1 | 52.41 |
+| ... | GPT-OSS-120B | 47.71 |
+| **19** | **Nemotron-3.5-Lightning, no thinking** | **44.71** |
+
+Caveats. **Token budget**: Nemotron thinks long (median 8,434 tokens per answer); LEXam gave reasoning
+models 8,192. Cut at 8,192 it would score about 31 %, at 16,384 about 45 %. Its 53.5 % needs the room.
+56 answers (3.4 %) ran past even 32,768 and count as wrong. **By slice**: English 68.8 %, German 44.3 %;
+International 77.9 %, Swiss 51.2 %; Private 63.9 %, Interdisciplinary 68.0 %, Public 45.0 %, Criminal
+40.3 %. **Data**: 69 of the 1,655 questions repeat a statement's text twice in a row (37 of them in
+Nebenstrafrecht) - a quirk of the dataset, the same for every model.
+
+### Open questions (60, same judge)
+
+| | rubric coverage | passes (coverage ≥ 60 %, no legal error) |
+|---|---|---|
+| agent before (A) | 56 % | 45 % (own report) |
+| agent after (D) | 54 % | 50 % (own report) |
+| Nemotron alone, LEXam prompt | **64 %** | 57 % (coverage and legal error only) |
+
+The changes do not touch open questions except through the premise-check fix; refusals fell from 16
+to 5, coverage is flat within judge noise. Nemotron alone covers more of the marking scheme because
+it writes the doctrine and the reasoning steps that no passage states, and the agent only writes what
+it can cite. Closing that gap means an uncited, clearly labelled assessment section on open
+questions as well - a product decision (it gives up "every sentence is sourced"), not made here.
+The grounded alternative, reading the provision for each issue, was tried on 20 September and made
+answers slower without raising coverage.
+
+### How to measure
+
+Arms ran as snapshots of `src/` on ports 8093-8096 with `SCA_VECTORS=cpu` (the GPU holds only one
+copy of the vectors; results are identical, only slower). Under eval load (30+ turns at once) the
+reranker NIM times out after 30 s and search falls back to vector order (~30 searches per arm in the
+first round, near zero after concurrency was lowered): keep eval concurrency ≤ 10 per server. An
+agent turn with thinking takes 5-15 minutes under that load; a 100-question arm takes 2-3 hours, which
+is why the decision is iterated with `lexam_decide.py` on saved research instead.
+
+Runs: `runs/lexam-ab/{D,E,F,open-A,open-D}`, `runs/bare-on-*`, `runs/bare-off-*`, `runs/bare-open-*`
+(local, not committed).
+
 ## 18 September - current corpus, clean A/B
 
 **The current agent: 64 % of cases correct, mean score 67.5/100** (two runs, 64 % and 64 %;

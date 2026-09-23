@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Clarification, DocumentInfo, Message, Source, Stage, StatuteRef, ToolCall } from "../api";
 import Answer from "./Answer";
 import { AttachmentChip, QuoteCard } from "./Composer";
@@ -295,12 +295,16 @@ function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, s
           {status.detail}
         </p>
       )}
-      {clarification && <p className="clarify-label">Question for you</p>}
+      {clarification && !sources.length && (
+        <p className="clarify-label">{(clarification.questions?.length ?? 0) > 1 ? "Questions for you" : "Question for you"}</p>
+      )}
       {content && (
         <Answer id={id} text={content} sources={sources} statutes={statutes} onStatute={onOpenStatute}
           language={language} streaming={streaming} activeN={activeN} onCite={open} />
       )}
-      {clarification && onReply && (
+      {clarification && onReply && ((clarification.questions?.length ?? 0) > 1 ? (
+        <ClarifyForm questions={clarification.questions!} onReply={onReply} />
+      ) : (
         <div className="clarify">
           {clarification.options.map((o) => (
             <button key={o} className="clarify-option" onClick={() => onReply(o)}>
@@ -309,8 +313,45 @@ function AssistantTurn({ id, content, sources, statutes, onOpenStatute, tools, s
           ))}
           <span className="clarify-hint">or type your answer below</span>
         </div>
-      )}
+      ))}
       {error && <p className="msg-error">{error}</p>}
+    </div>
+  );
+}
+
+/** Several questions asked back at once: pick an answer to each (or some), then send them together, numbered
+ *  like the questions in the message, which the next turn reads alongside. */
+function ClarifyForm({ questions, onReply }: {
+  questions: { question: string; options: string[] }[];
+  onReply: (text: string) => void;
+}) {
+  const [picked, setPicked] = useState<Record<number, string>>({});
+  const chosen = questions.map((_, i) => picked[i]).filter(Boolean).length;
+  const send = () =>
+    onReply(questions.map((_, i) => (picked[i] ? `${i + 1}. ${picked[i]}` : "")).filter(Boolean).join("\n"));
+  return (
+    <div className="clarify-form">
+      {questions.map((q, i) => (
+        <div key={i} className="clarify-row">
+          <span className="clarify-q">
+            {i + 1}. {q.question}
+          </span>
+          <div className="clarify">
+            {q.options.map((o) => (
+              <button key={o} className={`clarify-option${picked[i] === o ? " picked" : ""}`} aria-pressed={picked[i] === o}
+                onClick={() => setPicked((p) => ({ ...p, [i]: p[i] === o ? "" : o }))}>
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className="clarify">
+        <button className="clarify-send" disabled={!chosen} onClick={send}>
+          Send {chosen > 1 ? `${chosen} answers` : "answer"}
+        </button>
+        <span className="clarify-hint">or type your answers below</span>
+      </div>
     </div>
   );
 }

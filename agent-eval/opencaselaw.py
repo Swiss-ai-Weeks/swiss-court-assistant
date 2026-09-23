@@ -65,6 +65,7 @@ def main():
     p.add_argument('--capture-candidates', action='store_true')
     p.add_argument('--split', type=Path, help='Frozen topic-grouped split manifest')
     p.add_argument('--partition', choices=['dev', 'validation'], default='dev')
+    p.add_argument('--translate', action='store_true', help='search each language with an LLM translation of the query')
     p.add_argument('--resume', action='store_true')
     p.add_argument('--limit', type=int)
     p.add_argument('--output', type=Path, required=True)
@@ -84,10 +85,10 @@ def main():
     source = Path(identity.__file__).parent
     implementation = hashlib.sha256(b''.join((source / name).read_bytes() for name in (
         'identity.py', 'fts.py', 'server/corpus.py', 'server/search_ranking.py', 'server/decisions.py',
-        'server/citations.py', 'server/language.py'))).hexdigest()
+        'server/citations.py', 'server/language.py', 'statute_links.py', 'server/query_translation.py'))).hexdigest()
     config = {"retrieval_source_sha256": implementation, "benchmark_commit": subprocess.check_output(['git', '-C', str(args.repo), 'rev-parse', 'HEAD'], text=True).strip(),
               "golden": args.golden, "golden_sha256": hashlib.sha256(golden.read_bytes()).hexdigest(),
-              "baseline": args.baseline, "strategy": args.strategy, "capture_candidates": args.capture_candidates,
+              "baseline": args.baseline, "strategy": args.strategy, "translate": args.translate, "capture_candidates": args.capture_candidates,
               "partition": args.partition if args.split else None,
               "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest() if args.split else None,
               "db": str(args.db.resolve()), "decisions": len(store),
@@ -149,6 +150,7 @@ def main():
                               'debug': str(args.capture_candidates).lower()}
                     if args.strategy:
                         params['strategy'] = args.strategy
+                    params['translate'] = str(args.translate).lower()
                     response = client.get(args.url + '/api/search', params=params)
                     response.raise_for_status()
                     result = response.json()

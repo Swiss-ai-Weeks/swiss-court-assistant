@@ -115,6 +115,20 @@ run does not pick them up; pass `--cases agent-eval/cases/lexam`.
   is also the one number comparable with the LEXam leaderboard, with two caveats: the sample is
   Swiss only, and the leaderboard measures models answering from memory, not a research agent.
 
+Five scripts go with it (results in `RESULTS.md`, 23 September):
+
+- `lexam_bare.py` — the model alone, with LEXam's own prompt and letter extraction, on all 1,655
+  questions or `--ids` a case file: the number that sits on the leaderboard. Resumable (`--resume`).
+- `lexam_bare_open.py` — the model alone on the open questions, graded by this harness's judge, for
+  rubric coverage next to the agent's runs (`--compare`).
+- `lexam_compare.py` — several runs on the same questions: accuracy with a bootstrap interval, and
+  won / lost / McNemar p against the first run. Read this, not two accuracies with ±9-point intervals.
+- `lexam_decide.py` — replays the agent's multiple-choice decision on saved research with other
+  prompts: serve the agent with `SCA_DECIDE_DUMP=<file>` during a run, then compare variants in
+  minutes instead of hours.
+- `article_check.py` — looks up every "Art. N CODE" of the multiple-choice assessments in the statute
+  index and checks that the article's text is about what the sentence cites it for.
+
 What LEXam does not cover is what the behavioural suite is for: nothing in it asks the assistant to
 refuse, to look a decision up, to resist a false premise or an injected instruction, or to follow
 up. And it has no French or Italian — the Swiss open questions are 99 % German — so the

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -69,6 +69,8 @@ class Clarify:
     question: str
     options: list[str]
     notes: str
+    # several questions asked at once, each {"question", "options"}; `question` then holds them all as text
+    questions: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

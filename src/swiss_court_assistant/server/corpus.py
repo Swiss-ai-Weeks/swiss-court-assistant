@@ -19,6 +19,7 @@ from swiss_court_assistant import retrieval as R
 from swiss_court_assistant.facets import Facets
 from swiss_court_assistant.identity import canonical_id, exact_reference
 from swiss_court_assistant.fts import KeywordIndex
+from swiss_court_assistant.statute_links import StatuteLinks, query_articles
 from swiss_court_assistant.statutes import localize
 from swiss_court_assistant.gpuvec import open_matrix
 from swiss_court_assistant.vectordb import VectorDB
@@ -26,7 +27,9 @@ from swiss_court_assistant.vectordb import VectorDB
 from .citations import CitationIndex
 from .decisions import DecisionStore, SqliteDecisionStore
 from .language import detect_language
-from .search_ranking import DEPLOYED_RANK_CONFIG, decision_text, fuse_decisions, select_decisions
+from .query_translation import QueryTranslator
+from .search_ranking import (DEPLOYED_RANK_CONFIG, LinearRanker, candidate_features, decision_text,
+                             fuse_decisions, learned_select, select_decisions)
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +85,18 @@ class Corpus:
             raise ValueError('SCA_SEARCH_STRATEGY must be legacy or hybrid')
         self.hybrid_config = DEPLOYED_RANK_CONFIG
         log.info('decision retrieval: strategy=%s, hybrid weights=%s', self.search_strategy, self.hybrid_config)
+        # Decisions citing each statute article (`python -m swiss_court_assistant.statute_links build`).
+        links = Path(os.environ.get('SCA_STATUTE_LINKS', f'data/graph/{db.stem}.statutes.sqlite'))
+        self.statute_links = StatuteLinks(links) if links.exists() else None
+        # The learned hybrid ranker (agent-eval/fit_ranker.py); SCA_RANKER=off keeps the hand weights.
+        ranker = os.environ.get('SCA_RANKER', str(Path(__file__).with_name('ranker.json')))
+        self.ranker = LinearRanker.load(ranker) if ranker != 'off' and Path(ranker).exists() else None
+        # Off by default: on the OpenCaseLaw development queries (mostly German, German gold) the translated
+        # French/Italian pools crowded out the German leading cases (docs/OPENCASELAW.md). `translate=true`.
+        self.translator = QueryTranslator()
+        self.translate_default = os.environ.get('SCA_SEARCH_TRANSLATE', '0') == '1'
+        log.info('hybrid: statute links=%s, learned ranker=%s, query translation by default=%s',
+                 bool(self.statute_links), bool(self.ranker), self.translate_default)
         self.authority_weights = tuple(float(os.environ.get(name, default)) for name, default in (
             ("SCA_AUTHORITY_CITATIONS", "0.5"), ("SCA_AUTHORITY_BGE", "1.0"), ("SCA_AUTHORITY_BGER", "0.5")))
         cfg = R.RERANKERS["nemotron"]
@@ -290,7 +305,7 @@ class Corpus:
 
     async def search_decisions(self, query: str, k: int = 10, language: str | None = None,
                                baseline: bool = False, strategy: str | None = None,
-                               diagnostics: dict | None = None) -> list[Passage]:
+                               diagnostics: dict | None = None, translate: bool | None = None) -> list[Passage]:
         """Search-only interface, sharing the agent's ranking path without LLM query rewriting.
 
         Exact docket/reporter requests are resolved first, and a missing exact reference returns
@@ -307,8 +322,20 @@ class Corpus:
             return await self._authority(_diverse(hits, k, per_decision=1,
                 key=lambda did: next(iter(self.decisions.find(did)), canonical_id(did))))
         langs = [language] if language else ["de", "fr", "it"]
-        return await self.semantic_search_by_language({lang: query for lang in langs}, k=k, baseline=baseline,
-            strategy=strategy, query_language=language or detect_language(query, default=''), diagnostics=diagnostics)
+        query_language = language or detect_language(query, default='')
+        queries = {lang: query for lang in langs}
+        hybrid = not baseline and (strategy or self.search_strategy) == 'hybrid'
+        if translate is None:
+            translate = getattr(self, 'translate_default', False)
+        if hybrid and len(langs) > 1 and translate and getattr(self, 'translator', None) is not None:
+            versions = await self.translator.translate(query)
+            if versions:
+                # The query's own language keeps the user's words; the others get the translation.
+                queries = {lang: query if lang == query_language else versions[lang] for lang in langs}
+            if diagnostics is not None:
+                diagnostics['translations'] = versions
+        return await self.semantic_search_by_language(queries, k=k, baseline=baseline,
+            strategy=strategy, query_language=query_language, diagnostics=diagnostics)
 
     def _lexical_candidates(self, query: str, where: np.ndarray | None) -> list[Passage]:
         if self.fts is None:
@@ -322,6 +349,18 @@ class Corpus:
         ids = [i for i, _ in ranked]
         rows = {r['id']: r for r in self._rows(f"id IN ({','.join('?' * len(ids))})", ids)}
         return self._passages([rows[i] for i in ids if i in rows])
+
+    def _statute_candidates(self, articles: set, language: str, where: np.ndarray | None) -> list[Passage]:
+        """The most-cited decisions in `language` that cite an article the query names (first passage each)."""
+        ids = self.statute_links.most_cited(articles, language, 40)
+        if not ids:
+            return []
+        rows = self._rows(f"decision_id IN ({','.join('?' * len(ids))}) AND chunk_index = 0", ids)
+        if where is not None and rows:
+            keep = self.facets.keep([r['id'] for r in rows], where)
+            rows = [r for r, ok in zip(rows, keep) if ok]
+        order = {did: i for i, did in enumerate(ids)}
+        return self._passages(sorted(rows, key=lambda r: order[r['decision_id']]))
 
     def _bge_headnote_rows(self) -> np.ndarray:
         """Lazy mask over existing vectors; no new embeddings or full-index rebuild.
@@ -355,6 +394,11 @@ class Corpus:
         vectors = [await self._call(self.vdb.encode, q, self.embed_model) for q in queries.values()]
         loop = asyncio.get_running_loop()
         lexical_queries = list(dict.fromkeys(queries.values()))
+        explicit = set().union(*(query_articles(q) for q in queries.values()))
+        statute_hits = {}
+        if explicit and self.statute_links is not None:
+            found = await asyncio.gather(*(self._call(self._statute_candidates, explicit, lang, where) for lang in queries))
+            statute_hits = dict(zip(queries, found))
         headnote_rows = (await self._call(self._bge_headnote_rows)) & leading_rows if leading_rows is not None else None
         dense, bge, headnotes, lexical = await asyncio.gather(
             asyncio.gather(*(loop.run_in_executor(self._knn_pool, self._knn, v, lang, rows)
@@ -374,6 +418,8 @@ class Corpus:
             pools = {'dense': self._passages(normal), 'bge': self._passages(leading_hits),
                      'bge_headnotes': self._passages(headnote_hits),
                      'bm25': [h for h in lexical[query] if h.language == lang]}
+            if statute_hits.get(lang):
+                pools['statute'] = statute_hits[lang]
             bundles = fuse_decisions(pools, identity, limit=160)
             passages, texts, evidence_chunks = [], [], []
             courts = {}
@@ -400,6 +446,11 @@ class Corpus:
         ranked = await asyncio.gather(*(rank(lang, q, d, b, heads)
             for (lang, q), d, b, heads in zip(queries.items(), dense, bge, headnotes)))
         candidates = await self._authority([h for group in ranked for h in group])
+        features = None
+        if self.statute_links is not None and candidates:
+            articles = await asyncio.to_thread(self.statute_links.articles_of, sorted({h.decision_id for h in candidates}))
+            features = await asyncio.to_thread(candidate_features, candidates, query_language, self.hybrid_config,
+                                               articles, self.statute_links.idf, explicit)
         if diagnostics is not None:
             diagnostics.update(query_language=query_language, pools=details,
                 rerank_complete=all(h.reranker_score is not None and h.passage_score is not None for h in candidates),
@@ -408,8 +459,13 @@ class Corpus:
                              'authority_id': h.authority_id, 'authority_court': h.authority_court,
                              'reranker_score': h.reranker_score, 'passage_score': h.passage_score,
                              'fusion_score': h.fusion_score,
-                             'cited_by': h.cited_by, 'retrieval_sources': h.retrieval_sources}
-                            for h in candidates])
+                             'cited_by': h.cited_by, 'retrieval_sources': h.retrieval_sources,
+                             'features': features[h.decision_id] if features else None}
+                            for h in candidates],
+                explicit_articles=sorted(explicit), ranker='learned' if self.ranker and features else 'hand')
+        # The learned ranker needs reranker logits; on a reranker outage keep the hand-weighted fallback.
+        if self.ranker is not None and features and all(h.reranker_score is not None for h in candidates):
+            return learned_select(candidates, k, features, self.ranker, identity)
         return select_decisions(candidates, k, query_language, self.hybrid_config, identity)
 
     async def keyword_search(self, keyword: str, k: int = 8, where: np.ndarray | None = None) -> list[Passage]:

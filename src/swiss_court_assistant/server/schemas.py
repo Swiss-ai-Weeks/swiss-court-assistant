@@ -69,12 +69,19 @@ class ToolCall(Model):
     thought: str | None = None  # the agent's reasoning before the call
 
 
+class ClarifyQuestion(Model):
+    question: str
+    options: list[str] = []
+
+
 class Clarification(Model):
     """A question the assistant asked back instead of answering."""
 
-    question: str
+    question: str  # the whole text asked, all questions included
     options: list[str] = []  # likely answers, offered as buttons
     notes: str = ""  # what the research found before asking; read back by the next turn
+    # when it asked several questions at once, each with its own likely answers
+    questions: list[ClarifyQuestion] = []
 
 
 class DocumentInfo(Model):

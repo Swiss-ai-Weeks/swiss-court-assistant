@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -13,7 +14,8 @@ from typing import Annotated, Any, Literal
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, ModelRequest, ModelResponse
-from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import (AIMessage, AIMessageChunk, BaseMessage, HumanMessage, SystemMessage, ToolMessage,
+                                     messages_to_dict)
 from langchain_core.tools import tool
 from langchain_core.utils.json import parse_partial_json
 from langchain_openai import ChatOpenAI
@@ -174,10 +176,18 @@ def _flat(text: str) -> str:
 
 def named_terms(question: str) -> list[str]:
     """Terms the question puts in quotation marks. Lines starting with ">" are text the user selected,
-    not their own words, so a quotation inside one is not the user naming anything."""
+    not their own words, so a quotation inside one is not the user naming anything.
+
+    None for an exam-style question: its quotation marks name the fictional parties of the fact pattern
+    ("Sophara AG") and the answer format («Antwort: X»), and on LEXam the check sent the agent to search
+    for «Antwort: X» on every question, then told the answer to open by saying no decision uses it."""
+    if answer_options(question):
+        return []
     asked = "\n".join(line for line in question.splitlines() if not line.lstrip().startswith(">"))
     seen: dict[str, None] = {}
     for term in _QUOTED.findall(asked):
+        if _FORMAT.fullmatch(term.strip()):  # a format to answer in («Antwort: X»), not a term
+            continue
         if any(c.isalpha() for c in term) and len(term.split()) <= 12:
             seen.setdefault(" ".join(term.split()))
     return list(seen)
@@ -214,6 +224,75 @@ def _results_text(messages: list[BaseMessage]) -> str:
 # Asking the agent not to repeat a search only works if it notices that it is, so each turn
 # remembers what it has searched for. Queries are compared as token sets, because the repeats are
 # rewordings, not copies ("DSGVO Wettbewerbsrecht Sanktionen SVKG" then "DSGVO Wettbewerbsrecht").
+# An exam-style question lists lettered options and asks for one of them. The checked answer keeps only
+# what a passage states, and a choice between options is never stated by a passage, so the check removed
+# every "Answer: X" (59 of 100 LEXam questions ended with no option at all). The choice is made after the
+# checked answer instead, by the model reasoning over the research, and shown apart from it as its own
+# assessment. SCA_EXAM_DECIDE=0 turns it off (for the A/B in agent-eval).
+EXAM_DECIDE = os.environ.get("SCA_EXAM_DECIDE", "1") == "1"
+# agent-eval/lexam_decide.py replays the decision with other prompts on the same research: this file
+# collects what the decision saw, one JSON line per question (off unless set)
+DECIDE_DUMP = os.environ.get("SCA_DECIDE_DUMP", "")
+ARTICLE_CHECK = os.environ.get("SCA_ARTICLE_CHECK", "1") == "1"
+_OPTION = re.compile(r"(?m)^[ \t]*\(?([A-H])[).:][ \t]+\S")
+_CHOSEN = re.compile(r"(?:Antwort|Answer|Réponse|Risposta)\s*\**\s*[:：]\s*\**\s*[(«\"„]?\s*([A-H])\b")
+_FORMAT = re.compile(r"(?i)(?:Antwort|Answer|Réponse|Risposta)\s*[:：]\s*\S{0,3}")
+EXAM_HEADING = {"de": "Beurteilung der Optionen", "fr": "Appréciation des options",
+                "it": "Valutazione delle opzioni", "en": "Assessment of the options"}
+EXAM_ANSWER_WORD = {"de": "Antwort", "fr": "Réponse", "it": "Risposta", "en": "Answer"}
+DECIDE_PROMPT = """You are a Swiss law examiner's model student. The user asked a multiple-choice exam question; the research for it is above, and below is the answer that was written from the passages found and checked against them. Now settle the question itself.
+- Take each statement (i, ii, iii, ...), or each option when there are no statements, in turn and decide whether it is correct under Swiss law, in one or two sentences each, starting with its number: the rule that decides it and where it comes from. Where a passage in the research states the rule, rely on it and name that decision (by court and docket number) or article. Where the research does not reach a statement, decide it from your own knowledge of Swiss law and name the statute article it rests on; name a court decision only if it appears in the research above, never one from memory. Do not leave a statement undecided because no passage covered it.
+- Read the question's own wording exactly: whether it asks which statements are correct or which are false, and what each option lists. A statement that is only partly right is wrong.
+- Then give one line with your verdicts, e.g. "i: correct · ii: wrong · iii: correct", say which option lists exactly the statements the question asks for, and end with the line "{word}: X", where X is that option's letter ({letters}). Always choose exactly one option, even when unsure; if no option matches your verdicts exactly, reconsider the statement you are least sure of and choose the closest.
+Write in {language}, plainly, without headings, without Markdown tables and without citation markers."""
+
+
+EXAM_RESEARCH = os.environ.get("SCA_EXAM_RESEARCH", "1") == "1"
+EXAM_RESEARCH_NOTE = ("This is a multiple-choice exam question. Its statements (or options) each turn on a different "
+                      "point of law, and one search for the whole question finds passages for none of them. Research "
+                      "them one at a time: for each statement, the statute article it turns on (search_laws, then "
+                      "read_law for its text) or the leading decision on the point. Do not search for the same point "
+                      "twice; spend the calls on the statements you are least sure of. The option is chosen after "
+                      "the answer is written, so research the law, not the letter.")
+
+
+# what makes lettered options a choice of one: an answer format ("Antwort: X"), an instruction to pick one,
+# or options that are sets of the numbered statements ("B) i und iii", "A) keine der Aussagen")
+_PICK_ONE = re.compile(r"(?i)\b(?:Antwort|Answer|Réponse|Risposta)\s*[:：]\s*X\b|\b(?:wählen|kreuzen) Sie (?:eine|die richtige)|"
+                       r"\b(?:choose|select|pick) (?:one|the correct)|\bonly one (?:option|answer|choice)|"
+                       r"\b(?:choisissez|sélectionnez) (?:une|la bonne)|\bscegliete? (?:una|la risposta)")
+_SET_OPTION = re.compile(r"(?mi)^[ \t]*\(?[A-H][).:][ \t]+(?:(?:[ivx]{1,4})\b[,\s]*(?:und|and|et|e|,)?\s*)+$|"
+                         r"^[ \t]*\(?[A-H][).:][ \t]+(?:keine|alle|none|all|aucune|toutes|nessuna|tutte)\b")
+
+
+# The assessment names statute articles from memory, and a third of them were wrong (Art. 469 ZGB for the
+# parentelic order, Art. 457 ZGB). Every "Art. N CODE" in it is looked up; one whose text is about
+# something else, or that does not exist in an act the index has, goes back to be corrected once.
+_ARTICLE_REF = re.compile(r"\b[Aa]rt\.?\s*(\d+[a-z]?)(?:\s*(?:Abs|al|para|cpv|lit|Ziff|Bst|let)\.?\s*[\w.]+)*"
+                          r"\s+([A-Z][A-Za-z]{1,6})\b(?!\s*\d)")
+ARTICLE_FITS_PROMPT = """You check whether a statute article is cited for the right subject. You are given a sentence from a legal answer, the article reference in it, and the article's actual text. Reply {"fits": true} if the article's text deals with the matter the sentence cites it for - what the sentence says the article provides, governs or is about ("theft under Art. 139 StGB" fits when Art. 139 StGB is about theft; "Art. 222 ZPO concerns the written response, not experts" fits when it is about the written response). Judge only that attribution: not whether the rest of the sentence is right, and not whether the article covers every detail or is the only provision on the point. Reply {"fits": false} only if the article is about a different matter, so that it is plainly the wrong article for what the sentence uses it for."""
+ARTICLE_FITS_FORMAT = {"type": "json_schema", "json_schema": {"name": "fits", "schema": {
+    "type": "object", "properties": {"fits": {"type": "boolean"}}, "required": ["fits"]}}}
+ARTICLE_FIX = """Some of the statute articles you named are not the right ones:
+{problems}
+Correct each of these references: name the right article if you are sure of it, otherwise name the rule and the act without an article number. Change nothing else, and keep the verdicts and the last line "{word}: X" unless the correction changes the verdict. Reply with the whole assessment again."""
+
+
+def fits_input(sentence: str, ref: str, article: dict[str, Any]) -> str:
+    """What the article check is shown: the sentence, the reference as written, the article's text."""
+    return (f"SENTENCE:\n{sentence}\n\nREFERENCE: {ref}\n\n"
+            f"TEXT OF {article['label']}:\n{' '.join(article['text'].split())[:3000]}")
+
+
+def answer_options(question: str) -> str:
+    """The option letters of a question that asks for one of them ("A) ...", "B. ...", from A on, at
+    least three), or "". Lettered statements to mark true or false one by one are not a choice of one."""
+    letters = "".join(dict.fromkeys(_OPTION.findall(question)))
+    if len(letters) < 3 or not "ABCDEFGH".startswith(letters):
+        return ""
+    return letters if _PICK_ONE.search(question) or _SET_OPTION.search(question) else ""
+
+
 SAME_SEARCH = 0.8  # Jaccard overlap at which two searches count as the same
 
 
@@ -249,8 +328,11 @@ class Turn:
     collection: str | None = None  # the matter's case file in the case index, searched with search_case_file
     case_prep: str | None = None  # document id of the matter's generated case prep, when asked from Case Prep
     pushed_back: bool = False    # only once per turn
+    # questions to the user that follow an answer which held only in part (see ResearchThenAnswer._clarify)
+    clarify: dict[str, Any] | None = None
     chased_term: bool = False    # sent back once to keyword_search a term the question names
     researched_again: int = 0    # times the checks rejected the draft and the agent researched again
+    replied: bool = False        # this turn is the user's answer to questions asked back
     resumed_at: int = 0          # tool calls made when it last went back to research
     # statements whose citations failed in an earlier draft: one that comes back without a citation is dropped
     rejected: list[str] = field(default_factory=list)
@@ -339,6 +421,52 @@ Write the corrected answer as the same JSON object. Fix every problem: a quote t
 ASK_FORMAT = {"type": "json_schema", "json_schema": {"name": "question", "schema": {
     "type": "object", "properties": {"question": {"type": "string"}, "options": {"type": "array", "items": {
         "type": "string"}}}, "required": ["question", "options"]}}}
+# When the research ends without a sourced answer, the user gets questions that narrow it, not an apology:
+# a question as broad as "who must sign a revenue sharing agreement between two Swiss companies" turns on
+# facts it leaves open (the legal form, whether a written form is required, who represents each company),
+# and the passages found cover all of them a little and none of them.
+CLARIFY_PROMPT = """The research for the user's question is over, and it did not produce an answer that the passages support.{draft}
+
+Decide whether questions to the user would let a second search find the answer. They would when the question is broad or leaves open facts that decide which rule applies or where to look: the legal form of a company or party, the kind of contract, the canton (only where cantonal law applies: taxes, cantonal public law, building and planning - never for contract, company, employment or tenancy law, which are federal), dates, whether a deadline or a form requirement is in play, what exactly the user wants to know. They would not when the question is about foreign law, a ruling or event after the corpus, a doctrine or decision that does not exist, or a topic the corpus lacks whatever the facts: then set "ask" to false.
+
+If they would, write to the user in {language}:
+- "intro": two or three sentences in plain words: what you searched for, what came up, and why that is not yet an answer to their question. Do not state a rule of law, a deadline, an amount or an outcome, and do not apologise.
+- "questions": one to three short questions, each about one fact, the ones that most change the answer or the search, most important first. When the question can mean several things, the first asks which one is meant (for who must sign a contract between two companies: who may sign for each company, or whether both companies must sign for it to be valid). Ask in plain words and name no statute article: the user does not know which one applies, that is what the research is for. Ask about the canton only when the rule differs by canton - contract, company, employment and tenancy law are federal. Never a question the tools could answer themselves.
+- "options" for each: two to four short likely answers that are real alternatives the user can recognise ("AG" / "GmbH" / "Verein", "Zurich" / "Geneva" / "Vaud"), not a bare yes and no where there is a natural alternative, never a placeholder ("Canton A"), "not applicable", "I don't know" or "other": the user can always type.
+- "found_so_far": for the next search, two or three sentences on what was found and which decision_ids and statute articles may matter once the facts are known."""
+CLARIFY_FORMAT = {"type": "json_schema", "json_schema": {"name": "clarify", "schema": {
+    "type": "object", "properties": {
+        "ask": {"type": "boolean"}, "intro": {"type": "string"},
+        "questions": {"type": "array", "maxItems": 3, "items": {"type": "object", "properties": {
+            "question": {"type": "string"}, "options": {"type": "array", "maxItems": 4, "items": {"type": "string"}}},
+            "required": ["question", "options"]}},
+        "found_so_far": {"type": "string"}},
+    "required": ["ask", "intro", "questions", "found_so_far"]}}}
+# after an answer that held only in part: the questions follow it
+CLARIFY_MORE = {
+    "de": "Um Ihre Frage genauer beantworten zu können, brauche ich noch einige Angaben:",
+    "fr": "Pour répondre plus précisément à votre question, j'ai besoin de quelques précisions :",
+    "it": "Per rispondere in modo più preciso alla sua domanda, mi servono ancora alcune informazioni:",
+    "en": "To answer your question more precisely, I need a few more details:",
+}
+# Once the user has answered the questions asked back, the research stayed literal: asked who may sign a
+# revenue sharing agreement for an AG, it searched for passages naming revenue sharing agreements and set
+# aside Art. 719 OR as "not about revenue sharing". The rules that govern the kind of case answer it.
+REPLIED = ("The user has answered the questions you asked back; their answers follow the question below. Research "
+           "the question as the answers narrow it. A question about one particular arrangement is answered by the "
+           "provisions and case law that govern that kind of situation in general - the notice period of a cleaning "
+           "contract is a matter of the rules on the kind of contract it is (a mandate, a contract for work), not of "
+           "passages about cleaning contracts - so search for those rules, read the articles, and answer from them.")
+REPLIED_ANSWER = (" The user answered questions you asked back. The general provisions and case law that govern the "
+                  "situation the answers describe answer the question: state what they say, cite them, and say that "
+                  "they are the general rules. Do not report as missing a passage that names the exact arrangement.")
+# used when the intro did not survive the check
+CLARIFY_LEAD = {
+    "de": "Ich habe zu Ihrer Frage noch keine Antwort gefunden, die sich mit Entscheiden oder Gesetzesstellen belegen lässt. Damit ich gezielter suchen kann:",
+    "fr": "Je n'ai pas encore trouvé de réponse à votre question qui soit étayée par des décisions ou des dispositions légales. Pour chercher de manière plus ciblée :",
+    "it": "Non ho ancora trovato una risposta alla sua domanda sostenuta da decisioni o disposizioni di legge. Per cercare in modo più mirato:",
+    "en": "I have not yet found an answer to your question that decisions or statutory provisions support. So that I can search more precisely:",
+}
 
 LAW_TOOLS = """- read_law(code, article, canton="CH"): the text of a statute article in German, French and Italian, e.g. code="OR", article="271a". Read the provision a question or a decision turns on, so the answer can quote what it says.
 - search_laws(query_de, query_fr, query_it, canton="CH", code=""): finds statute articles by meaning, when you do not know which provision applies. canton="CH" is federal law; a canton's code ("ZH", "GE") searches that canton's law instead. code limits the search to one act ("OR", "StGB", "ZPO"), when you know the act but not the article. It searches the {n_articles:,} statute articles, not the decisions. When the question asks which provision, article or rule governs something, search the statutes before concluding that there is none: court passages rarely say that no provision exists.
@@ -868,6 +996,9 @@ DOCUMENT_TOOL_NAMES = {"read_document", "search_document"}
 
 
 _OTHER = re.compile(r"(?i)^(andere[sr]?|sonstiges|other|autre|altro|else|etwas anderes)\b")
+# options that answer nothing; the prompt forbids them and the model still writes them
+_NO_ANSWER_OPTION = re.compile(r"(?i)^\W*(don.?t know|do not know|not sure|unsure|not applicable|n/a|unknown|"
+                               r"weiss (ich )?nicht|keine ahnung|unbekannt|je ne sais pas|inconnu|non so|sconosciuto)\b")
 
 
 def _gap(not_found: Any) -> str | None:
@@ -882,6 +1013,15 @@ def _writer() -> Callable[[Any], None]:
         return get_stream_writer()
     except Exception:  # noqa: BLE001 - called directly, e.g. from a test
         return lambda _: None
+
+
+def _clarify_text(lead: str, questions: list[dict[str, Any]]) -> str:
+    """The questions asked back as the message text: one on its own line, several numbered."""
+    if len(questions) == 1:
+        asked = questions[0]["question"]
+    else:
+        asked = "\n".join(f"{i}. {q['question']}" for i, q in enumerate(questions, 1))
+    return f"{lead}\n\n{asked}" if lead else asked
 
 
 def _calls_made(messages: list[BaseMessage]) -> str:
@@ -899,9 +1039,11 @@ class ResearchThenAnswer(AgentMiddleware):
     the check passes or the revisions run out; only what passed is handed to answer()."""
 
     def __init__(self, answer_llm: ChatOpenAI, verifier: Verifier, translate_llm: ChatOpenAI | None = None,
-                 max_tool_calls: int = MAX_TOOL_CALLS, max_revisions: int = MAX_REVISIONS):
+                 max_tool_calls: int = MAX_TOOL_CALLS, max_revisions: int = MAX_REVISIONS,
+                 clarify_llm: ChatOpenAI | None = None, decide_llm: ChatOpenAI | None = None):
         super().__init__()
         self.answer_llm, self.verifier, self.translate_llm = answer_llm, verifier, translate_llm
+        self.clarify_llm, self.decide_llm = clarify_llm, decide_llm
         self.max_tool_calls, self.max_revisions = max_tool_calls, max_revisions
 
     async def _in_language(self, question: str, options: list[str]) -> tuple[str, list[str]]:
@@ -938,6 +1080,9 @@ class ResearchThenAnswer(AgentMiddleware):
                   if used >= budget else "required")
         messages = request.messages
         # not after researching again: the nudge tells it to give up, the instructions it got to look again
+        if EXAM_RESEARCH and used < budget and answer_options(
+                str(next((m.content for m in reversed(request.messages) if isinstance(m, HumanMessage)), ""))):
+            messages = [*messages, HumanMessage(EXAM_RESEARCH_NOTE)]
         if NUDGE_AFTER <= used < self.max_tool_calls and not again:
             messages = [*messages, HumanMessage(NUDGE.format(used=used, max_calls=self.max_tool_calls))]
         tools = request.tools
@@ -1049,6 +1194,8 @@ class ResearchThenAnswer(AgentMiddleware):
                  + "Answer that question now, from the tool results above. What the notes say was not "
                    "found is reported as not found, never filled in from your own knowledge. An earlier "
                    "answer in this conversation is not a source for it and is never repeated as the answer.")
+        if turn and turn.replied:
+            final += REPLIED_ANSWER
         if language:
             final += f" Write its text parts and explanations in {language}."
         # The premise check: the searches were made and still nothing found uses the term.
@@ -1107,12 +1254,15 @@ class ResearchThenAnswer(AgentMiddleware):
         # statements whose citations did not hold, across the rounds and the earlier research
         failed: list[str] = list(turn.rejected) if turn else []
         rounds = 0
+        first_answers: bool | None = None  # whether the first draft responds to the question
         while True:
             n = sum(isinstance(p, CitationPart) for p in parts)
             status(Status("checking", f"Checking {n} citation{'s' * (n != 1)} against the passages" if n
                           else "Checking the draft against the results"))
             report = await self.verifier.verify(parts, question, code, seen,
                                                 lenient=rounds >= self.max_revisions, check_answers=rounds == 0)
+            if rounds == 0:
+                first_answers = report.answers
             if not report.problems or rounds >= self.max_revisions:
                 break
             rounds += 1
@@ -1140,6 +1290,25 @@ class ResearchThenAnswer(AgentMiddleware):
             status(Status("thinking", "The passages found do not support the draft: researching again "
                                       f"({turn.researched_again} of {MAX_RESEARCH_AGAIN})"))
             return self._research_again(request, report, turn.researched_again)
+        # Rather than give up, or answer a broad question vaguely, ask the user for the facts that narrow it:
+        # when nothing sourced is left, or when the draft did not reach the point asked and the agent's own
+        # notes say what it could not find. Not after the user has answered a question asked back.
+        nothing = empty or not answer.sources
+        if (turn is not None and turn.may_ask and self.clarify_llm is not None
+                and (nothing or (first_answers is False and _gap(args.get("not_found"))))):
+            draft = " ".join(p.text for p in answer.parts if isinstance(p, TextPart)).strip()
+            if asked := await self._clarify(request, question, code, seen, draft):
+                if nothing:
+                    lead = asked["intro"] or CLARIFY_LEAD.get(code, CLARIFY_LEAD["en"])
+                    log.info("no sourced answer; asking the user %d question(s) instead", len(asked["questions"]))
+                    return AIMessage(content="", additional_kwargs={"ask_user": {
+                        "question": _clarify_text(lead, asked["questions"]),
+                        "options": asked["questions"][0]["options"], "questions": asked["questions"],
+                        "notes": asked["notes"]}})
+                log.info("the answer does not reach the point asked; %d question(s) follow it", len(asked["questions"]))
+                turn.clarify = {"question": _clarify_text(CLARIFY_MORE.get(code, CLARIFY_MORE["en"]), asked["questions"]),
+                                "options": asked["questions"][0]["options"], "questions": asked["questions"],
+                                "notes": asked["notes"]}
         if empty or (rejected and not answer.sources):  # nothing sourced: what is left is no answer either
             log.warning("nothing of the draft held up against the passages; giving up with a brief")
             status(Status("checking", "Summarising what the research found"))
@@ -1154,7 +1323,105 @@ class ResearchThenAnswer(AgentMiddleware):
                 log.warning("removed %d statement(s) whose citations did not hold", answer.dropped)
             if rejected:  # what held is shown, and that much did not
                 answer.parts.append(TextPart(type="text", text="\n\n" + PARTLY_SUPPORTED.get(code, PARTLY_SUPPORTED["en"])))
+        if letters := answer_options(question) if EXAM_DECIDE and self.decide_llm is not None else "":
+            status(Status("checking", "Weighing the options"))
+            if decided := await self._decide(request, answer, letters, code):
+                heading = EXAM_HEADING.get(code, EXAM_HEADING["en"])
+                answer.parts.append(TextPart(type="text", text=f"\n\n**{heading}**\n\n{decided}"))
         return self._finish(turn, answer, report.problems)
+
+    async def _fix_articles(self, text: str, prompt: list[BaseMessage], letters: str, word: str) -> str:
+        """The assessment with its statute articles checked: wrong ones are sent back once to be corrected,
+        and a reference still wrong after that loses its article number, keeping the act's name."""
+        if not ARTICLE_CHECK or not (problems := await self.verifier.article_problems(text)):
+            return text
+        log.info("the assessment names %d article(s) that do not hold: %s", len(problems), [r for r, _ in problems])
+        listed = "\n".join(f"- {ref}: {why}" for ref, why in problems)
+        quick = self.decide_llm.bind(extra_body={"chat_template_kwargs": {"enable_thinking": False}})
+        try:
+            reply = await quick.ainvoke([*prompt, AIMessage(text),
+                                         HumanMessage(ARTICLE_FIX.format(problems=listed, word=word))])
+            fixed = str(reply.content).strip()
+            if [x for x in _CHOSEN.findall(fixed) if x in letters]:
+                text = fixed
+        except Exception:  # noqa: BLE001 - the unchecked assessment, trimmed below, still stands
+            log.warning("the article correction failed", exc_info=True)
+        for ref, _ in await self.verifier.article_problems(text):
+            text = text.replace(ref, _ARTICLE_REF.match(ref).group(2))  # "Art. 469 ZGB" -> "ZGB"
+        return text
+
+    async def _decide(self, request: ModelRequest, answer: VerifiedAnswer, letters: str, code: str) -> str | None:
+        """The option an exam-style question asks for, reasoned out over the research and the checked
+        answer: a short verdict on each statement and a last line "Answer: X". None when no option came
+        back twice over; the checked answer then stands alone."""
+        written = " ".join(p.text for p in answer.parts if isinstance(p, TextPart)).strip()
+        word = EXAM_ANSWER_WORD.get(code, EXAM_ANSWER_WORD["en"])
+        system = SystemMessage(DECIDE_PROMPT.format(word=word, letters=", ".join(letters),
+                                                    language=LANGUAGE_NAMES.get(code, "English")))
+        ask = HumanMessage(f"The checked answer:\n{written or '(nothing held up against the passages)'}\n\n"
+                           f"Decide the question now. End with the line \"{word}: X\".")
+        if DECIDE_DUMP:
+            try:
+                with open(DECIDE_DUMP, "a") as f:
+                    f.write(json.dumps({"question": str(request.messages[0].content) if request.messages else "",
+                                        "letters": letters, "code": code, "written": written,
+                                        "messages": messages_to_dict(list(request.messages))},
+                                       ensure_ascii=False) + "\n")
+            except Exception:  # noqa: BLE001 - a debugging aid, never a reason to fail the answer
+                log.warning("could not write the decision dump", exc_info=True)
+        for attempt in range(2):
+            # the second time without thinking: a decision that comes back empty has usually run out of
+            # tokens reasoning in circles (3 % of LEXam questions, answered bare), not failed to decide
+            llm = self.decide_llm if attempt == 0 else self.decide_llm.bind(
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}})
+            try:
+                reply = await llm.ainvoke([system, *request.messages, ask])
+            except Exception:  # noqa: BLE001 - the checked answer is still an answer
+                log.warning("the decision call failed", exc_info=True)
+                continue
+            text = str(reply.content).strip()
+            chosen = [x for x in _CHOSEN.findall(text) if x in letters]
+            if chosen:
+                return await self._fix_articles(text, [system, *request.messages, ask], letters, word)
+            log.warning("the decision named no option (attempt %d): %r", attempt + 1, text[-200:])
+        return None
+
+    async def _clarify(self, request: ModelRequest, question: str, code: str, seen: set[str],
+                       draft: str) -> dict[str, Any] | None:
+        """Questions that would let a second search find the answer: {"intro", "questions": [{"question",
+        "options"}], "notes"}, or None when the model finds that no fact from the user would help (foreign
+        law, a ruling after the corpus, a topic the corpus lacks) or the call fails. The intro goes through
+        the brief's check, so it reports the research and states no law."""
+        _writer()(Status("checking", "Working out what to ask you"))
+        said = f" Your draft answer, after the checks, was:\n{draft}" if draft else ""
+        prompt = [SystemMessage(f"You are a legal research assistant for Swiss case law.\n\n{today_note()}"),
+                  *request.messages, HumanMessage(CLARIFY_PROMPT.format(
+                      draft=said, language=LANGUAGE_NAMES.get(code, "the language of the question")))]
+        try:
+            out = json.loads(str((await self.clarify_llm.ainvoke(prompt)).content))  # type: ignore[union-attr]
+        except Exception:  # noqa: BLE001 - then the turn ends as it would have without asking
+            log.warning("could not write the questions to the user", exc_info=True)
+            return None
+        questions = []
+        for q in out.get("questions") or []:
+            text = " ".join(str((q or {}).get("question") or "").split())
+            options = [o for o in (" ".join(str(x).split()) for x in (q.get("options") or []))
+                       if o and not _OTHER.match(o) and not _NO_ANSWER_OPTION.match(o)][:4]
+            if text:
+                questions.append({"question": text, "options": options})
+        if not out.get("ask") or not questions:
+            log.info("no question to the user would narrow the research")
+            return None
+        intro = " ".join(str(out.get("intro") or "").split())
+        if intro:
+            try:
+                parts = [TextPart(type="text", text=intro)]
+                report = await self.verifier.verify(parts, question, code, seen, check_answers=False, brief=True)
+                intro = " ".join(p.text for p in report.prune(parts, []).parts if isinstance(p, TextPart)).strip()
+            except Exception:  # noqa: BLE001 - an unchecked intro is not shown
+                log.warning("could not check the introduction to the questions", exc_info=True)
+                intro = ""
+        return {"intro": intro, "questions": questions[:3], "notes": " ".join(str(out.get("found_so_far") or "").split())}
 
     async def _brief(self, request: ModelRequest, question: str, code: str, seen: set[str],
                      rejected: list[str]) -> list[str]:
@@ -1535,6 +1802,7 @@ class Report:
     # text parts with no source that add something new: index → what is left of them once the
     # sentences that add something are removed ("" when nothing is)
     rewritten: dict[int, str] = field(default_factory=dict)
+    answers: bool | None = None  # whether the draft responds to the question (None: not checked)
 
     @property
     def failed_statements(self) -> list[str]:
@@ -1677,9 +1945,11 @@ class Verifier:
     restates what is sourced, the answer responds to the question)."""
 
     def __init__(self, corpus: Corpus, support_llm: ChatOpenAI, covered_llm: ChatOpenAI | None = None,
-                 answers_llm: ChatOpenAI | None = None, documents: DocumentStore | None = None):
+                 answers_llm: ChatOpenAI | None = None, documents: DocumentStore | None = None,
+                 fits_llm: ChatOpenAI | None = None):
         self.corpus, self.documents = corpus, documents
         self.support_llm, self.covered_llm, self.answers_llm = support_llm, covered_llm, answers_llm
+        self.fits_llm = fits_llm
 
     async def _yes_no(self, llm: ChatOpenAI | None, system: str, user: str, key: str, what: str) -> bool | None:
         if llm is None:
@@ -1692,6 +1962,34 @@ class Verifier:
         except Exception:  # noqa: BLE001 - a check that fails is not a verdict either way
             log.warning("%s check failed", what, exc_info=True)
         return None
+
+    async def article_problems(self, text: str) -> list[tuple[str, str]]:
+        """The article references in a text that do not hold: (the reference as written, why), for an
+        article missing from an act the index has, and for one whose text is about something else. A
+        reference to an act the index cannot resolve is left alone: there is nothing to check it by."""
+        if self.fits_llm is None:
+            return []
+        checks: dict[str, tuple[str, str, str]] = {}
+        for sentence in _sentences(text):
+            for m in _ARTICLE_REF.finditer(sentence):
+                checks.setdefault(m.group(0), (sentence, m.group(1), m.group(2)))
+
+        async def one(ref: str, sentence: str, number: str, code: str) -> tuple[str, str] | None:
+            decisions = self.corpus.decisions
+            if not await asyncio.to_thread(decisions.find_acts, code):
+                return None
+            found = await asyncio.to_thread(decisions.find_articles, code, number)
+            if not found:
+                return ref, f"{code} has no article {number}"
+            article = next((a for a in found if a["language"] == "de"), found[0])
+            fits = await self._yes_no(self.fits_llm, ARTICLE_FITS_PROMPT, fits_input(sentence, ref, article),
+                                      "fits", "article")
+            if fits is False:
+                return ref, f"{article['label']} says: \"{' '.join(article['text'].split())[:300]}\""
+            return None
+
+        results = await asyncio.gather(*(one(ref, *args) for ref, args in list(checks.items())[:12]))
+        return [r for r in results if r]
 
     async def supported(self, statement: str, source: Source) -> bool | None:
         """Does the cited passage state the sentence it is attached to?"""
@@ -1846,7 +2144,7 @@ class Verifier:
             problems.append(f"The answer does not respond to the question asked: \"{question[:300]}\". "
                             f"Answer that question directly, from the tool results; if they do not cover it, "
                             f"say so.")
-        return Report(checked, problems, rewritten)
+        return Report(checked, problems, rewritten, answers)
 
 
 # ── agent ───────────────────────────────────────────────────────────────
@@ -1901,10 +2199,13 @@ class ReactAgent:
         answer_llm = ChatOpenAI(**common, max_tokens=4096, tags=["nostream"], extra_body={
             "chat_template_kwargs": {"enable_thinking": False}, "response_format": ANSWER_FORMAT})
         translate_llm = self._judge(common, ASK_FORMAT, max_tokens=512)
+        # the choice an exam-style question asks for is reasoned out, not drafted as constrained JSON
+        decide_llm = ChatOpenAI(**{**common, "streaming": False}, max_tokens=16384, tags=["nostream"],
+                                timeout=600, extra_body={"chat_template_kwargs": {"enable_thinking": True}})
         # one short yes/no call per check: does the passage say what the sentence claims, does an unsourced
         # sentence only restate the sourced ones, does the answer respond to the question
         verifier = Verifier(corpus, self._judge(common, SUPPORT_FORMAT), self._judge(common, COVERED_FORMAT),
-                            self._judge(common, ANSWERS_FORMAT), documents)
+                            self._judge(common, ANSWERS_FORMAT), documents, self._judge(common, ARTICLE_FITS_FORMAT))
         law_tools = LAW_TOOLS.format(n_articles=corpus.n_articles) if corpus.has_laws else ""
         prompt = RESEARCH_PROMPT.format(n_decisions=len(corpus.decisions), max_calls=MAX_TOOL_CALLS,
                                         min_calls=MIN_TOOL_CALLS, law_tools=law_tools,
@@ -1912,7 +2213,9 @@ class ReactAgent:
                                         if corpus.facets else "", ask_tool=ASK_TOOL,
                                         document_tools=DOCUMENT_TOOLS if documents is not None else "")
         self.graph = create_agent(research_llm, make_tools(corpus, documents, case_index), system_prompt=prompt,
-                                  middleware=[ResearchThenAnswer(answer_llm, verifier, translate_llm)])
+                                  middleware=[ResearchThenAnswer(answer_llm, verifier, translate_llm,
+                                                                     clarify_llm=self._judge(common, CLARIFY_FORMAT, max_tokens=1536),
+                                                                     decide_llm=decide_llm)])
         log.info("react agent: %s at %s (thinking=%s, up to %d revisions)", self.model, LLM_URL, LLM_THINKING,
                  MAX_REVISIONS)
 
@@ -1949,6 +2252,7 @@ class ReactAgent:
                            and sum(d.chars for d in attachments) > INLINE_DOCUMENT else None)
         cites.seen.update(turn.documents)
         _turn.set(turn)  # before the graph starts, so its tasks share this turn's state
+        turn.replied = bool(history and history[-1].role == "assistant" and history[-1].clarification)
         question = with_clarification(question, history)
         yield Status("thinking", "Searching the case file" if turn.collection else
                      "Reading the attached document" if attachments else "Planning the research")
@@ -1972,7 +2276,8 @@ class ReactAgent:
         background = ([HumanMessage(case_prep_block(self.documents, case_prep))]
                       if case_prep and self.documents else [])
         events = self.graph.astream(
-            {"messages": [*background, *_history(history), *attached, HumanMessage(question)]},
+            {"messages": [*background, *_history(history), *attached,
+                          *([HumanMessage(REPLIED)] if turn.replied else []), HumanMessage(question)]},
             {"recursion_limit": RECURSION_LIMIT}, stream_mode=["messages", "updates", "custom"])
         thought: list[str] = []  # reasoning since the last tool call
         shown = False  # whether any part of an answer has been sent
@@ -1995,12 +2300,18 @@ class ReactAgent:
                             seen = ", ".join(sorted(cites.seen)[:12])
                             notes = asked["notes"] + (f" Decisions found: {seen}." if seen else "")
                             yield Delta(asked["question"])
-                            yield Clarify(asked["question"], asked["options"], notes)
+                            yield Clarify(asked["question"], asked["options"], notes, asked.get("questions") or [])
                         elif isinstance(m, AIMessage) and "checked" in m.additional_kwargs:
                             shown = True
                             yield Status("answer", "Writing the answer")
                             async for ev in self._emit(turn, m, cites):
                                 yield ev
+                            if more := turn.clarify:  # the answer held only in part: questions follow it
+                                seen = ", ".join(sorted(cites.seen)[:12])
+                                yield Delta("\n\n" + more["question"])
+                                yield Clarify(more["question"], more["options"],
+                                              more["notes"] + (f" Decisions found: {seen}." if seen else ""),
+                                              more["questions"])
                         elif isinstance(m, AIMessage) and m.tool_calls:
                             said = " ".join("".join(thought).split()) or None
                             thought.clear()

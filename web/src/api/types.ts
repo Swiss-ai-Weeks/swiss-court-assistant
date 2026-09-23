@@ -87,6 +87,8 @@ export interface Clarification {
   options: string[];
   /** What the research found before asking; the next turn reads it back. */
   notes: string;
+  /** When several questions were asked at once (`question` is then their whole text), each with its answers. */
+  questions?: { question: string; options: string[] }[];
 }
 
 /** A document the user attached, parsed (Nemotron Parse for PDFs and scans) and stored on the server. */

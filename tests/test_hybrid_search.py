@@ -135,6 +135,7 @@ class Pipeline(unittest.IsolatedAsyncioTestCase):
         c = object.__new__(Corpus)
         c.citations = None
         c.hybrid_config = RankConfig()
+        c.statute_links = c.ranker = c.translator = None
         c.embed_model = 'fake'
         c.vdb = SimpleNamespace(encode=lambda *a: None)
         c._call = AsyncMock(side_effect=lambda fn, *a, **kw: fn(*a, **kw))

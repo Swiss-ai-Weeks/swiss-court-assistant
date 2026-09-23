@@ -604,6 +604,15 @@ mark.hl.active { background: #fbdc6a; }
 }
 .clarify-option:hover { background: var(--highlight); }
 .clarify-hint { font-size: 13px; color: var(--mute); }
+.clarify-form { display: flex; flex-direction: column; gap: var(--space-md, 12px); margin-top: var(--space-sm); }
+.clarify-row .clarify { margin-top: 6px; }
+.clarify-q { font-size: 14px; color: var(--body); }
+.clarify-option.picked { background: var(--ink); color: var(--canvas, #fff); }
+.clarify-send {
+  font: inherit; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: var(--rounded-sm); cursor: pointer;
+  border: 1px solid var(--primary); background: var(--primary); color: var(--ink);
+}
+.clarify-send:disabled { opacity: 0.45; cursor: default; }
 
 /* ── attached documents ───────────────────────────────── */
 .attachments { display: flex; flex-wrap: wrap; gap: var(--space-xs, 6px); margin: 0 0 var(--space-sm); }

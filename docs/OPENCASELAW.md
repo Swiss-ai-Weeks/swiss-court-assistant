@@ -286,3 +286,68 @@ to `compare_search.py` without `--subset` for the full 99-query comparison. The
 comparison refuses mismatched benchmark hashes, gold coverage, duplicate queries,
 or mixed parameter sets. Candidate capture fails explicitly on reranker outages;
 a fallback ranking must not silently become a calibration result.
+
+## Learned ranker + statute-graph pool (2026-09-22)
+
+What OpenCaseLaw's [methodology](https://opencaselaw.ch/methodology.html) does that we did not:
+a statute-graph candidate pool, cross-result citation evidence, LLM query analysis and a Haiku
+re-rank of the top 15 (their MRR .470 → .647). Their gold labels come from the citation graph
+(`generate_golden_queries.py`: top-cited decisions per statute article); 188/290 gold are BGE.
+
+Measured offline on the frozen dev capture before touching serving code:
+
+* **LLM re-ranking with the local Nemotron (3B active)** does not transfer: pointwise yes/no
+  alone gives dev hit@1 17%, listwise 22%; blended with the hybrid score, no gain
+  (`agent-eval/llm_rerank_experiment.py`). The model's notion of "relevant" is not the
+  citation-graph gold.
+* **Signals that separate gold**: citation count (gold mean log1p 4.7 vs 1.7), fusion score,
+  native language, which pools found it, and whether the decision cites the article the query
+  names. A linear combination fitted on dev beats the hand formula; cross-result citation
+  evidence added nothing on top.
+* **Statute pool**: `data/raw/graph/statute_references.parquet` → `data/graph/corpus.statutes.sqlite`
+  (`python -m swiss_court_assistant.statute_links build`, 45 s). For an article named in the
+  query, the 40 most-cited decisions per language citing it join the RRF pools ("Art. 41 OR":
+  the three q017 gold judgments are among the top 10 German ones; the old pools had none).
+* **LLM query translation** (`translate=true`, off by default): hurts. Main dev CV hit@1
+  .449 → .435, recall@10 .418 → .369; cross-lingual hit@1 82% → 60%. Untreated, the model also
+  invented statutes ("Raub Gewalt Drohung OR § 143 ZGB"); `query_translation.sanitize` strips them.
+
+Serving: `search_ranking.candidate_features` computes 14 features, written to the diagnostics;
+`LinearRanker` (weights in `server/ranker.json`, fitted by `agent-eval/fit_ranker.py fit` on the
+dev partition only, l2 chosen by grouped CV inside dev) orders the judgments. `SCA_RANKER=off`
+restores the hand formula; so does a reranker outage.
+
+| Population / metric | Hand weights (same pools) | **Learned ranker** | OpenCaseLaw plain | OpenCaseLaw + Haiku |
+|---|---:|---:|---:|---:|
+| Validation (30, scored once) hit@1 | 46.7% | **53.3%** | – | – |
+| Validation hit@10 | 83.3% | **90.0%** | – | – |
+| Validation MRR@10 | .610 | **.652** | – | – |
+| Validation recall@10 | 51.7% | **59.0%** | – | – |
+| Full 100: hit@1 (unavailable = miss) | – | **46/100** | 33/100 | ≈57/100 |
+| Full 99 scored: MRR@10 | – | .557 | .470 | ≈.647 |
+| Full 99: recall@10 | – | 49.5% | 49.6% | – |
+| Full 99: upstream-compatible nDCG@10 | – | **.568** | .525 | – |
+| Cross-lingual 150: hit@1 | **82.0%** | 76.0% | – | – |
+| Cross-lingual hit@10 | 89.3% | **96.0%** | 83.3% | – |
+| Cross-lingual MRR@10 | **.852** | .836 | – | – |
+
+Caveats: the full-100 rows include the 70 dev queries the ranker was fitted on (dev grouped-CV
+estimate: hit@1 44.9%, MRR .512, recall@10 41.8%); only validation and cross-lingual are held
+out, and this public benchmark was inspected before. OpenCaseLaw tuned on the same 100 queries.
+Recall@10 is a tie, not a win. Italian stays weak (0/7 hit@1, 5/7 hit@10): its gold is mostly
+Ticino cantonal decisions, which a ranker fitted on German dev queries ranks below cited BGEs.
+The learned ranker trades cross-lingual hit@1 (-6 pt) for hit@10 (+6.7 pt). The agent now
+uses this ranker too; answer quality with it has not been re-evaluated.
+
+Reports: `data/eval/opencaselaw/final/` (`dev.json`, `validation.json`, `cross-lingual*.json`,
+`*-scored.json`, `ranker.json`); dev ablations in `data/eval/opencaselaw/ranker/`.
+
+```bash
+O=data/eval/opencaselaw/final
+S="--repo /tmp/opencaselaw-benchmark --strategy hybrid --capture-candidates --split agent-eval/fixtures/opencaselaw-split.json"
+uv run python agent-eval/opencaselaw.py $S --partition dev --output $O/dev.json
+uv run python agent-eval/fit_ranker.py cv --cache $O/dev.json
+uv run python agent-eval/fit_ranker.py fit --cache $O/dev.json --l2 0.001 --output $O/ranker.json
+uv run python agent-eval/opencaselaw.py $S --partition validation --output $O/validation.json
+uv run python agent-eval/fit_ranker.py score --cache $O/validation.json --ranker $O/ranker.json --output $O/validation-scored.json
+```

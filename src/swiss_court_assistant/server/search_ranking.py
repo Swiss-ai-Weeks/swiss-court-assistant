@@ -150,3 +150,83 @@ def select_decisions(hits: list[Passage], k: int, language: str | None, config: 
         if len(chosen) == k:
             break
     return sorted(chosen, key=lambda h: (-h.score, h.decision_id, h.chunk_id))
+
+
+# ── Learned linear ranker ──────────────────────────────────────────────────────────────────────
+# One weight per standardised feature, fitted offline on the development partition only
+# (agent-eval/learned_rank_experiment.py fit). The features are computed here, in serving code, and
+# written to the search diagnostics, so the offline fit and replay see exactly what serving sees.
+
+FEATURES = ('rerank', 'passage', 'fusion', 'logcit', 'bge', 'bger', 'native', 'src_dense', 'src_bm25',
+            'src_bge', 'src_headnotes', 'src_statute', 'explicit_article', 'prf_articles')
+
+
+@dataclass(frozen=True)
+class LinearRanker:
+    features: tuple[str, ...]
+    mean: tuple[float, ...]
+    scale: tuple[float, ...]
+    weights: tuple[float, ...]
+
+    @classmethod
+    def load(cls, path) -> 'LinearRanker':
+        import json
+        from pathlib import Path
+        data = json.loads(Path(path).read_text())
+        return cls(*(tuple(data[k]) for k in ('features', 'mean', 'scale', 'weights')))
+
+    def score(self, features: dict[str, float]) -> float:
+        return sum(w * (float(features[n]) - m) / s
+                   for n, m, s, w in zip(self.features, self.mean, self.scale, self.weights))
+
+
+def candidate_features(hits: list[Passage], language: str | None, config: RankConfig,
+                       articles: dict[str, set[tuple[str, str]]], idf: Callable[[set], dict],
+                       explicit: set[tuple[str, str]], prf_depth: int = 20) -> dict[str, dict[str, float]]:
+    """Features per physical decision id. `articles` maps decision ids to the statute articles they cite.
+
+    prf_articles: pseudo-relevance feedback over statutes. The articles cited by the top judgments of
+    the hand-weighted ranking form an IDF-weighted profile; a candidate scores the share of it it cites.
+    """
+    ranked = rank_decisions(hits, language, config)
+    profile: dict[tuple[str, str], float] = defaultdict(float)
+    top = ranked[:prf_depth]
+    weights = idf(set().union(*(articles.get(h.decision_id, set()) for h in top))) if top else {}
+    for r, h in enumerate(top):
+        for art in articles.get(h.decision_id, ()):
+            profile[art] += weights.get(art, 0.0) / (r + 1)
+    norm = sum(profile.values()) or 1.0
+    out = {}
+    for h in hits:
+        cites = articles.get(h.decision_id, set())
+        sources = set(h.retrieval_sources)
+        court = h.authority_court or h.court
+        out[h.decision_id] = {
+            'rerank': h.reranker_score if h.reranker_score is not None else 0.0,
+            'passage': h.passage_score if h.passage_score is not None else 0.0,
+            'fusion': h.fusion_score * 100, 'logcit': math.log1p(max(0, h.cited_by)),
+            'bge': float(court == 'bge'), 'bger': float(court == 'bger'),
+            'native': float(bool(language) and h.language == language),
+            'src_dense': float('dense' in sources), 'src_bm25': float('bm25' in sources),
+            'src_bge': float('bge' in sources), 'src_headnotes': float('bge_headnotes' in sources),
+            'src_statute': float('statute' in sources),
+            'explicit_article': float(bool(explicit & cites)),
+            'prf_articles': sum(profile.get(a, 0.0) for a in cites) / norm,
+        }
+    return out
+
+
+def learned_select(hits: list[Passage], k: int, features: dict[str, dict[str, float]], ranker: LinearRanker,
+                   identity: Callable[[str], str]) -> list[Passage]:
+    """Top-k judgments by the learned score; one (best-scoring) record per canonical judgment."""
+    scored = sorted((replace(h, score=ranker.score(features[h.decision_id])) for h in hits),
+                    key=lambda h: (-h.score, h.decision_id, h.chunk_id))
+    chosen, seen = [], set()
+    for h in scored:
+        did = identity(h.decision_id)
+        if did not in seen:
+            seen.add(did)
+            chosen.append(h)
+            if len(chosen) == k:
+                break
+    return chosen

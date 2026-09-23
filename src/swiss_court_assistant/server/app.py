@@ -151,7 +151,7 @@ async def search(s: Svc, q: Annotated[str, Query(min_length=1, max_length=2000)]
                  k: Annotated[int, Query(ge=1, le=50)] = 10,
                  language: Literal["de", "fr", "it"] | None = None,
                  baseline: bool = False, strategy: Literal['legacy', 'hybrid'] | None = None,
-                 debug: bool = False) -> dict:
+                 debug: bool = False, translate: bool | None = None) -> dict:
     """Ranked, distinct decisions without answer generation. `baseline` is the relevance-only
     ablation (no extra BGE candidates or authority priors), not a historical chat replay."""
     corpus = getattr(s.agent, "corpus", None)
@@ -163,7 +163,8 @@ async def search(s: Svc, q: Annotated[str, Query(min_length=1, max_length=2000)]
         raise HTTPException(422, 'baseline is the legacy relevance-only ablation; do not combine with hybrid')
     start = time.perf_counter()
     diagnostics = {} if debug else None
-    hits = await corpus.search_decisions(q.strip(), k, language, baseline, strategy=strategy, diagnostics=diagnostics)
+    hits = await corpus.search_decisions(q.strip(), k, language, baseline, strategy=strategy,
+                                       diagnostics=diagnostics, translate=translate)
     selected_strategy = 'legacy' if baseline else strategy or getattr(corpus, 'search_strategy', 'legacy')
     return {"query": q, "k": k, "baseline": baseline, "language": language,
             "strategy": selected_strategy, "diagnostics": diagnostics,
@@ -667,7 +668,8 @@ async def _events(s: Services, conv: ConversationSummary, question: str, history
                         parts.append(f"[{ev.source.n}]")
                         yield {"type": "citation", "source": ev.source.model_dump(by_alias=True)}
                     case Clarify():
-                        clarification = Clarification(question=ev.question, options=ev.options, notes=ev.notes)
+                        clarification = Clarification(question=ev.question, options=ev.options, notes=ev.notes,
+                                                      questions=ev.questions)
                         yield {"type": "clarify", "clarification": clarification.model_dump(by_alias=True)}
                     case Mention():
                         if all(m.text != ev.text for m in mentions):
